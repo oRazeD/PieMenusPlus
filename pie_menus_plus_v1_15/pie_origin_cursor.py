@@ -18,7 +18,6 @@
 
 
 import bpy
-from .__init__ import *
 from bpy.types import Operator
 from bpy.props import EnumProperty
 from bpy_extras import view3d_utils

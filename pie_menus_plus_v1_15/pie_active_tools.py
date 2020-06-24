@@ -19,7 +19,6 @@
 
 import bpy
 from bpy.props import EnumProperty
-from .__init__ import *
 
 
 class PIESPLUS_OT_active_tools(bpy.types.Operator):
@@ -42,7 +41,7 @@ class PIESPLUS_OT_active_tools(bpy.types.Operator):
                ('select_lasso', "Select Lasso", ""),
                ('select_box', "select Box", ""),
                ('cursor', "Cursor", "")),
-               default='tool_transform')
+        default='tool_transform')
 
     def execute(self, context):
         # Affect Tool
@@ -60,7 +59,8 @@ class PIESPLUS_OT_active_tools(bpy.types.Operator):
 
         # Affect Gizmo
         elif self.active_tools == 'gizmo_transform':
-            bpy.ops.view3d.transform_gizmo_set(type={'TRANSLATE', 'ROTATE', 'SCALE'})
+            bpy.ops.view3d.transform_gizmo_set(
+                type={'TRANSLATE', 'ROTATE', 'SCALE'})
 
         elif self.active_tools == 'gizmo_move':
             bpy.ops.view3d.transform_gizmo_set(type={'TRANSLATE'})
@@ -84,7 +84,7 @@ class PIESPLUS_OT_active_tools(bpy.types.Operator):
         elif self.active_tools == 'select_box':
             bpy.ops.wm.tool_set_by_id(name="builtin.select_box")
 
-        else: # 3D Cursor
+        else:  # 3D Cursor
             bpy.ops.wm.tool_set_by_id(name="builtin.cursor")
 
         defaultToolPref = context.preferences.addons[__package__].preferences.defaultTool_Pref
@@ -99,18 +99,19 @@ class PIESPLUS_OT_active_tools(bpy.types.Operator):
                     bpy.ops.wm.tool_set_by_id(name="builtin.select_box")
                 elif defaultToolPref == 'circle_select':
                     bpy.ops.wm.tool_set_by_id(name="builtin.select_circle")
-                else: # Lasso
+                else:  # Lasso
                     bpy.ops.wm.tool_set_by_id(name="builtin.select_lasso")
         return {'FINISHED'}
 
 
 ##############################
-#   REGISTRATION    
+#   REGISTRATION
 ##############################
 
 
 def register():
     bpy.utils.register_class(PIESPLUS_OT_active_tools)
+
 
 def unregister():
     bpy.utils.unregister_class(PIESPLUS_OT_active_tools)

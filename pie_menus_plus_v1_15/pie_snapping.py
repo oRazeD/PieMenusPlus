@@ -18,7 +18,6 @@
 
 
 import bpy
-from .__init__ import *
 from bpy.props import EnumProperty
 
 

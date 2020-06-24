@@ -19,7 +19,6 @@
 
 import bpy
 from bpy.props import EnumProperty
-from .__init__ import *
 
 
 class PIESPLUS_OT_keyframing(bpy.types.Operator):
@@ -39,7 +38,7 @@ class PIESPLUS_OT_keyframing(bpy.types.Operator):
                                     ('key_vis_rot', "Visual Rotation", ""),
                                     ('key_vis_scale', "Visual Scale", ""),
                                     ('key_vis_locrot', "Visual LocRot", ""),
-                                    ('key_vis_locrotscale', "Visual LocRotScale", ""),
+                                    ('key_vis_locrotscale',"Visual LocRotScale", ""),
                                     ('key_vis_locscale', "Visual LocScale", ""),
                                     ('key_vis_rotscale', "Visual RotScale", ""),
                                     ('key_del_loc', "Delta Location", ""),
@@ -49,7 +48,7 @@ class PIESPLUS_OT_keyframing(bpy.types.Operator):
                                     ('key_bendy_bones', "BBone Shape", ""),
                                     ('key_whole_char', "Whole Character", ""),
                                     ('key_whole_char_sel', "Whole Character Selected", "")),
-                                    default='key_loc')
+                             default='key_loc')
 
     def execute(self, context):
         # Non-visual
@@ -89,13 +88,16 @@ class PIESPLUS_OT_keyframing(bpy.types.Operator):
             bpy.ops.anim.keyframe_insert_menu(type='BUILTIN_KSI_VisualLocRot')
 
         elif self.key_choice == 'key_vis_locrotscale':
-            bpy.ops.anim.keyframe_insert_menu(type='BUILTIN_KSI_VisualLocRotScale')
+            bpy.ops.anim.keyframe_insert_menu(
+                type='BUILTIN_KSI_VisualLocRotScale')
 
         elif self.key_choice == 'key_vis_locscale':
-            bpy.ops.anim.keyframe_insert_menu(type='BUILTIN_KSI_VisualLocScale')
+            bpy.ops.anim.keyframe_insert_menu(
+                type='BUILTIN_KSI_VisualLocScale')
 
         elif self.key_choice == 'key_vis_rotscale':
-            bpy.ops.anim.keyframe_insert_menu(type='BUILTIN_KSI_VisualRotScale')
+            bpy.ops.anim.keyframe_insert_menu(
+                type='BUILTIN_KSI_VisualRotScale')
 
         # Delta
         elif self.key_choice == 'key_del_loc':
@@ -112,11 +114,12 @@ class PIESPLUS_OT_keyframing(bpy.types.Operator):
             try:
                 bpy.ops.anim.keyframe_insert_menu(type='Available')
             except:
-                self.report({'ERROR'}, "No suitable context info for active keying set")
+                self.report(
+                    {'ERROR'}, "No suitable context info for active keying set")
 
         elif self.key_choice == 'key_bendy_bones':
             bpy.ops.anim.keyframe_insert_menu(type='BUILTIN_KSI_BendyBones')
-    
+
         elif self.key_choice == 'key_whole_char':
             bpy.ops.anim.keyframe_insert_menu(type='WholeCharacter')
 
@@ -126,12 +129,13 @@ class PIESPLUS_OT_keyframing(bpy.types.Operator):
 
 
 ##############################
-#   REGISTRATION    
+#   REGISTRATION
 ##############################
 
 
 def register():
     bpy.utils.register_class(PIESPLUS_OT_keyframing)
+
 
 def unregister():
     bpy.utils.unregister_class(PIESPLUS_OT_keyframing)

@@ -92,6 +92,7 @@ class PIESPLUS_OT_select_loop_inner_region(Operator):
         bpy.ops.mesh.select_mode(type='FACE')
         return {'FINISHED'}
 
+
 class PIESPLUS_OT_select_marked(Operator):
     bl_idname = 'pies_plus.select_marked_sharp'
     bl_label = ""
@@ -99,7 +100,7 @@ class PIESPLUS_OT_select_marked(Operator):
 
     markedChoice: EnumProperty(items=(('marked_sharp', "Sharps", ""),
                                       ('marked_seam', "Seams", "")),
-                                      default='marked_sharp')
+                               default='marked_sharp')
 
     def execute(self, context):
         bpy.ops.object.mode_set(mode='EDIT')
@@ -111,7 +112,7 @@ class PIESPLUS_OT_select_marked(Operator):
             if self.markedChoice == 'marked_sharp':
                 if edge.use_edge_sharp:
                     edge.select = True
-            else: # Seam
+            else:  # Seam
                 if edge.use_seam:
                     edge.select = True
 
@@ -119,19 +120,33 @@ class PIESPLUS_OT_select_marked(Operator):
         return {'FINISHED'}
 
 
+class PIESPLUS_OT_make_links(Operator):
+    bl_idname = 'pies_plus.make_links'
+    bl_label = ""
+    bl_description = 'Make a new link from the Active Object'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        bpy.ops.wm.call_menu(name="VIEW3D_MT_make_links")
+        return {'FINISHED'}
+
+
 ##############################
-#   REGISTRATION    
+#   REGISTRATION
 ##############################
 
 
 classes = (PIESPLUS_OT_view_selection,
            PIESPLUS_OT_mesh_selection,
            PIESPLUS_OT_select_loop_inner_region,
-           PIESPLUS_OT_select_marked)
+           PIESPLUS_OT_select_marked,
+           PIESPLUS_OT_make_links)
+
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
+
 
 def unregister():
     for cls in classes:
