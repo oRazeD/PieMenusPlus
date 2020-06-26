@@ -22,6 +22,7 @@ from bpy.types import Operator
 from bpy.props import EnumProperty
 from bpy_extras import view3d_utils
 import bmesh
+from ctypes import *
 
 
 class PIESPLUS_OT_origin_to_selection(Operator):
@@ -179,137 +180,168 @@ safety undo in your history should the operation break"""
     def modal(self, context, event):
         ts = context.scene.tool_settings
 
-        if self.done:
-            ts.use_transform_data_origin = self.savedAlignSettings
-            ts.snap_elements = self.savedSnapSettings
-            ts.use_snap_backface_culling = self.savedBackface
-            ts.use_snap_align_rotation = self.savedAlignSettings
-            ts.use_snap = self.savedUsingSnap
-
-            for area in context.screen.areas:
-                if area.type == 'VIEW_3D':
-                    for space in area.spaces:
-                        space.overlay.show_wireframes = self.savedWireframe
-                        break
-
-            if self.hasSubsurf:
-                context.object.modifiers["Subdivision"].show_viewport = True
-
-            if self.hasMirror:
-                context.object.modifiers["Mirror"].show_viewport = True
-
-            for o in self.savedSelection:
-                ob = context.scene.objects.get(o)
-                ob.select_set(True)
-
-            if context.preferences.addons[__package__].preferences.faceCenterSnap_Pref:
+        if event.type in {'LEFTMOUSE', 'RIGHTMOUSE', 'ESC'} or self.redoOp:
+            # If the experimental mode is on, remove the loose vertices on the mesh
+            if context.preferences.addons[__package__].preferences.faceCenterSnap_Pref and not self.redoOp:
                 bpy.ops.object.mode_set(mode='EDIT')
                 bpy.ops.mesh.select_all(action='SELECT')
                 bpy.ops.mesh.delete_loose()
-
-            bpy.ops.object.mode_set(mode=self.modeCallback)
-
-            if self.finished:
-                return {'FINISHED'}
+                self.redoOp = True
+                return {'PASS_THROUGH'}
             else:
-                return {'CANCELLED'}
+                # Refresh snapping options
+                ts.use_transform_data_origin = self.savedAlignSettings
+                ts.snap_elements = self.savedSnapSettings
+                ts.use_snap_backface_culling = self.savedBackface
+                ts.use_snap_align_rotation = self.savedAlignSettings
 
-        if event.type in {'LEFTMOUSE'}:
-            self.finished = True
-            self.done = True
-            return {'PASS_THROUGH'}
-        
-        if event.type in {'RIGHTMOUSE', 'ESC'}:
-            self.cancelled = True
-            self.done = True
-            return {'PASS_THROUGH'}
+                # Refresh wireframe settings
+                for area in context.screen.areas:
+                    if area.type == 'VIEW_3D':
+                        for space in area.spaces:
+                            space.overlay.show_wireframes = self.savedWireframe
+                            break
+
+                # Only works on Windows (TO-DO - Find an alternative that works for Mac)
+                if event.type in {'LEFTMOUSE'}:
+                    windll.user32.keybd_event(0x0D, 0, 0, 0)
+                    windll.user32.keybd_event(0x0D, 0, 2, 0)
+                else:
+                    windll.user32.keybd_event(0x1B, 0, 0, 0)
+                    windll.user32.keybd_event(0x1B, 0, 2, 0)
+
+                # Refresh modifier visibility
+                for ob in self.subsurf_check_list:
+                    context.view_layer.objects.active = bpy.data.objects[ob]
+                    context.object.modifiers["Subdivision"].show_viewport = True
+
+                for ob in self.mirror_check_list:
+                    context.view_layer.objects.active = bpy.data.objects[ob]
+                    context.object.modifiers["Mirror"].show_viewport = True
+
+                # Refresh selection & Active Object
+                for o in self.savedSelection:
+                    ob = context.scene.objects.get(o)
+                    ob.select_set(True)
+
+                context.view_layer.objects.active = self.savedActive
+
+                # Refresh Context Mode
+                bpy.ops.object.mode_set(mode=self.modeCallback)
+                return {'CANCELLED'}
         return {'PASS_THROUGH'}
         
     def invoke(self, context, event):
+        # Safety check for if user searches the operation
+        if not context.active_object:
+            self.report({'ERROR'}, "No Active Object selected")
+            return{'FINISHED'}
+
         ts = context.scene.tool_settings
 
-        self.finished = False
-        self.cancelled = False
-        self.done = False
         self.savedBackface = ts.use_snap_backface_culling
         self.savedSnapSettings = ts.snap_elements
         self.savedAlignSettings = ts.use_snap_align_rotation
         self.savedUsingSnap = ts.use_snap
         self.savedSelection = context.view_layer.objects.selected.keys()
         self.modeCallback = context.object.mode
-        self.hasSubsurf = False
-        self.hasMirror = False
 
-        bpy.ops.ed.undo_push(message="Safety push, go here to revert unwanted changes")
+        self.redoOp = False
 
-        if context.active_object:
+        # Save the Active Object & Make sure it is selected
+        self.savedActive = context.view_layer.objects.active
+        context.active_object.select_set(True)
+
+        # Create an empty at the origin point of the object
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+        obj = context.view_layer.objects.active
+
+        bpy.ops.object.empty_add(type='ARROWS', location = obj.location)
+        pivot = context.active_object
+        pivot.name = obj.name + ".OriginHelper"
+
+        obj = bpy.data.objects[pivot.name[:-13]]
+        piv_loc = pivot.location
+        cl = context.scene.cursor.location
+        piv = (cl[0],cl[1],cl[2])
+        context.scene.cursor.location = piv_loc
+        context.view_layer.objects.active = obj
+        bpy.data.objects[obj.name].select_set(True)
+        bpy.ops.object.origin_set(type='ORIGIN_CURSOR', center='MEDIAN')
+        context.scene.cursor.location = (piv[0],piv[1],piv[2])
+        bpy.data.objects[obj.name].select_set(False)
+        bpy.data.objects[pivot.name].select_set(True)
+        bpy.ops.object.delete()
+        bpy.data.objects[obj.name].select_set(True)
+        context.view_layer.objects.active = obj
+
+        # BMesh (Add vertices to face centers)
+        if context.preferences.addons[__package__].preferences.faceCenterSnap_Pref:
+            mesh = context.object.data
+            verts = []
+
+            for poly in mesh.polygons:
+                verts.append((poly.center[0],poly.center[1],poly.center[2]))
+
+            bm = bmesh.new()
+
+            bpy.ops.object.mode_set(mode='EDIT') # Convert the current mesh to a bmesh (must be in edit mode)
+            bm.from_mesh(mesh)
             bpy.ops.object.mode_set(mode='OBJECT')
 
-            # Select Active Object, deselect non Actives & save the active to a variable
+            for v in verts:
+                bm.verts.new(v) # Add a new vert
 
-            context.active_object.select_set(True)
+            bm.to_mesh(mesh) # Make the bmesh the object's mesh
+            bm.free() # Always do this when finished
 
-            for ob in context.selected_objects:
-                if ob != context.active_object:
-                    ob.select_set(False)
+        # Save & set the Context Mode
+        self.modeCallback = context.object.mode
+        bpy.ops.object.mode_set(mode='OBJECT')
 
-            # BMesh (Add vertices to face centers)
+        # Lists for saving which objects had subsurf/mirror enabled and which didn't
+        self.subsurf_check_list = []
+        self.mirror_check_list = []
 
-            if context.preferences.addons[__package__].preferences.faceCenterSnap_Pref:
-                mesh = context.object.data
-                verts = []
-
-                for poly in mesh.polygons:
-                    verts.append((poly.center[0],poly.center[1],poly.center[2]))
-
-                bm = bmesh.new()
-
-                bpy.ops.object.mode_set(mode='EDIT') # Convert the current mesh to a bmesh (must be in edit mode)
-                bm.from_mesh(mesh)
-                bpy.ops.object.mode_set(mode='OBJECT')
-
-                for v in verts:
-                    bm.verts.new(v) # Add a new vert
-
-                bm.to_mesh(mesh) # Make the bmesh the object's mesh
-                bm.free() # Always do this when finished
-
-            # Toggle modifiers & enable wireframe
-
-            for ob in context.selected_objects:
-                for mod in ob.modifiers:
-                    if(mod.type == "SUBSURF"):
+        # Deselect objects that aren't the Active, Toggle modifiers if turned on & save to list
+        for ob in context.view_layer.objects:
+            for mod in ob.modifiers:
+                if(mod.type == "SUBSURF"):
+                    if ob.modifiers["Subdivision"].show_viewport:
                         ob.modifiers["Subdivision"].show_viewport = False
-                        self.hasSubsurf = True
-                    if(mod.type == "MIRROR"):
+                        if ob.select_get():
+                            self.subsurf_check_list.append(ob.name)
+                if(mod.type == "MIRROR"):
+                    if ob.modifiers["Mirror"].show_viewport:
                         ob.modifiers["Mirror"].show_viewport = False
-                        self.hasMirror = True
+                        if ob.select_get():
+                            self.mirror_check_list.append(ob.name)
 
-            for area in context.screen.areas:
-                if area.type == 'VIEW_3D':
-                    for space in area.spaces:
-                        self.savedWireframe = space.overlay.show_wireframes
-                        space.overlay.show_wireframes = True
-                        break
+            if ob != context.active_object:
+                ob.select_set(False)
 
-            # Change snap settings & enable editable origin
-            
-            ts.use_snap_backface_culling = True
-            ts.use_snap_align_rotation = False
-            ts.use_snap = True
+        # Enable wireframe
+        for area in context.screen.areas:
+            if area.type == 'VIEW_3D':
+                for space in area.spaces:
+                    self.savedWireframe = space.overlay.show_wireframes
+                    space.overlay.show_wireframes = True
+                    break
 
-            ts.snap_elements = {'VERTEX', 'EDGE', 'FACE', 'EDGE_MIDPOINT'}
-            ts.use_transform_data_origin = True
+        # Change snap settings & enable editable origin
+        ts.use_snap_backface_culling = True
+        ts.use_snap_align_rotation = False
 
-            # Translate modal
+        ts.snap_elements = {'VERTEX', 'EDGE', 'FACE', 'EDGE_MIDPOINT'}
+        ts.use_transform_data_origin = True
 
-            bpy.ops.transform.translate('INVOKE_DEFAULT')
+        # Translate modal
+        bpy.ops.transform.translate('INVOKE_DEFAULT', snap=True)
 
-            wm = context.window_manager
-            wm.modal_handler_add(self)
-            return {'RUNNING_MODAL'}
-        else:
-            return {'FINISHED'}
+        wm = context.window_manager
+        wm.modal_handler_add(self)
+        return {'RUNNING_MODAL'}
 
 
 class PIESPLUS_OT_edit_cursor(Operator):
@@ -321,7 +353,7 @@ class PIESPLUS_OT_edit_cursor(Operator):
     def modal(self, context, event):
         ts = context.scene.tool_settings
 
-        if self.done:
+        if self.finished or self.cancelled:
             ts.snap_elements = self.savedSnapSettings
             ts.use_snap_backface_culling = self.savedBackface
             ts.use_snap_align_rotation = self.savedAlignSettings
@@ -333,77 +365,128 @@ class PIESPLUS_OT_edit_cursor(Operator):
                         space.overlay.show_wireframes = self.savedWireframe
                         break
 
-            if context.active_object:
-                if self.hasSubsurf:
-                    context.object.modifiers["Subdivision"].show_viewport = True
+            for ob in self.subsurf_check_list:
+                context.view_layer.objects.active = bpy.data.objects[ob]
+                context.object.modifiers["Subdivision"].show_viewport = True
 
-                if self.hasMirror:
-                    context.object.modifiers["Mirror"].show_viewport = True
+            for ob in self.mirror_check_list:
+                context.view_layer.objects.active = bpy.data.objects[ob]
+                context.object.modifiers["Mirror"].show_viewport = True
 
-                for o in self.savedSelection:
-                    ob = context.scene.objects.get(o)
-                    ob.select_set(True)
+            for o in self.savedSelection:
+                ob = context.scene.objects.get(o)
+                ob.select_set(True)
 
-                bpy.ops.object.mode_set(mode=self.modeCallback)
+            bpy.ops.object.mode_set(mode=self.modeCallback)
 
             if self.finished:
                 return {'FINISHED'}
-            else:
-                return {'CANCELLED'}
 
+        # We need to pass_through once on completion so that the built-in translate finishes before we do
         if event.type in {'LEFTMOUSE'}:
-            self.finished = True
-            self.done = True
-            return {'PASS_THROUGH'}
+            ts.snap_elements = self.savedSnapSettings
+            ts.use_snap_backface_culling = self.savedBackface
+            ts.use_snap_align_rotation = self.savedAlignSettings
+            ts.use_snap = False #self.savedUsingSnap
+
+            for area in context.screen.areas:
+                if area.type == 'VIEW_3D':
+                    for space in area.spaces:
+                        space.overlay.show_wireframes = self.savedWireframe
+                        break
+
+            for ob in self.subsurf_check_list:
+                context.view_layer.objects.active = bpy.data.objects[ob]
+                context.object.modifiers["Subdivision"].show_viewport = True
+
+            for ob in self.mirror_check_list:
+                context.view_layer.objects.active = bpy.data.objects[ob]
+                context.object.modifiers["Mirror"].show_viewport = True
+
+            for o in self.savedSelection:
+                ob = context.scene.objects.get(o)
+                ob.select_set(True)
+
+            bpy.ops.object.mode_set(mode=self.modeCallback)
+            return {'CANCELLED'}
         
         if event.type in {'RIGHTMOUSE', 'ESC'}:
-            self.cancelled = True
-            self.done = True
-            return {'PASS_THROUGH'}
+            ts.snap_elements = self.savedSnapSettings
+            ts.use_snap_backface_culling = self.savedBackface
+            ts.use_snap_align_rotation = self.savedAlignSettings
+            ts.use_snap = False #self.savedUsingSnap
+
+            for area in context.screen.areas:
+                if area.type == 'VIEW_3D':
+                    for space in area.spaces:
+                        space.overlay.show_wireframes = self.savedWireframe
+                        break
+
+            for ob in self.subsurf_check_list:
+                context.view_layer.objects.active = bpy.data.objects[ob]
+                context.object.modifiers["Subdivision"].show_viewport = True
+
+            for ob in self.mirror_check_list:
+                context.view_layer.objects.active = bpy.data.objects[ob]
+                context.object.modifiers["Mirror"].show_viewport = True
+
+            for o in self.savedSelection:
+                ob = context.scene.objects.get(o)
+                ob.select_set(True)
+            
+            # Only works for Windows
+            windll.user32.keybd_event(0x1B, 0, 0, 0)
+            
+            bpy.ops.object.mode_set(mode=self.modeCallback)
+            return {'CANCELLED'}
         return {'PASS_THROUGH'}
         
     def invoke(self, context, event):
+        # Safety check for if user searches the operation
+        if not context.active_object:
+            self.report({'ERROR'}, "No Active Object selected")
+            return{'FINISHED'}
+
         ts = context.scene.tool_settings
 
-        self.finished = False
-        self.cancelled = False
-        self.done = False
+        # Safety undo push to undo possible errors
+        bpy.ops.ed.undo_push(message="Safety push, go here to revert unwanted changes!")
+                    
         self.savedBackface = ts.use_snap_backface_culling
         self.savedSnapSettings = ts.snap_elements
         self.savedAlignSettings = ts.use_snap_align_rotation
         self.savedUsingSnap = ts.use_snap
         self.savedSelection = context.view_layer.objects.selected.keys()
 
-        bpy.ops.ed.undo_push(message="Safety push, go here to revert unwanted changes")
+        # Save & set the Context Mode
+        self.modeCallback = context.object.mode
+        bpy.ops.object.mode_set(mode='OBJECT')
 
-        if context.active_object:
-            self.hasSubsurf = False
-            self.hasMirror = False
+        # Make sure Active Object is selected
+        context.active_object.select_set(True)
 
-            self.modeCallback = context.object.mode
-            bpy.ops.object.mode_set(mode='OBJECT')
+        # Lists for saving which objects had subsurf/mirror enabled and which didn't
+        self.subsurf_check_list = []
+        self.mirror_check_list = []
 
-            # Select Active Object, deselect non Actives & save the active to a variable
-
-            context.active_object.select_set(True)
-
-            for ob in context.selected_objects:
-                if ob != context.active_object:
-                    ob.select_set(False)
-
-            # Toggle modifiers & enable wireframe
-
-            for ob in context.selected_objects:
-                for mod in ob.modifiers:
-                    if(mod.type == "SUBSURF"):
+        # Deselect objects that aren't the Active, Toggle modifiers if turned on & save to list
+        for ob in context.view_layer.objects:
+            for mod in ob.modifiers:
+                if(mod.type == "SUBSURF"):
+                    if ob.modifiers["Subdivision"].show_viewport:
                         ob.modifiers["Subdivision"].show_viewport = False
-                        self.hasSubsurf = True
-                    if(mod.type == "MIRROR"):
+                        if ob.select_get():
+                            self.subsurf_check_list.append(ob.name)
+                if(mod.type == "MIRROR"):
+                    if ob.modifiers["Mirror"].show_viewport:
                         ob.modifiers["Mirror"].show_viewport = False
-                        self.hasMirror = True
+                        if ob.select_get():
+                            self.mirror_check_list.append(ob.name)
+
+            if ob != context.active_object:
+                ob.select_set(False)
 
         # Enable wireframe
-
         for area in context.screen.areas:
             if area.type == 'VIEW_3D':
                 for space in area.spaces:
@@ -412,20 +495,23 @@ class PIESPLUS_OT_edit_cursor(Operator):
                     break
         
         # Reset 3D Cursor rotation
-        
         context.scene.cursor.rotation_euler = (0,0,0)
 
         # Change snap settings & enable editable origin
-        
         ts.use_snap_backface_culling = True
         ts.use_snap_align_rotation = True
-        ts.use_snap = True
+        #ts.use_snap = False
 
-        ts.snap_elements = {'VERTEX', 'EDGE', 'FACE', 'EDGE_MIDPOINT'}
+        ts.snap_elements = {'VERTEX', 'FACE', 'EDGE_MIDPOINT'}
 
         # Translate modal
+        bpy.ops.transform.translate('INVOKE_DEFAULT', cursor_transform=True, snap=True)
 
-        bpy.ops.transform.translate('INVOKE_DEFAULT', cursor_transform=True)
+        #ts.use_snap = True
+
+        # Finished/cancelled checks for the modal
+        self.finished = False
+        self.cancelled = False
 
         wm = context.window_manager
         wm.modal_handler_add(self)
