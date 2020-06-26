@@ -23,7 +23,7 @@ from bpy.props import EnumProperty
 from bpy_extras import view3d_utils
 import bmesh
 from ctypes import *
-
+from time import sleep
 
 class PIESPLUS_OT_origin_to_selection(Operator):
     bl_idname = "pies_plus.origin_to_selection"
@@ -180,20 +180,48 @@ safety undo in your history should the operation break"""
     def modal(self, context, event):
         ts = context.scene.tool_settings
 
-        if event.type in {'LEFTMOUSE', 'RIGHTMOUSE', 'ESC'} or self.redoOp:
+        if event.type in {'LEFTMOUSE', 'RET', 'RIGHTMOUSE', 'ESC'} or self.redoOp:
             # If the experimental mode is on, remove the loose vertices on the mesh
             if context.preferences.addons[__package__].preferences.faceCenterSnap_Pref and not self.redoOp:
                 bpy.ops.object.mode_set(mode='EDIT')
                 bpy.ops.mesh.select_all(action='SELECT')
                 bpy.ops.mesh.delete_loose()
+
                 self.redoOp = True
                 return {'PASS_THROUGH'}
             else:
                 # Refresh snapping options
-                ts.use_transform_data_origin = self.savedAlignSettings
                 ts.snap_elements = self.savedSnapSettings
                 ts.use_snap_backface_culling = self.savedBackface
                 ts.use_snap_align_rotation = self.savedAlignSettings
+
+                # Select Active here because later causes crashing...???
+                context.view_layer.objects.active = self.savedActive
+                bpy.data.objects[self.savedActive.name].select_set(True)
+
+                # Only works on Windows (TO-DO - Find an alternative that works for Mac)
+                if event.type in {'LEFTMOUSE', 'RET'}:
+                    #windll.user32.keybd_event(0x0D, 0, 0, 0)
+                    #sleep(0.01)
+                    #windll.user32.keybd_event(0x0D, 0, 2, 0)
+                    #sleep(0.01)
+
+                    self.piv = (self.cursor_loc[0], self.cursor_loc[1], self.cursor_loc[2])
+                    context.scene.cursor.location = self.piv_loc
+
+                    bpy.ops.object.origin_set(type='ORIGIN_CURSOR', center='MEDIAN')
+                    context.scene.cursor.location = (self.piv[0],self.piv[1],self.piv[2])
+                else:
+                    windll.user32.keybd_event(0x1B, 0, 0, 0)
+                    sleep(0.01)
+                    windll.user32.keybd_event(0x1B, 0, 2, 0)
+                    sleep(0.01)
+
+                # Deselect the Active Object rather than having to loop through every selected object later
+                bpy.data.objects[self.savedActive.name].select_set(False)
+
+                # Delete the pivot
+                bpy.data.objects.remove(bpy.data.objects[self.pivot.name], do_unlink=True)
 
                 # Refresh wireframe settings
                 for area in context.screen.areas:
@@ -201,14 +229,6 @@ safety undo in your history should the operation break"""
                         for space in area.spaces:
                             space.overlay.show_wireframes = self.savedWireframe
                             break
-
-                # Only works on Windows (TO-DO - Find an alternative that works for Mac)
-                if event.type in {'LEFTMOUSE'}:
-                    windll.user32.keybd_event(0x0D, 0, 0, 0)
-                    windll.user32.keybd_event(0x0D, 0, 2, 0)
-                else:
-                    windll.user32.keybd_event(0x1B, 0, 0, 0)
-                    windll.user32.keybd_event(0x1B, 0, 2, 0)
 
                 # Refresh modifier visibility
                 for ob in self.subsurf_check_list:
@@ -219,7 +239,7 @@ safety undo in your history should the operation break"""
                     context.view_layer.objects.active = bpy.data.objects[ob]
                     context.object.modifiers["Mirror"].show_viewport = True
 
-                # Refresh selection & Active Object
+                # Refresh original selection & Active Object
                 for o in self.savedSelection:
                     ob = context.scene.objects.get(o)
                     ob.select_set(True)
@@ -242,7 +262,6 @@ safety undo in your history should the operation break"""
         self.savedBackface = ts.use_snap_backface_culling
         self.savedSnapSettings = ts.snap_elements
         self.savedAlignSettings = ts.use_snap_align_rotation
-        self.savedUsingSnap = ts.use_snap
         self.savedSelection = context.view_layer.objects.selected.keys()
         self.modeCallback = context.object.mode
 
@@ -251,30 +270,6 @@ safety undo in your history should the operation break"""
         # Save the Active Object & Make sure it is selected
         self.savedActive = context.view_layer.objects.active
         context.active_object.select_set(True)
-
-        # Create an empty at the origin point of the object
-        bpy.ops.object.mode_set(mode='OBJECT')
-
-        obj = context.view_layer.objects.active
-
-        bpy.ops.object.empty_add(type='ARROWS', location = obj.location)
-        pivot = context.active_object
-        pivot.name = obj.name + ".OriginHelper"
-
-        obj = bpy.data.objects[pivot.name[:-13]]
-        piv_loc = pivot.location
-        cl = context.scene.cursor.location
-        piv = (cl[0],cl[1],cl[2])
-        context.scene.cursor.location = piv_loc
-        context.view_layer.objects.active = obj
-        bpy.data.objects[obj.name].select_set(True)
-        bpy.ops.object.origin_set(type='ORIGIN_CURSOR', center='MEDIAN')
-        context.scene.cursor.location = (piv[0],piv[1],piv[2])
-        bpy.data.objects[obj.name].select_set(False)
-        bpy.data.objects[pivot.name].select_set(True)
-        bpy.ops.object.delete()
-        bpy.data.objects[obj.name].select_set(True)
-        context.view_layer.objects.active = obj
 
         # BMesh (Add vertices to face centers)
         if context.preferences.addons[__package__].preferences.faceCenterSnap_Pref:
@@ -310,16 +305,28 @@ safety undo in your history should the operation break"""
                 if(mod.type == "SUBSURF"):
                     if ob.modifiers["Subdivision"].show_viewport:
                         ob.modifiers["Subdivision"].show_viewport = False
-                        if ob.select_get():
-                            self.subsurf_check_list.append(ob.name)
+                        self.subsurf_check_list.append(ob.name)
                 if(mod.type == "MIRROR"):
                     if ob.modifiers["Mirror"].show_viewport:
                         ob.modifiers["Mirror"].show_viewport = False
-                        if ob.select_get():
-                            self.mirror_check_list.append(ob.name)
+                        self.mirror_check_list.append(ob.name)
 
             if ob != context.active_object:
                 ob.select_set(False)
+
+        # Create new empty & scale (would rather it be super small than super large)
+        bpy.ops.object.empty_add(location = self.savedActive.location)
+        context.object.scale = (.05, .05, .05)
+
+        # Save Active Object pivot to a variable
+        self.pivot = context.active_object
+
+        # Set the variables name to the obj
+        self.pivot.name = self.savedActive.name + ".OriginHelper"
+
+        # Magic
+        self.piv_loc = self.pivot.location
+        self.cursor_loc = context.scene.cursor.location
 
         # Enable wireframe
         for area in context.screen.areas:
@@ -332,9 +339,7 @@ safety undo in your history should the operation break"""
         # Change snap settings & enable editable origin
         ts.use_snap_backface_culling = True
         ts.use_snap_align_rotation = False
-
         ts.snap_elements = {'VERTEX', 'EDGE', 'FACE', 'EDGE_MIDPOINT'}
-        ts.use_transform_data_origin = True
 
         # Translate modal
         bpy.ops.transform.translate('INVOKE_DEFAULT', snap=True)
