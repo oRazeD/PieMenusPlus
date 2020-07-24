@@ -1,22 +1,3 @@
-# ##### BEGIN GPL LICENSE BLOCK #####
-#
-#  This program is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU General Public License
-#  as published by the Free Software Foundation; either version 2
-#  of the License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software Foundation,
-#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-#
-# ##### END GPL LICENSE BLOCK #####
-
-
 import bpy
 import rna_keymap_ui
 from bpy.props import StringProperty, EnumProperty, BoolProperty, IntProperty, PointerProperty
@@ -24,11 +5,14 @@ from bpy.types import Operator, AddonPreferences, PropertyGroup
 
 
 ##################################
-# Preferences
+# Property Group
 ##################################
 
 
 class PIESPLUS_property_group(PropertyGroup):
+    def update_smoothAngle(self, context):
+        bpy.ops.pies_plus.auto_smooth()
+
     dropdownDelete: BoolProperty()
     dropdownSelection: BoolProperty()
     dropdownProportional: BoolProperty()
@@ -36,6 +20,13 @@ class PIESPLUS_property_group(PropertyGroup):
     dropdownSelectMode: BoolProperty()
     dropdownAnimation: BoolProperty()
     dropdownTools: BoolProperty()
+
+    smoothAngle: bpy.props.IntProperty(name = "", default=180, min=0, max=180, update = update_smoothAngle)
+
+
+##################################
+# Keymapping
+##################################
 
 
 class PIESPLUS_addon_keymaps:
@@ -139,7 +130,7 @@ class PIESPLUS_addon_keymaps:
     @staticmethod
     def draw_keymap_items(wm, layout):
         kc = wm.keyconfigs.user
-        addon_preferences = bpy.context.scene.addon_preferences
+        pies_plus = bpy.context.scene.pies_plus
 
         deleteUsed = 0
         selectionUsed = 0
@@ -158,58 +149,58 @@ class PIESPLUS_addon_keymaps:
                     selectModeUsed = 1
                     boxProp = layout.box()
                     row = boxProp.row()
-                    row.prop(addon_preferences, 'dropdownSelectMode', icon_only=True, emboss=False,
-                             icon="DOWNARROW_HLT" if addon_preferences.dropdownSelectMode else "RIGHTARROW")
+                    row.prop(pies_plus, 'dropdownSelectMode', icon_only=True, emboss=False,
+                             icon="DOWNARROW_HLT" if pies_plus.dropdownSelectMode else "RIGHTARROW")
                     row.label(text="Select Mode Pies")
                     row.label(text="[Standard, UV]")
-                    if addon_preferences.dropdownSelectMode:
+                    if pies_plus.dropdownSelectMode:
                         row = boxProp.row()
-                if addon_preferences.dropdownSelectMode:
+                if pies_plus.dropdownSelectMode:
                     drawKeymap = 1
 
             # Snapping
-            if name.startswith('Snapping'):
+            elif name.startswith('Snapping'):
                 if snappingUsed == 0:
                     snappingUsed = 1
                     boxProp = layout.box()
                     row = boxProp.row()
-                    row.prop(addon_preferences, 'dropdownSnapping', icon_only=True, emboss=False,
-                             icon="DOWNARROW_HLT" if addon_preferences.dropdownSnapping else "RIGHTARROW")
+                    row.prop(pies_plus, 'dropdownSnapping', icon_only=True, emboss=False,
+                             icon="DOWNARROW_HLT" if pies_plus.dropdownSnapping else "RIGHTARROW")
                     row.label(text="Snapping Pies")
                     row.label(text="[Standard, UV]")
-                    if addon_preferences.dropdownSnapping:
+                    if pies_plus.dropdownSnapping:
                         row = boxProp.row()
-                if addon_preferences.dropdownSnapping:
+                if pies_plus.dropdownSnapping:
                     drawKeymap = 1
 
             # Delete
-            if name.startswith('Delete'):
+            elif name.startswith('Delete'):
                 if deleteUsed == 0:
                     deleteUsed = 1
                     boxProp = layout.box()
                     row = boxProp.row()
-                    row.prop(addon_preferences, 'dropdownDelete', icon_only=True, emboss=False,
-                             icon="DOWNARROW_HLT" if addon_preferences.dropdownDelete else "RIGHTARROW")
+                    row.prop(pies_plus, 'dropdownDelete', icon_only=True, emboss=False,
+                             icon="DOWNARROW_HLT" if pies_plus.dropdownDelete else "RIGHTARROW")
                     row.label(text="Delete Pies")
                     row.label(text="[Standard, Curve]")
-                    if addon_preferences.dropdownDelete:
+                    if pies_plus.dropdownDelete:
                         row = boxProp.row()
-                if addon_preferences.dropdownDelete:
+                if pies_plus.dropdownDelete:
                     drawKeymap = 1
 
             # Selection
-            if name.startswith('Selection'):
+            elif name.startswith('Selection'):
                 if selectionUsed == 0:
                     selectionUsed = 1
                     boxProp = layout.box()
                     row = boxProp.row()
-                    row.prop(addon_preferences, 'dropdownSelection', icon_only=True, emboss=False,
-                             icon="DOWNARROW_HLT" if addon_preferences.dropdownSelection else "RIGHTARROW")
+                    row.prop(pies_plus, 'dropdownSelection', icon_only=True, emboss=False,
+                             icon="DOWNARROW_HLT" if pies_plus.dropdownSelection else "RIGHTARROW")
                     row.label(text="Selection Pies")
                     row.label(text="[Object, Edit]")
-                    if addon_preferences.dropdownSelection:
+                    if pies_plus.dropdownSelection:
                         row = boxProp.row()
-                if addon_preferences.dropdownSelection:
+                if pies_plus.dropdownSelection:
                     drawKeymap = 1
 
             # Proportional
@@ -218,13 +209,13 @@ class PIESPLUS_addon_keymaps:
                     proportionalUsed = 1
                     boxProp = layout.box()
                     row = boxProp.row()
-                    row.prop(addon_preferences, 'dropdownProportional', icon_only=True, emboss=False,
-                             icon="DOWNARROW_HLT" if addon_preferences.dropdownProportional else "RIGHTARROW")
+                    row.prop(pies_plus, 'dropdownProportional', icon_only=True, emboss=False,
+                             icon="DOWNARROW_HLT" if pies_plus.dropdownProportional else "RIGHTARROW")
                     row.label(text="Proportional Pies")
                     row.label(text="[Object, Edit]")
-                    if addon_preferences.dropdownProportional:
+                    if pies_plus.dropdownProportional:
                         row = boxProp.row()
-                if addon_preferences.dropdownProportional:
+                if pies_plus.dropdownProportional:
                     drawKeymap = 1
 
             # Tools
@@ -233,13 +224,13 @@ class PIESPLUS_addon_keymaps:
                     toolsUsed = 1
                     boxProp = layout.box()
                     row = boxProp.row()
-                    row.prop(addon_preferences, 'dropdownTools', icon_only=True, emboss=False,
-                             icon="DOWNARROW_HLT" if addon_preferences.dropdownTools else "RIGHTARROW")
+                    row.prop(pies_plus, 'dropdownTools', icon_only=True, emboss=False,
+                             icon="DOWNARROW_HLT" if pies_plus.dropdownTools else "RIGHTARROW")
                     row.label(text="Active Tool Pies")
                     row.label(text="[Active, Sculpt]")
-                    if addon_preferences.dropdownTools:
+                    if pies_plus.dropdownTools:
                         row = boxProp.row()
-                if addon_preferences.dropdownTools:
+                if pies_plus.dropdownTools:
                     drawKeymap = 1
 
             # Animation
@@ -248,24 +239,23 @@ class PIESPLUS_addon_keymaps:
                     animationUsed = 1
                     boxProp = layout.box()
                     row = boxProp.row()
-                    row.prop(addon_preferences, 'dropdownAnimation', icon_only=True, emboss=False,
-                             icon="DOWNARROW_HLT" if addon_preferences.dropdownAnimation else "RIGHTARROW")
+                    row.prop(pies_plus, 'dropdownAnimation', icon_only=True, emboss=False,
+                             icon="DOWNARROW_HLT" if pies_plus.dropdownAnimation else "RIGHTARROW")
                     row.label(text="Animation Pies")
                     row.label(text="[Playback, Keyframing]")
-                    if addon_preferences.dropdownAnimation:
+                    if pies_plus.dropdownAnimation:
                         row = boxProp.row()
-                if addon_preferences.dropdownAnimation:
+                if pies_plus.dropdownAnimation:
                     drawKeymap = 1
 
             else:
-                if not name.startswith(('Delete', 'Snapping', 'Select Mode')):
-                    box = layout.box()
-                    kmi_name, kmi_value, km_name = items[:3]
-                    split = box.split()
-                    col = split.column()
-                    km = kc.keymaps[km_name]
-                    PIESPLUS_addon_keymaps.get_hotkey_entry_item(
-                        name, kc, km, kmi_name, kmi_value, col)
+                box = layout.box()
+                kmi_name, kmi_value, km_name = items[:3]
+                split = box.split()
+                col = split.column()
+                km = kc.keymaps[km_name]
+                PIESPLUS_addon_keymaps.get_hotkey_entry_item(
+                    name, kc, km, kmi_name, kmi_value, col)
 
             if drawKeymap:
                 kmi_name, kmi_value, km_name = items[:3]
@@ -295,12 +285,16 @@ class PIESPLUS_OT_Add_Hotkey(Operator):
         return {'FINISHED'}
 
 
+##################################
+# Preferences
+##################################
+
+
 class PIESPLUS_MT_addon_prefs(AddonPreferences):
     bl_idname = __package__
 
-    Tabs: EnumProperty(items=(('info', "Information", "Information about the addon"),
-                              ('keymaps', "Keymaps", "Keymapping"),
-                              ('settings', "Settings", "Settings")))
+    Tabs: EnumProperty(items=(('general', "General", "Information & Settings"),
+                              ('keymaps', "Keymaps", "Keymapping")))
 
     gizmoSwitch_Pref: EnumProperty(items=(('tool', "Tool", "Changes the tool"),
                                           ('gizmo', "Gizmo", "Changes the gizmo instead of the tool (preferred workflow, will set your tool to tweak if using a different tool that isn't box, lasso or circle select)")))
@@ -333,6 +327,9 @@ class PIESPLUS_MT_addon_prefs(AddonPreferences):
     faceCenterSnap_Pref: BoolProperty(
         description="Allows snapping directly to the center of any face on the object being edited (WARNING: This operation can be very slow in bigger scenes)")
 
+    invertSelection_Pref: BoolProperty(
+        description="Only deselect all objects if all object are selected (versus deselecting if any selection is made)")
+
     def draw(self, context):
         layout = self.layout
 
@@ -341,7 +338,7 @@ class PIESPLUS_MT_addon_prefs(AddonPreferences):
 
         # Information
 
-        if self.Tabs == 'info':
+        if self.Tabs == 'general':
             row = layout.row()
             row.separator()
 
@@ -351,43 +348,13 @@ class PIESPLUS_MT_addon_prefs(AddonPreferences):
             box.label(text="Pie Menus Plus is an add-on structured around creating a fully functioning pie menu")
             box.label(text="ecosystem that extends usability beyond what the built-in pie menus are capable of.")
 
-            row = layout.row()
-            row.label(text="        Help:")
+            flow.separator(factor = 2)
 
-            flow = layout.grid_flow()
-            box = flow.box()
+            box_main = layout.box()
 
-            box.label(text="If you ever have problems with any of the tools provided in versions of Blender from")
-            box.label(text="2.83 down to 2.80 you can contact me via email @ ethan.simon.3d@gmail.com.")
-
-            row = layout.row()
-            row.label(text="        Support Us:")
-
-            flow = layout.grid_flow()
-            box = flow.box()
-
-            box.label(text="If you like Pie Menus Plus, consider leaving a positive rating on the view content page")
-            box.label(text="of the product in your Gumroad library. If you would like to support me further you can")
-            box.label(text="either contact me with development ideas or send a few bucks via purchasing the product.")
-
-        # Keymapping
-
-        if self.Tabs == 'keymaps':
-            row = layout.row()
-            row.separator()
-
-            wm = context.window_manager
-            PIESPLUS_addon_keymaps.draw_keymap_items(wm, layout)
-
-        # Settings
-
-        if self.Tabs == 'settings':
-            row = layout.row()
-            row.separator()
-            row = layout.row()
-
+            row = box_main.row()
             row.label(text="        Gizmo / Tool Settings:")
-            box = layout.box()
+            box = box_main.box()
             row = box.row()
             row.label(text="Gizmo change method:")
             row.prop(self, "gizmoSwitch_Pref", expand=True)
@@ -396,32 +363,42 @@ class PIESPLUS_MT_addon_prefs(AddonPreferences):
             row.label(text="Default Selection Tool:")
             row.prop(self, "defaultTool_Pref", expand=True)
 
-            row = layout.row()
+            row = box_main.row()
             row.separator()
-            row = layout.row()
+            row = box_main.row()
 
             row.label(text="        Wireframe Settings:")
-            box = layout.box()
+            box = box_main.box()
             row = box.row()
             row.label(text="Wireframe method:")
             row.prop(self, "wireframeType_Pref", expand=True)
 
-            row = layout.row()
+            row = box_main.row()
             row.separator()
-            row = layout.row()
+            row = box_main.row()
 
             row.label(text="        Snapping Settings:")
-            box = layout.box()
+            box = box_main.box()
             row = box.row()
             row.prop(self, "autoSnap_Pref",
                      text="Auto enable snapping when snap type changed")
 
-            row = layout.row()
+            row = box_main.row()
             row.separator()
-            row = layout.row()
+            row = box_main.row()
+
+            row.label(text="        Selection Settings:")
+            box = box_main.box()
+            row = box.row()
+            row.prop(self, "invertSelection_Pref",
+                     text="Invert selection toggle")
+
+            row = box_main.row()
+            row.separator()
+            row = box_main.row()
 
             row.label(text="        Origin / Cursor Change Settings:")
-            box = layout.box()
+            box = box_main.box()
             if bpy.app.version >= (2, 81, 0):
                 row = box.row()
                 row.prop(self, "editOriginActivate_Pref",
@@ -436,12 +413,12 @@ class PIESPLUS_MT_addon_prefs(AddonPreferences):
             row.prop(self, "resetRot_Pref",
                      text="Reset 3D Cursor rotation when resetting location")
 
-            row = layout.row()
+            row = box_main.row()
             row.separator()
-            row = layout.row()
+            row = box_main.row()
 
             row.label(text="        Quick Face-Weighted Normals Settings:")
-            box = layout.box()
+            box = box_main.box()
             row = box.row()
             row.label(text="Weight:")
             row.scale_x = 2
@@ -453,21 +430,20 @@ class PIESPLUS_MT_addon_prefs(AddonPreferences):
             row = box.row()
             row.prop(self, "keepSharp_Pref", text="Keep Sharps")
 
-            row = layout.row()
+            row = box_main.row()
             row.separator()
-            row = layout.row()
+            row = box_main.row()
 
             row.label(text="        General Pie Settings:")
 
-            view = context.preferences.view
-            flow = layout.grid_flow()
+            flow = box_main.grid_flow()
             box = flow.box()
             box.scale_y = .97
 
-            box.label(
-                text="Dev Note: I personally recommend 0 for Animation Timeout and 125+")
-            box.label(
-                text="for Radius, but I have not changed any of your User Preferences.")
+            box.label(text="Dev Note: I personally recommend 0 for Animation Timeout and 125+")
+            box.label(text="for Radius, but I have not changed any of your User Preferences.")
+
+            view = context.preferences.view
 
             box.prop(view, "pie_animation_timeout")
             box.prop(view, "pie_tap_timeout")
@@ -475,6 +451,15 @@ class PIESPLUS_MT_addon_prefs(AddonPreferences):
             box.prop(view, "pie_menu_radius")
             box.prop(view, "pie_menu_threshold")
             box.prop(view, "pie_menu_confirm")
+
+        # Keymapping
+
+        if self.Tabs == 'keymaps':
+            row = layout.row()
+            row.separator()
+
+            wm = context.window_manager
+            PIESPLUS_addon_keymaps.draw_keymap_items(wm, layout)
 
 
 ##################################
@@ -487,8 +472,7 @@ def register():
     bpy.utils.register_class(PIESPLUS_OT_Add_Hotkey)
     bpy.utils.register_class(PIESPLUS_property_group)
 
-    bpy.types.Scene.addon_preferences = PointerProperty(
-        type=PIESPLUS_property_group)
+    bpy.types.Scene.pies_plus = PointerProperty(type = PIESPLUS_property_group)
 
     # Assign Standard Keymaps
     PIESPLUS_addon_keymaps.new_keymap('Select Mode Pie', 'wm.call_menu_pie', 'PIESPLUS_MT_modes',
@@ -555,7 +539,7 @@ def register():
                                       '3D View', 'VIEW_3D', 'WINDOW',
                                       'S', 'PRESS', False, True, False)
 
-    PIESPLUS_addon_keymaps.new_keymap('Apply / Clear Transforms Pie', 'wm.call_menu_pie', 'PIESPLUS_MT_apply_clear_transforms',
+    PIESPLUS_addon_keymaps.new_keymap('Apply / Clear Transforms Pie', 'wm.call_menu_pie', 'PIESPLUS_MT_transforms',
                                       'Object Mode', 'EMPTY', 'WINDOW',
                                       'A', 'PRESS', True, False, False)
 
@@ -575,6 +559,25 @@ def unregister():
     bpy.utils.unregister_class(PIESPLUS_OT_Add_Hotkey)
     bpy.utils.unregister_class(PIESPLUS_property_group)
 
-    del bpy.types.Scene.addon_preferences
+    del bpy.types.Scene.pies_plus
 
     PIESPLUS_addon_keymaps.unregister_keymaps()  # Keymap Cleanup
+
+
+# ##### BEGIN GPL LICENSE BLOCK #####
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# ##### END GPL LICENSE BLOCK #####
