@@ -21,9 +21,9 @@ bl_info = {
     "name": "Pie Menus Plus",
     "description": "Additional / Improved Pie Menus for Blender 2.8+",
     "author": "Ethan Simon-Law",
-    "version": (1, 1, 5),
-    "blender": (2, 83, 0),
-    "location": "View3D",
+    "version": (1, 2, 0),
+    "blender": (2, 83, 3),
+    "tracker_url": "https://discord.com/invite/wHAyVZG",
     "category": "3D View"}
 
 
@@ -35,7 +35,6 @@ module_names = ("ui",
                 "prefs",
                 "pie_modes",
                 "pie_snapping",
-                "pie_looptools",
                 "pie_active_tools",
                 "pie_origin_cursor",
                 "pie_apply_transforms",
@@ -45,18 +44,17 @@ module_names = ("ui",
                 "pie_keyframing")
 modules = []
 
-for module_name in module_names:
-    if module_name in locals():
-        modules.append(importlib.reload(locals()[module_name]))
+for mod in module_names:
+    if mod in locals():
+        modules.append(importlib.reload(locals()[mod]))
     else:
         modules.append(importlib.import_module(
-            "." + module_name, package=__package__))
+            "." + mod, package=__package__))
 
 
 def register():
     for module in modules:
         module.register()
-
 
 def unregister():
     for module in modules:
