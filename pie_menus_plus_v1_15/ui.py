@@ -1,31 +1,7 @@
-# ##### BEGIN GPL LICENSE BLOCK #####
-#
-#  This program is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU General Public License
-#  as published by the Free Software Foundation; either version 2
-#  of the License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software Foundation,
-#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-#
-# ##### END GPL LICENSE BLOCK #####
-
-
 import bpy
 import os
 from .pie_shading import *
 from bpy.types import Menu
-
-
-##############################
-#   PIE MENUS
-##############################
 
 
 ########################################################################################################################
@@ -64,7 +40,7 @@ class PIESPLUS_MT_modes(Menu):
             # 1 - BOTTOM - LEFT
             if context.selected_objects:
                 pie.operator("pies_plus.auto_active")
-                pie.label(text="          WARNING: No Active Object selected")
+                pie.label(text="          WARNING: No Active selected")
             else:
                 pie.separator()
                 pie.label(text="          WARNING: No objects selected")
@@ -406,29 +382,23 @@ class PIESPLUS_MT_looptools(Menu):
         for modID in context.preferences.addons.keys():
             if modID == 'mesh_looptools':
                 # 4 - LEFT
-                pie.operator("pies_plus.looptools",
-                             text="Relax").lt_func = 'lt_relax'
+                pie.operator("mesh.looptools_relax")
                 # 6 - RIGHT
-                pie.operator("pies_plus.looptools",
-                             text="Space").lt_func = 'lt_space'
+                pie.operator("mesh.looptools_space")
                 # # 2 - BOTTOM
-                pie.operator("pies_plus.looptools",
-                             text="Flatten").lt_func = 'lt_flatten'
+                pie.operator("mesh.looptools_flatten")
                 # # 8 - TOP
-                pie.operator("pies_plus.looptools",
-                             text="Circle").lt_func = 'lt_circle'
+                pie.operator("mesh.looptools_circle")
                 # # 7 - TOP - LEFT
-                pie.operator("pies_plus.looptools",
-                             text="Loft").lt_func = 'lt_loft'
+                pie.operator("mesh.looptools_bridge",
+                             text="Loft").loft = True
                 # # 9 - TOP - RIGHT
-                pie.operator("pies_plus.looptools",
-                             text="GStretch").lt_func = 'lt_gstretch'
+                pie.operator("mesh.looptools_gstretch")
                 # 1 - BOTTOM - LEFT
-                pie.operator("pies_plus.looptools",
-                             text="Curve").lt_func = 'lt_curve'
+                pie.operator("mesh.looptools_curve")
                 # 3 - BOTTOM - RIGHT
-                pie.operator("pies_plus.looptools",
-                             text="Bridge").lt_func = 'lt_bridge'
+                pie.operator("mesh.looptools_bridge",
+                             text="Bridge")
                 break
         else:
             pie.label(text="          WARNING: You do not have LoopTools enabled")
@@ -439,39 +409,33 @@ class PIESPLUS_MT_looptools(Menu):
 ########################################################################################################################
 
 
-class PIESPLUS_MT_apply_clear_transforms(Menu):
-    bl_idname = "PIESPLUS_MT_apply_clear_transforms"
+class PIESPLUS_MT_transforms(Menu):
+    bl_idname = "PIESPLUS_MT_transforms"
     bl_label = "Transforms"
 
     def draw(self, context):
         layout = self.layout
         pie = layout.menu_pie()
 
-        if not context.active_object:
-            if context.selected_objects:
-                pie.label(text="          WARNING: No Active Object selected")
-            else:
-                pie.label(text="          WARNING: No objects selected")
-
-        else:
+        if context.selected_objects:
             #4 - LEFT
-            pie.operator("pies_plus.apply_transforms", text="Clear All",
-                         icon='EMPTY_AXIS').apply_transforms = 'clear_all'
+            pie.operator("pies_plus.transforms", text="Clear All",
+                         icon='EMPTY_AXIS').tranforms_type = 'clear_all'
             #6 - RIGHT
-            pie.operator("pies_plus.apply_transforms", text="Apply Scale",
-                         icon='FILE_TICK').apply_transforms = 'apply_scale'
+            pie.operator("pies_plus.transforms", text="Apply Scale",
+                         icon='FILE_TICK').tranforms_type = 'apply_scale'
             #2 - BOTTOM
-            pie.operator("pies_plus.apply_transforms", text="Apply All",
-                         icon='FILE_TICK').apply_transforms = 'apply_all'
+            pie.operator("pies_plus.transforms", text="Apply All",
+                         icon='FILE_TICK').tranforms_type = 'apply_all'
             #8 - TOP
-            pie.operator("pies_plus.apply_transforms", text="Apply Rot & Scale",
-                         icon='FILE_TICK').apply_transforms = 'apply_rot_scale'
+            pie.operator("pies_plus.transforms", text="Apply Rot & Scale",
+                         icon='FILE_TICK').tranforms_type = 'apply_rot_scale'
             #7 - TOP - LEFT
-            pie.operator("pies_plus.apply_transforms", text="Apply Location",
-                         icon='FILE_TICK').apply_transforms = 'apply_loc'
+            pie.operator("pies_plus.transforms", text="Apply Location",
+                         icon='FILE_TICK').tranforms_type = 'apply_loc'
             #9 - TOP - RIGHT
-            pie.operator("pies_plus.apply_transforms", text="Apply Rotation",
-                         icon='FILE_TICK').apply_transforms = 'apply_rot'
+            pie.operator("pies_plus.transforms", text="Apply Rotation",
+                         icon='FILE_TICK').tranforms_type = 'apply_rot'
             #1 - BOTTOM - LEFT
             col = pie.column()
 
@@ -495,12 +459,14 @@ class PIESPLUS_MT_apply_clear_transforms(Menu):
             box = col.box().column()
             box.scale_y = 1.25
 
-            box.operator("object.visual_transform_apply",
-                         text="Apply Visual Transforms", icon='FILE_TICK')
-            box.operator("object.convert", text="Convert to Mesh",
-                         icon='OUTLINER_OB_MESH').target = 'MESH'
-            box.operator("object.duplicates_make_real",
-                         text="Make Duplicates Real", icon='USER')
+            box.operator("object.convert", text="Convert to...", icon='FILE_REFRESH')
+            box.operator("object.visual_transform_apply", text="Apply Visual Transforms", icon='FILE_TICK')
+            box.operator("object.duplicates_make_real", text="Make Duplicates Real", icon='USER')
+        else:
+            if not context.active_object:
+                pie.label(text="          WARNING: No Active selected")
+            else:
+                pie.label(text="          WARNING: No objects selected")
 
 
 ########################################################################################################################
@@ -518,7 +484,7 @@ class PIESPLUS_MT_origin_pivot(Menu):
 
         if not context.active_object:
             if context.selected_objects:
-                pie.label(text="          WARNING: No Active Object selected")
+                pie.label(text="          WARNING: No Active selected")
             else:
                 pie.label(text="          WARNING: No objects selected")
 
@@ -798,13 +764,10 @@ class PIESPLUS_MT_selection_edit_mode(Menu):
         row = box.row(align=True)
         row.scale_x = .875
         row.label(text="Select:")
-        row.operator("pies_plus.select_marked_sharp",
-                     text="Sharps").markedChoice = 'marked_sharp'
-        row.operator("pies_plus.select_marked_sharp",
-                     text="Seams").markedChoice = 'marked_seam'
+        row.operator("pies_plus.select_seamed", text="Seams [X]")
+        row.operator("pies_plus.select_sharped", text="Sharps")
         #3 - BOTTOM - RIGHT
-        pie.operator("mesh.select_nth", text="Checker Deselect",
-                     icon='PARTICLE_POINT')
+        pie.operator("mesh.select_nth", text="Checker Deselect", icon='PARTICLE_POINT')
 
 
 ########################################################################################################################
@@ -823,21 +786,12 @@ class PIESPLUS_MT_shading(Menu):
         # 4 - LEFT
         pie.operator("pies_plus.solid", icon='SHADING_SOLID')
         # 6 - RIGHT
-        if context.selected_objects:
-            if context.active_object:
-                if context.object.type == 'MESH':
-                    if context.active_object.data.polygons[0].use_smooth:
-                        pie.operator("pies_plus.shade_flat")
-                    else:
-                        pie.operator("pies_plus.shade_smooth")
-                else:
-                    pie.separator()
-            else:
-                pie.separator()
-                pie.label(text="          WARNING: No Active Object selected")
+        pie.separator()
+        if not context.active_object:
+            pie.label(text="          WARNING: No Active selected")
         else:
-            pie.separator()
-            pie.label(text="          WARNING: No objects selected")
+            if not context.selected_objects:
+                pie.label(text="          WARNING: No objects selected")
         # 2 - BOTTOM
         pie.operator("pies_plus.wireframe", icon='SHADING_WIRE')
         # 8 - TOP
@@ -847,38 +801,31 @@ class PIESPLUS_MT_shading(Menu):
         # 9 - TOP - RIGHT
         pie.operator("pies_plus.overlay", icon='OVERLAY')
         #1 - BOTTOM - LEFT
-        if context.active_object and context.object.type == 'MESH':
-            col = pie.column()
+        col = pie.column()
 
-            gap = col.column()
-            gap.separator()
-            if context.selected_objects:
-                gap.scale_y = 16.5
-            else:
-                gap.scale_y = 2.5
+        gap = col.column()
+        gap.separator()
+        gap.scale_y = 16.5
 
-            box = col.box().column(align=True)
-            box.scale_y = 1.1
+        box = col.box().column(align = True)
+        box.scale_y = 1.1
 
-            box.prop(context.active_object, "useAutoSmooth")
-            box.prop(context.active_object, "smoothAngle")
-            if context.selected_objects:
-                box = col.box().column()
-                box.scale_y = 1.25
-                box.operator("pies_plus.recalc_normals", icon='NORMALS_FACE')
-                box.operator("pies_plus.auto_fwn", icon='MOD_NORMALEDIT')
-                box.operator("pies_plus.remove_custom_normals", icon='X')
+        row = box.row()
+        row.operator("pies_plus.auto_smooth")
+        row.prop(context.scene.pies_plus, "smoothAngle")
+        row.operator("pies_plus.remove_auto_smooth", text = "", icon = 'CANCEL')
+        box = box.row(align = True)
+        box.operator("pies_plus.shade_smooth", text = "Smooth")
+        box.operator("pies_plus.shade_flat", text = "Flat")
+        box = col.box().column()
+        box.scale_y = 1.25
+        box.operator("pies_plus.recalc_normals", icon='NORMALS_FACE')
+        box.operator("pies_plus.auto_fwn", icon='MOD_NORMALEDIT')
+        box.operator("pies_plus.remove_custom_normals", icon='X')
 
-                box = col.box().column()
-                box.scale_y = 1.25
-                box.operator("pies_plus.wireframe_per_obj",
-                             icon='MOD_WIREFRAME')
-
-        elif context.selected_objects and not context.active_object:
-            pie.operator("pies_plus.auto_active")
-
-        else:
-            pie.separator()
+        box = col.box().column()
+        box.scale_y = 1.25
+        box.operator("pies_plus.wireframe_per_obj", icon='MOD_WIREFRAME')
         #3 - BOTTOM - RIGHT
         pie.operator("pies_plus.rendered", icon='SHADING_RENDERED')
 
@@ -1375,7 +1322,7 @@ classes = (PIESPLUS_MT_modes,
            PIESPLUS_MT_active_tools,
            PIESPLUS_MT_looptools,
            PIESPLUS_MT_origin_pivot,
-           PIESPLUS_MT_apply_clear_transforms,
+           PIESPLUS_MT_transforms,
            PIESPLUS_MT_delete,
            PIESPLUS_MT_delete_curve,
            PIESPLUS_MT_selection_object_mode,
@@ -1402,3 +1349,22 @@ def unregister():
 
     for cls in classes:
         bpy.utils.unregister_class(cls)
+
+
+# ##### BEGIN GPL LICENSE BLOCK #####
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# ##### END GPL LICENSE BLOCK #####
