@@ -2,7 +2,9 @@ import bpy
 from bpy.types import Operator
 
 
-    # Operators
+##############################
+#   OPERATORS    
+##############################
 
 
 class PIESPLUS_OT_auto_smooth(Operator):
@@ -12,7 +14,10 @@ class PIESPLUS_OT_auto_smooth(Operator):
     bl_options = {'UNDO'}
 
     def execute(self, context):
-        bpy.ops.object.mode_set(mode="OBJECT")
+        if context.active_object:
+            modeCallback = context.object.mode
+
+            bpy.ops.object.mode_set(mode="OBJECT")
 
         for ob in context.selected_objects:
             if ob.type == 'MESH':
@@ -21,6 +26,9 @@ class PIESPLUS_OT_auto_smooth(Operator):
                 ob.data.auto_smooth_angle = context.scene.pies_plus.smoothAngle * 3.14159 / 180
             
         bpy.ops.object.shade_smooth()
+
+        if 'modeCallback' in locals():
+            bpy.ops.object.mode_set(mode = modeCallback)
         return {'FINISHED'}
 
 
@@ -31,13 +39,19 @@ class PIESPLUS_OT_remove_auto_smooth(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        bpy.ops.object.mode_set(mode="OBJECT")
+        if context.active_object:
+            modeCallback = context.object.mode
+
+            bpy.ops.object.mode_set(mode="OBJECT")
 
         for ob in context.selected_objects:
             if ob.type == 'MESH':
                 ob.data.use_auto_smooth = False
             
         bpy.ops.object.shade_flat()
+
+        if 'modeCallback' in locals():
+            bpy.ops.object.mode_set(mode = modeCallback)
         return {'FINISHED'}
 
 
@@ -45,7 +59,7 @@ class PIESPLUS_OT_solid_shading(Operator):
     bl_idname = "pies_plus.solid"
     bl_label = "Solid"
     bl_description = "Sets the viewport shading type to Solid"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER'}
 
     def execute(self, context):
         context.space_data.shading.type = 'SOLID'
@@ -70,18 +84,26 @@ class PIESPLUS_OT_wire_shading(Operator):
         return {'FINISHED'}
 
 
-class PIESPLUS_OT_wire_shading_per_obj(Operator):
-    bl_idname = "pies_plus.wireframe_per_obj"
+class PIESPLUS_OT_wire_per_obj(Operator):
+    bl_idname = "pies_plus.wire_per_obj"
     bl_label = "Wireframe (per obj)"
-    bl_description = "Toggle viewport wireframes for all selected object"
+    bl_description = "Toggle per-object wireframes for all selected objects"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         for ob in context.selected_objects:
-            if not context.object.show_wire:
-                ob.show_wire = True
-            else:
-                ob.show_wire = False
+            ob.show_wire = not ob.show_wire
+        return {'FINISHED'}
+
+class PIESPLUS_OT_remove_wire_per_obj(Operator):
+    bl_idname = "pies_plus.remove_wire_per_obj"
+    bl_label = ""
+    bl_description = "Remove per-object wireframes from all selected objects"
+    bl_options = {'UNDO'}
+
+    def execute(self, context):
+        for ob in context.selected_objects:
+            ob.show_wire = False
         return {'FINISHED'}
 
 
@@ -89,7 +111,7 @@ class PIESPLUS_OT_mat_preview_shading(Operator):
     bl_idname = "pies_plus.mat_preview"
     bl_label = "Material Preview"
     bl_description = "Sets the viewport shading type to Material Preview"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER'}
 
     def execute(self, context):
         context.space_data.shading.type = 'MATERIAL'
@@ -100,11 +122,12 @@ class PIESPLUS_OT_rendered_shading(Operator):
     bl_idname = "pies_plus.rendered"
     bl_label = "Rendered"
     bl_description = "Sets the viewport shading type to Rendered"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER'}
 
     def execute(self, context):
         context.space_data.shading.type = 'RENDERED'
         return {'FINISHED'}
+
 
 class PIESPLUS_OT_recalc_normals(Operator):
     """    [BATCH] Recalculates the Active(s) Normals (individual faces in Edit Mode if selected)
@@ -116,34 +139,50 @@ class PIESPLUS_OT_recalc_normals(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def invoke(self, context, event):
+        if not context.selected_objects and not context.active_object:
+            self.report({'ERROR'}, "Nothing is selected & there is no Active Object")
+            return{'FINISHED'}
+
+        if context.active_object:
+            if context.object.type != 'MESH':
+                self.report({'ERROR'}, "The Active Object is not a mesh")
+                return{'FINISHED'}
+        else:
+            for ob in context.selected_objects:
+                context.view_layer.objects.active = ob
+                break
+
         modeCallback = context.object.mode
 
         if context.mode == 'EDIT_MESH':
             context.view_layer.objects.active.select_set(True)
             for ob in context.selected_objects:
-                ob.update_from_editmode()
-                selected_polys = [x for x in ob.data.polygons if x.select]
-                if selected_polys:
-                    bpy.ops.mesh.select_mode(type='FACE')
-                    bpy.ops.mesh.normals_make_consistent(inside=event.alt)
-                    self.report({'INFO'}, "Recalculated Normals on Selected Faces")
-                    return{'FINISHED'}
+                if ob.type == 'MESH':
+                    ob.update_from_editmode()
+
+                    selected_polys = [x for x in ob.data.polygons if x.select]
+                    if selected_polys:
+                        bpy.ops.mesh.select_mode(type='FACE')
+                        bpy.ops.mesh.normals_make_consistent(inside=event.alt)
+                        self.report({'INFO'}, "Recalculated Normals on selected faces")
+                        return{'FINISHED'}
 
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_mode(type='FACE')
         bpy.ops.mesh.select_all(action='SELECT')
         bpy.ops.mesh.normals_make_consistent(inside=event.alt)
         bpy.ops.mesh.select_all(action='DESELECT')
-        self.report({'INFO'}, "Recalculated Normals on All Faces")
+        self.report({'INFO'}, "Recalculated Normals on all faces")
 
-        bpy.ops.object.mode_set(mode = modeCallback)
+        if 'modeCallback' in locals():
+            bpy.ops.object.mode_set(mode = modeCallback)
         return{'FINISHED'}
 
 
 class PIESPLUS_OT_shade_smooth(Operator):
     bl_idname = "pies_plus.shade_smooth"
     bl_label = "Shade Smooth"
-    bl_description = "[BATCH] Changes the shading of the Active Object to smooth"
+    bl_description = "[BATCH] Changes the shading of the selected objects to smooth"
     bl_options = {'UNDO'}
 
     def execute(self,context):
@@ -154,7 +193,7 @@ class PIESPLUS_OT_shade_smooth(Operator):
 
         bpy.ops.object.shade_smooth()
 
-        if context.active_object:
+        if 'activeCallback' in locals():
             bpy.ops.object.mode_set(mode = modeCallback)
         return{'FINISHED'}
 
@@ -162,7 +201,7 @@ class PIESPLUS_OT_shade_smooth(Operator):
 class PIESPLUS_OT_shade_flat(Operator):
     bl_idname = "pies_plus.shade_flat"
     bl_label = "Shade Flat"
-    bl_description = "[BATCH] Changes the shading of the Active Object to flat"
+    bl_description = "[BATCH] Changes the shading of the selected objects to flat"
     bl_options = {'UNDO'}
 
     def execute(self,context):
@@ -173,7 +212,7 @@ class PIESPLUS_OT_shade_flat(Operator):
 
         bpy.ops.object.shade_flat()
 
-        if context.active_object:
+        if 'activeCallback' in locals():
             bpy.ops.object.mode_set(mode = modeCallback)
         return{'FINISHED'}
 
@@ -185,13 +224,18 @@ class PIESPLUS_OT_auto_fwn(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
+        if not context.selected_objects and not context.active_object:
+            self.report({'ERROR'}, "Nothing is selected & there is no Active Object")
+            return{'FINISHED'}
+
         userPrefs = context.preferences.addons[__package__].preferences
 
-        activeCallback = context.view_layer.objects.active
+        if context.active_object:
+            activeCallback = context.view_layer.objects.active
 
-        modeCallback = context.object.mode
+            modeCallback = context.object.mode
         
-        bpy.ops.object.mode_set(mode='OBJECT')
+            bpy.ops.object.mode_set(mode='OBJECT')
 
         for ob in context.selected_objects:
             if ob.type == 'MESH':
@@ -208,10 +252,12 @@ class PIESPLUS_OT_auto_fwn(Operator):
                     ob.modifiers.new('Weighted Normal', 'WEIGHTED_NORMAL')
                     ob.modifiers["Weighted Normal"].weight = userPrefs.weightValue_Pref
                     ob.modifiers["Weighted Normal"].keep_sharp = userPrefs.keepSharp_Pref
+                    ob.modifiers["Weighted Normal"].face_influence = userPrefs.faceInf_Pref
 
-        context.view_layer.objects.active = activeCallback
-        
-        bpy.ops.object.mode_set(mode = modeCallback)
+        if 'activeCallback' in locals():
+            context.view_layer.objects.active = activeCallback
+            
+            bpy.ops.object.mode_set(mode = modeCallback)
         
         self.report({'INFO'}, "Automatically FWN'd selection")
         return{'FINISHED'}
@@ -224,13 +270,18 @@ class PIESPLUS_OT_remove_custom_normals(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        for ob in context.selected_objects:
-            
+        if not context.selected_objects and not context.active_object:
+            self.report({'ERROR'}, "Nothing is selected & there is no Active Object")
+            return{'FINISHED'}
+
+        if context.active_object:
             activeCallback = context.view_layer.objects.active.name
-            
+
+        for ob in context.selected_objects:
             context.view_layer.objects.active = ob
             bpy.ops.mesh.customdata_custom_splitnormals_clear()
-            
+
+        if 'activeCallback' in locals():
             context.view_layer.objects.active = bpy.data.objects[activeCallback]
         return{'FINISHED'}
 
@@ -243,7 +294,8 @@ class PIESPLUS_OT_remove_custom_normals(Operator):
 classes = (PIESPLUS_OT_auto_smooth,
            PIESPLUS_OT_remove_auto_smooth,
            PIESPLUS_OT_solid_shading,
-           PIESPLUS_OT_wire_shading_per_obj,
+           PIESPLUS_OT_wire_per_obj,
+           PIESPLUS_OT_remove_wire_per_obj,
            PIESPLUS_OT_wire_shading,
            PIESPLUS_OT_mat_preview_shading,
            PIESPLUS_OT_rendered_shading,
