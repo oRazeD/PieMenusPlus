@@ -1,6 +1,7 @@
 import bpy
 from bpy.types import Operator
 from bpy.props import EnumProperty
+import bmesh
 
 
 class PIESPLUS_OT_view_selection(Operator):
@@ -54,8 +55,18 @@ class PIESPLUS_OT_mesh_selection(Operator):
             if context.active_object:
                 if context.object.mode == 'EDIT':
                     if context.preferences.addons[__package__].preferences.invertSelection_Pref:
+                        verts_hidden = 0
+
+                        for ob in context.selected_objects:
+                            bm = bmesh.from_edit_mesh(ob.data)
+
+                            for v in bm.verts:
+                                if v.hide:
+                                    verts_hidden += 1
+
                         scene_verts = context.scene.statistics(context.view_layer).split(" | ")[1]
-                        if scene_verts.split('/')[1] == scene_verts.split('/')[0].split(':')[1]:
+
+                        if int(scene_verts.split('/')[1].replace(',','')) - verts_hidden == int(scene_verts.split('/')[0].split(':')[1].replace(',','')):
                             bpy.ops.mesh.select_all(action='DESELECT')
                         else:
                             bpy.ops.mesh.select_all(action='SELECT')
