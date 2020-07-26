@@ -16,10 +16,11 @@ class PIESPLUS_MT_modes(Menu):
     def draw(self, context):
         ts = context.tool_settings
 
+        # Get Active Object type (if active selected)
         try:
             obType = context.object.type
         except:
-            print("")
+            pass
 
         layout = self.layout
         pie = layout.menu_pie()
@@ -783,19 +784,29 @@ class PIESPLUS_MT_shading(Menu):
         layout = self.layout
         pie = layout.menu_pie()
 
+        space = context.space_data
+
         # 4 - LEFT
         pie.operator("pies_plus.solid", icon='SHADING_SOLID')
         # 6 - RIGHT
-        pie.separator()
-        if not context.active_object:
-            pie.label(text="          WARNING: No Active selected")
-        else:
-            if not context.selected_objects:
-                pie.label(text="          WARNING: No objects selected")
+        pie.operator("pies_plus.mat_preview", icon='MATERIAL_DATA')
         # 2 - BOTTOM
         pie.operator("pies_plus.wireframe", icon='SHADING_WIRE')
         # 8 - TOP
-        pie.operator("pies_plus.mat_preview", icon='MATERIAL_DATA')
+        box = pie.box()
+
+        row = box.row(align = True)
+
+        row.scale_x = .9
+
+        row.prop(space.shading, "light", expand=True)
+
+        if space.shading.light in ["STUDIO", "MATCAP"]:
+            box.template_icon_view(space.shading, "studio_light", scale=4, scale_popup=2.5)
+
+        #row = box.row(align = True)
+
+        #row.prop(space.shading, "color_type", expand=True)
         # 7 - TOP - LEFT
         pie.operator("pies_plus.xray", icon='XRAY')
         # 9 - TOP - RIGHT
@@ -807,16 +818,19 @@ class PIESPLUS_MT_shading(Menu):
         gap.separator()
         gap.scale_y = 16.5
 
-        box = col.box().column(align = True)
+        box = col.box().column()
         box.scale_y = 1.1
 
-        row = box.row()
+        row = box.row(align=True)
         row.operator("pies_plus.auto_smooth")
         row.prop(context.scene.pies_plus, "smoothAngle")
         row.operator("pies_plus.remove_auto_smooth", text = "", icon = 'CANCEL')
-        box = box.row(align = True)
-        box.operator("pies_plus.shade_smooth", text = "Smooth")
-        box.operator("pies_plus.shade_flat", text = "Flat")
+
+        row = box.row(align=True)
+        row.label(text="Shade:")
+        row.operator("pies_plus.shade_smooth", text = "Smooth")
+        row.operator("pies_plus.shade_flat", text = "Flat")
+
         box = col.box().column()
         box.scale_y = 1.25
         box.operator("pies_plus.recalc_normals", icon='NORMALS_FACE')
@@ -997,8 +1011,8 @@ class PIESPLUS_MT_keyframing(Menu):
                              text="BBone Shape").key_choice = 'key_bendy_bones'
                 box.operator("pies_plus.keyframing",
                              text="Whole Character").key_choice = 'key_whole_char'
-                box.operator(
-                    "pies_plus.keyframing", text="Whole Selected").key_choice = 'key_whole_char_sel'
+                box.operator("pies_plus.keyframing",
+                             text="Whole Selected").key_choice = 'key_whole_char_sel'
             # 3 - BOTTOM - RIGHT
             col = pie.column()
 
@@ -1282,6 +1296,7 @@ class PIESPLUS_MT_sculpt_grab(Menu):
 #   REGISTRATION
 ##############################
 
+
     # Icons
 brush_icons = {}
 
@@ -1303,8 +1318,7 @@ def create_icons():
             icon_value = bpy.app.icons.new_triangles_from_file(filename)
             brush_icons[brush] = icon_value
     else:
-        print(
-            "Brush icons are not currently supported in versions of blender lower than 2.81")
+        print("Brush icons are not currently supported in versions of blender lower than 2.81")
 
 
 def release_icons():
