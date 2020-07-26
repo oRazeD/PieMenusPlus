@@ -122,14 +122,11 @@ class PIESPLUS_OT_UV_sel_change(Operator):
     def execute(self, context):
         if self.sel_choice == 'sel_vert':
             context.scene.tool_settings.uv_select_mode = 'VERTEX'
-
         elif self.sel_choice == 'sel_edge':
             context.scene.tool_settings.uv_select_mode = 'EDGE'
-
         elif self.sel_choice == 'sel_face':
             context.scene.tool_settings.uv_select_mode = 'FACE'
-
-        else:
+        else: # Island
             context.scene.tool_settings.uv_select_mode = 'ISLAND'
         return {'FINISHED'}
 
