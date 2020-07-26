@@ -147,13 +147,15 @@ class PIESPLUS_OT_shade_smooth(Operator):
     bl_options = {'UNDO'}
 
     def execute(self,context):
-        modeCallback = context.object.mode
+        if context.active_object:
+            modeCallback = context.object.mode
 
-        bpy.ops.object.mode_set(mode='OBJECT')
+            bpy.ops.object.mode_set(mode='OBJECT')
 
         bpy.ops.object.shade_smooth()
 
-        bpy.ops.object.mode_set(mode = modeCallback)
+        if context.active_object:
+            bpy.ops.object.mode_set(mode = modeCallback)
         return{'FINISHED'}
 
 
@@ -164,13 +166,15 @@ class PIESPLUS_OT_shade_flat(Operator):
     bl_options = {'UNDO'}
 
     def execute(self,context):
-        modeCallback = context.object.mode
+        if context.active_object:
+            modeCallback = context.object.mode
 
-        bpy.ops.object.mode_set(mode='OBJECT')
+            bpy.ops.object.mode_set(mode='OBJECT')
 
         bpy.ops.object.shade_flat()
 
-        bpy.ops.object.mode_set(mode = modeCallback)
+        if context.active_object:
+            bpy.ops.object.mode_set(mode = modeCallback)
         return{'FINISHED'}
 
 
