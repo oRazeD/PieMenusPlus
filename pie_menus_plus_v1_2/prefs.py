@@ -13,6 +13,15 @@ class PIESPLUS_property_group(PropertyGroup):
     def update_smoothAngle(self, context):
         bpy.ops.pies_plus.auto_smooth()
 
+    def update_uvSyncSelection(self, context):
+        context.scene.tool_settings.use_uv_select_sync = self.uvSyncSelection
+
+        if context.preferences.addons[__package__].preferences.preserveUVSelection_Pref:
+            if not context.scene.tool_settings.use_uv_select_sync:
+                for area in context.screen.areas:
+                    if area.type == 'VIEW_3D':
+                        bpy.ops.mesh.select_all(action='SELECT')
+
     dropdownDelete: BoolProperty()
     dropdownSelection: BoolProperty()
     dropdownProportional: BoolProperty()
@@ -22,6 +31,8 @@ class PIESPLUS_property_group(PropertyGroup):
     dropdownTools: BoolProperty()
 
     smoothAngle: bpy.props.IntProperty(name = "", default=180, min=0, max=180, update = update_smoothAngle)
+
+    uvSyncSelection: BoolProperty(name = "UV Sync Selection", default = False, update = update_uvSyncSelection)
 
 
 ##################################
@@ -308,18 +319,21 @@ class PIESPLUS_MT_addon_prefs(AddonPreferences):
                                           ('lasso_select', "Lasso", "Lasso Select")))
 
     keepSharp_Pref: BoolProperty(
-        description="Toggles whether the FWN Modifier accounts for Sharps on each mesh", default=True)
+        description="Toggles whether the FWN Modifier accounts for Sharps on each mesh", default = True)
 
     weightValue_Pref: IntProperty(name="Weight", default=100, min=1, max=100)
+
+    faceInf_Pref: BoolProperty(
+        description="Use influence of face for weighting", default = False)
 
     smoothAngle_Pref: IntProperty(
         name="Smooth Angle", default=60, min=0, max=180)
 
     autoSnap_Pref: BoolProperty(
-        description="Automatically turns snapping on when you change snapping pie settings", default=True)
+        description="Automatically turns snapping on when you change snapping pie settings", default = True)
 
     resetRot_Pref: BoolProperty(
-        description="Decide whether the 3D Cursors rotation resets when you reset per axis", default=True)
+        description="Decide whether the 3D Cursors rotation resets when you reset per axis", default = True)
 
     editOriginActivate_Pref: BoolProperty(
         description="Edit Origin & 3D Cursor allows you to move the Actives origin (or 3D Cursor) with a modal. This used to be on by default but the undo system can be a bit unreliable. The tool is safe to use, avoid undos if you can <3")
@@ -329,6 +343,9 @@ class PIESPLUS_MT_addon_prefs(AddonPreferences):
 
     invertSelection_Pref: BoolProperty(
         description="Only deselect all objects if all object are selected (versus deselecting if any selection is made)")
+
+    preserveUVSelection_Pref: BoolProperty(
+        description="Selects all faces when you leave UV Sync", default = False)
 
     def draw(self, context):
         layout = self.layout
@@ -353,6 +370,13 @@ class PIESPLUS_MT_addon_prefs(AddonPreferences):
             box_main = layout.box()
 
             row = box_main.row()
+            row.label(text="        Select Mode Settings:")
+            box = box_main.box()
+            row = box.row()
+            row.prop(self, "preserveUVSelection_Pref",
+                     text="Preserve UV selection when exiting UV Sync mode")
+
+            row = box_main.row()
             row.label(text="        Gizmo / Tool Settings:")
             box = box_main.box()
             row = box.row()
@@ -364,40 +388,7 @@ class PIESPLUS_MT_addon_prefs(AddonPreferences):
             row.prop(self, "defaultTool_Pref", expand=True)
 
             row = box_main.row()
-            row.separator()
-            row = box_main.row()
-
-            row.label(text="        Wireframe Settings:")
-            box = box_main.box()
-            row = box.row()
-            row.label(text="Wireframe method:")
-            row.prop(self, "wireframeType_Pref", expand=True)
-
-            row = box_main.row()
-            row.separator()
-            row = box_main.row()
-
-            row.label(text="        Snapping Settings:")
-            box = box_main.box()
-            row = box.row()
-            row.prop(self, "autoSnap_Pref",
-                     text="Auto enable snapping when snap type changed")
-
-            row = box_main.row()
-            row.separator()
-            row = box_main.row()
-
-            row.label(text="        Selection Settings:")
-            box = box_main.box()
-            row = box.row()
-            row.prop(self, "invertSelection_Pref",
-                     text="Invert selection toggle")
-
-            row = box_main.row()
-            row.separator()
-            row = box_main.row()
-
-            row.label(text="        Origin / Cursor Change Settings:")
+            row.label(text="        Origin / Cursor Settings:")
             box = box_main.box()
             if bpy.app.version >= (2, 81, 0):
                 row = box.row()
@@ -407,18 +398,27 @@ class PIESPLUS_MT_addon_prefs(AddonPreferences):
                     row = box.row()
                     row.prop(self, "faceCenterSnap_Pref",
                              text="[EXPERIMENTAL] Edit Origin snapping to center of faces (Slow in big scenes)")
-            row = box.row()
-            row.separator()
+                    row = box.row()
             row = box.row()
             row.prop(self, "resetRot_Pref",
                      text="Reset 3D Cursor rotation when resetting location")
 
             row = box_main.row()
-            row.separator()
-            row = box_main.row()
-
-            row.label(text="        Quick Face-Weighted Normals Settings:")
+            row.label(text="        Selection Settings:")
             box = box_main.box()
+            row = box.row()
+            row.prop(self, "invertSelection_Pref",
+                     text="Invert selection toggle")
+
+            row = box_main.row()
+            row.label(text="        Shading Settings:")
+            box = box_main.box()
+            row = box.row()
+            row.label(text="Wireframe method:")
+            row.prop(self, "wireframeType_Pref", expand=True)
+
+            row = box.row()
+            box.label(text="    Quick FWN:")
             row = box.row()
             row.label(text="Weight:")
             row.scale_x = 2
@@ -429,11 +429,10 @@ class PIESPLUS_MT_addon_prefs(AddonPreferences):
             row.prop(self, "smoothAngle_Pref")
             row = box.row()
             row.prop(self, "keepSharp_Pref", text="Keep Sharps")
+            row = box.row()
+            row.prop(self, "faceInf_Pref", text="Face Influence")
 
             row = box_main.row()
-            row.separator()
-            row = box_main.row()
-
             row.label(text="        General Pie Settings:")
 
             flow = box_main.grid_flow()
