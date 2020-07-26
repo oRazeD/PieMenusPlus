@@ -1,6 +1,5 @@
 import bpy
 import os
-from .pie_shading import *
 from bpy.types import Menu
 
 
@@ -56,8 +55,7 @@ class PIESPLUS_MT_modes(Menu):
             # 2 - BOTTOM
             pie.operator("pies_plus.edge", icon='EDGESEL')
             # 8 - TOP
-            pie.operator("object.editmode_toggle",
-                         text="Edit / Object", icon='OBJECT_DATAMODE')
+            pie.operator("object.editmode_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
             # 7 - TOP - LEFT
             pie.operator("pies_plus.xray", icon='XRAY')
             # 9 - TOP - RIGHT
@@ -148,12 +146,10 @@ class PIESPLUS_MT_UV_modes(Menu):
     bl_label = "Select Mode (UV)"
 
     def draw(self, context):
-        ts = context.tool_settings
-
         layout = self.layout
         pie = layout.menu_pie()
 
-        if ts.use_uv_select_sync:
+        if context.tool_settings.use_uv_select_sync:
             # 4 - LEFT
             pie.operator("pies_plus.vertex", icon='VERTEXSEL')
             # 6 - RIGHT
@@ -161,7 +157,7 @@ class PIESPLUS_MT_UV_modes(Menu):
             # 2 - BOTTOM
             pie.operator("pies_plus.edge", icon='EDGESEL')
             # 8 - TOP
-            pie.prop(ts, "use_uv_select_sync", icon='UV_SYNC_SELECT')
+            pie.prop(context.scene.pies_plus, "uvSyncSelection", icon='UV_SYNC_SELECT')
         else:
             #4 - LEFT
             pie.operator("pies_plus.uv_sel_change", text='Vertex',
@@ -173,7 +169,7 @@ class PIESPLUS_MT_UV_modes(Menu):
             pie.operator("pies_plus.uv_sel_change", text='Edge',
                          icon='EDGESEL').sel_choice = 'sel_edge'
             # 8 - TOP
-            pie.prop(ts, "use_uv_select_sync", icon='UV_SYNC_SELECT')
+            pie.prop(context.scene.pies_plus, "uvSyncSelection", icon='UV_SYNC_SELECT')
             # 7 - TOP - LEFT
             pie.separator()
             # 9 - TOP - RIGHT
@@ -587,9 +583,10 @@ class PIESPLUS_MT_origin_pivot(Menu):
         box.scale_y = 1.25
         box.operator("view3d.reset_cursor_rot", icon='PIVOT_CURSOR')
         if context.preferences.addons[__package__].preferences.editOriginActivate_Pref:
-            box.operator("view3d.snap_selected_to_cursor", text="Selection to Cursor",
-                         icon='RESTRICT_SELECT_OFF').use_offset = True
-            box.operator("pies_plus.edit_cursor", icon='PIVOT_CURSOR')
+            if context.active_object:
+                box.operator("view3d.snap_selected_to_cursor", text="Selection to Cursor",
+                            icon='RESTRICT_SELECT_OFF').use_offset = True
+                box.operator("pies_plus.edit_cursor", icon='PIVOT_CURSOR')
 
 
 ########################################################################################################################
@@ -632,13 +629,19 @@ class PIESPLUS_MT_delete(Menu):
 
         gap = col.column()
         gap.separator()
-        gap.scale_y = 10.5
+        gap.scale_y = 14
 
         box = col.box().column()
         box.scale_y = 1.25
 
         box.operator("mesh.remove_doubles",
                      text="Merge by Distance", icon='AUTOMERGE_ON')
+
+        box2 = col.box().column()
+        box2.scale_y = 1.25
+
+        box2.operator("mesh.delete_loose",
+                      text="Delete Loose", icon='STICKY_UVS_VERT')
 
         box2 = col.box().column()
         box2.scale_y = 1.25
@@ -784,29 +787,31 @@ class PIESPLUS_MT_shading(Menu):
         layout = self.layout
         pie = layout.menu_pie()
 
-        space = context.space_data
 
         # 4 - LEFT
         pie.operator("pies_plus.solid", icon='SHADING_SOLID')
         # 6 - RIGHT
-        pie.operator("pies_plus.mat_preview", icon='MATERIAL_DATA')
+        pie.separator()
         # 2 - BOTTOM
         pie.operator("pies_plus.wireframe", icon='SHADING_WIRE')
         # 8 - TOP
-        box = pie.box()
+        pie.operator("pies_plus.mat_preview", icon='MATERIAL_DATA')
 
-        row = box.row(align = True)
+        # Future Shading Pie idea
 
-        row.scale_x = .9
+        #space = context.space_data
 
-        row.prop(space.shading, "light", expand=True)
-
-        if space.shading.light in ["STUDIO", "MATCAP"]:
-            box.template_icon_view(space.shading, "studio_light", scale=4, scale_popup=2.5)
+        #box = pie.box()
 
         #row = box.row(align = True)
+        #row.scale_x = .9
+        #row.prop(space.shading, "light", expand=True)
+        #if space.shading.light in ["STUDIO", "MATCAP"]:
+        #    box.template_icon_view(space.shading, "studio_light", scale=4, scale_popup=2.5)
 
+        #row = box.row(align = True)
         #row.prop(space.shading, "color_type", expand=True)
+
         # 7 - TOP - LEFT
         pie.operator("pies_plus.xray", icon='XRAY')
         # 9 - TOP - RIGHT
@@ -821,13 +826,26 @@ class PIESPLUS_MT_shading(Menu):
         box = col.box().column()
         box.scale_y = 1.1
 
-        row = box.row(align=True)
-        row.operator("pies_plus.auto_smooth")
-        row.prop(context.scene.pies_plus, "smoothAngle")
-        row.operator("pies_plus.remove_auto_smooth", text = "", icon = 'CANCEL')
+        split = box.split(factor=.55)
 
-        row = box.row(align=True)
-        row.label(text="Shade:")
+        col_left = split.column()
+        col_left.scale_x = .01
+        col_left.operator("pies_plus.auto_smooth")
+
+        col_right = split.column()
+        col_right_row = col_right.row()
+        col_right_row.prop(context.scene.pies_plus, "smoothAngle")
+        col_right_row.operator("pies_plus.remove_auto_smooth", text = "", icon = 'CANCEL')
+
+        #row = box.row()
+        #row.operator("pies_plus.auto_smooth")
+        
+        #row.operator("pies_plus.remove_auto_smooth", text = "", icon = 'CANCEL')
+
+        #row.prop(context.scene.pies_plus, "smoothAngle")
+
+        row = box.row(align = True)
+        row.label(text = "Shade:")
         row.operator("pies_plus.shade_smooth", text = "Smooth")
         row.operator("pies_plus.shade_flat", text = "Flat")
 
@@ -839,7 +857,10 @@ class PIESPLUS_MT_shading(Menu):
 
         box = col.box().column()
         box.scale_y = 1.25
-        box.operator("pies_plus.wireframe_per_obj", icon='MOD_WIREFRAME')
+
+        row = box.row(align = True)
+        row.operator("pies_plus.wire_per_obj", icon='MOD_WIREFRAME')
+        row.operator("pies_plus.remove_wire_per_obj", icon='CANCEL')
         #3 - BOTTOM - RIGHT
         pie.operator("pies_plus.rendered", icon='SHADING_RENDERED')
 
