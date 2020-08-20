@@ -1,6 +1,5 @@
 import bpy
 from bpy.types import Operator
-from bpy.props import EnumProperty
 
 
 class PIESPLUS_OT_object_mode(Operator):
@@ -109,25 +108,18 @@ class PIESPLUS_OT_face(Operator):
 
 class PIESPLUS_OT_UV_sel_change(Operator):
     bl_idname = "pies_plus.uv_sel_change"
-    bl_label = "UV Sel Change"
-    bl_description = "Changes the UV selection mode to the selected mode"
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_label = "UV Selection Change"
+    bl_description = "Changes the UV selection mode to whatever option is selected"
+    bl_options = {'REGISTER'}
 
-    sel_choice: EnumProperty(items=(('sel_vert', "Vertex", ""),
-                                    ('sel_edge', "Edge", ""),
-                                    ('sel_face', "Face", ""),
-                                    ('sel_island', "Island", "")),
-                                    default='sel_vert')
+    sel_choice: bpy.props.EnumProperty(items=(('vertex', "Vertex", ""),
+                                              ('edge', "Edge", ""),
+                                              ('face', "Face", ""),
+                                              ('island', "Island", "")),
+                                              default='vertex', name = 'Selection Choice')
 
     def execute(self, context):
-        if self.sel_choice == 'sel_vert':
-            context.scene.tool_settings.uv_select_mode = 'VERTEX'
-        elif self.sel_choice == 'sel_edge':
-            context.scene.tool_settings.uv_select_mode = 'EDGE'
-        elif self.sel_choice == 'sel_face':
-            context.scene.tool_settings.uv_select_mode = 'FACE'
-        else: # Island
-            context.scene.tool_settings.uv_select_mode = 'ISLAND'
+        context.scene.tool_settings.uv_select_mode = self.sel_choice.upper()
         return {'FINISHED'}
 
 
@@ -138,24 +130,7 @@ class PIESPLUS_OT_overlays(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        if not context.space_data.overlay.show_overlays:
-            context.space_data.overlay.show_overlays = True
-        else:
-            context.space_data.overlay.show_overlays = False
-        return {'FINISHED'}
-
-
-class PIESPLUS_OT_xray(Operator):
-    bl_idname = "pies_plus.xray"
-    bl_label = "X-Ray Toggle"
-    bl_description = "Toggles the viewport X-Ray"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        if context.space_data.shading.type == 'SOLID' or context.space_data.shading.type == 'WIREFRAME':
-            bpy.ops.view3d.toggle_xray()
-        else:
-            self.report({'INFO'}, "X-Ray not available in current mode")
+        context.space_data.overlay.show_overlays = not context.space_data.overlay.show_overlays
         return {'FINISHED'}
 
 
@@ -187,7 +162,6 @@ classes = (PIESPLUS_OT_object_mode,
            PIESPLUS_OT_face,
            PIESPLUS_OT_UV_sel_change,
            PIESPLUS_OT_overlays,
-           PIESPLUS_OT_xray,
            PIESPLUS_OT_auto_active)
 
 def register():
