@@ -1,6 +1,5 @@
 import bpy
 from bpy.types import Operator
-from bpy.props import EnumProperty
 import bmesh
 
 
@@ -30,50 +29,43 @@ class PIESPLUS_OT_mesh_selection(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def invoke(self, context, event):
+
+        if context.mode == 'EDIT_MESH':
+            select = bpy.ops.mesh
+        else:
+            select = bpy.ops.object
+
         if event.shift:
-            if context.active_object:
-                if context.object.mode == 'EDIT':
-                    bpy.ops.mesh.select_all(action='SELECT')
-                    return {'FINISHED'}
-            bpy.ops.object.select_all(action='SELECT')
+            select.select_all(action='SELECT')
 
         elif event.ctrl:
-            if context.active_object:
-                if context.object.mode == 'EDIT':
-                    bpy.ops.mesh.select_all(action='DESELECT')
-                    return {'FINISHED'}
-            bpy.ops.object.select_all(action='DESELECT')
+            select.select_all(action='DESELECT')
 
         elif event.alt:
-            if context.active_object:
-                if context.object.mode == 'EDIT':
-                    bpy.ops.mesh.select_all(action='INVERT')
-                    return {'FINISHED'}
-            bpy.ops.object.select_all(action='INVERT')
+            select.select_all(action='INVERT')
 
         else:
-            if context.active_object:
-                if context.object.mode == 'EDIT':
-                    if context.preferences.addons[__package__].preferences.invertSelection_Pref:
-                        verts_hidden = 0
+            if context.mode == 'EDIT_MESH':
+                if context.scene.pies_plus.invertSelection_Pref:
+                    verts_hidden = 0
 
-                        for ob in context.selected_objects:
-                            bm = bmesh.from_edit_mesh(ob.data)
+                    for ob in context.selected_objects:
+                        bm = bmesh.from_edit_mesh(ob.data)
 
-                            for v in bm.verts:
-                                if v.hide:
-                                    verts_hidden += 1
+                        for v in bm.verts:
+                            if v.hide:
+                                verts_hidden += 1
 
-                        scene_verts = context.scene.statistics(context.view_layer).split(" | ")[1]
+                    scene_verts = context.scene.statistics(context.view_layer).split(" | ")[1]
 
-                        if int(scene_verts.split('/')[1].replace(',','')) - verts_hidden == int(scene_verts.split('/')[0].split(':')[1].replace(',','')):
-                            bpy.ops.mesh.select_all(action='DESELECT')
-                        else:
-                            bpy.ops.mesh.select_all(action='SELECT')
-                        return {'FINISHED'}
-                    bpy.ops.mesh.select_all(action='TOGGLE')
+                    if int(scene_verts.split('/')[1].replace(',','')) - verts_hidden == int(scene_verts.split('/')[0].split(':')[1].replace(',','')):
+                        bpy.ops.mesh.select_all(action='DESELECT')
+                    else:
+                        bpy.ops.mesh.select_all(action='SELECT')
                     return {'FINISHED'}
-            if context.preferences.addons[__package__].preferences.invertSelection_Pref:
+                bpy.ops.mesh.select_all(action='TOGGLE')
+                return {'FINISHED'}
+            if context.scene.pies_plus.invertSelection_Pref:
                 if len([ob for ob in context.view_layer.objects if ob.visible_get()]) == len(context.selected_objects):
                     bpy.ops.object.select_all(action='DESELECT')
                 else:
@@ -116,6 +108,7 @@ class PIESPLUS_OT_select_seamed(Operator):
         bpy.ops.object.mode_set(mode='EDIT')
         return {'FINISHED'}
 
+
 class PIESPLUS_OT_select_sharped(Operator):
     bl_idname = 'pies_plus.select_sharped'
     bl_label = "Select all edges with sharps"
@@ -146,6 +139,40 @@ class PIESPLUS_OT_make_links(Operator):
         return {'FINISHED'}
 
 
+class PIESPLUS_OT_ring_sel(Operator):
+    """Make a ringed selection.
+
+        Specials:
+    SHIFT - & Loop"""
+    bl_idname = 'pies_plus.ring_sel'
+    bl_label = ""
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def invoke(self, context, event):
+        bpy.ops.mesh.loop_multi_select(ring = True)
+
+        if event.shift:
+            bpy.ops.mesh.loop_multi_select(ring = False)
+        return {'FINISHED'}
+
+
+class PIESPLUS_OT_loop_sel(Operator):
+    """Make a looped selection.
+
+        Specials:
+    SHIFT - & Ring"""
+    bl_idname = 'pies_plus.loop_sel'
+    bl_label = ""
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def invoke(self, context, event):
+        bpy.ops.mesh.loop_multi_select(ring = False)
+
+        if event.shift:
+            bpy.ops.mesh.loop_multi_select(ring = True)
+        return {'FINISHED'}
+
+
 ##############################
 #   REGISTRATION
 ##############################
@@ -156,7 +183,9 @@ classes = (PIESPLUS_OT_view_selection,
            PIESPLUS_OT_select_loop_inner_region,
            PIESPLUS_OT_select_seamed,
            PIESPLUS_OT_select_sharped,
-           PIESPLUS_OT_make_links)
+           PIESPLUS_OT_make_links,
+           PIESPLUS_OT_loop_sel,
+           PIESPLUS_OT_ring_sel)
 
 
 def register():
