@@ -3,6 +3,8 @@ from bpy.types import Operator
 from bpy.props import EnumProperty
 from bpy_extras import view3d_utils
 import bmesh
+import bgl
+import blf
 
 
 class PIESPLUS_OT_origin_to_selection(Operator):
@@ -133,7 +135,7 @@ class PIESPLUS_OT_reset_cursor(Operator):
         else:
             context.scene.cursor.location[2] = 0
 
-        if context.preferences.addons[__package__].preferences.resetRot_Pref:
+        if context.scene.pies_plus.resetRot_Pref:
             context.scene.cursor.rotation_euler = (0, 0, 0)
         return{'FINISHED'}
 
@@ -149,6 +151,17 @@ class PIESPLUS_OT_reset_cursor_rot(Operator):
         return{'FINISHED'}
 
 
+def draw_callback_px(self, context):
+    font_id = 0
+
+    blf.position(font_id, 15, 140, 0)
+    blf.size(font_id, 26, 72)
+    blf.draw(font_id, "EDIT ORIGIN")
+
+    blf.position(font_id, 15, 100, 0)
+    blf.size(font_id, 18, 72)
+    blf.draw(font_id, " ")
+
 class PIESPLUS_OT_edit_origin(Operator):
     """Manually edit the origin
 
@@ -161,7 +174,8 @@ if you undo and then redo after using the operation"""
 
     def modal(self, context, event):
         if self.finished:
-            self.ts.use_snap = self.savedUseSnap
+            bpy.types.SpaceView3D.draw_handler_remove(self._handle, 'WINDOW')
+            #self.ts.use_snap = self.savedUseSnap
             return {'CANCELLED'}
 
         if event.type in {'LEFTMOUSE', 'RET', 'RIGHTMOUSE', 'ESC'}:
@@ -210,7 +224,7 @@ if you undo and then redo after using the operation"""
             context.view_layer.objects.active = self.savedActive
 
             # If the experimental mode is on, remove the loose vertices on the mesh
-            if context.preferences.addons[__package__].preferences.faceCenterSnap_Pref:
+            if context.scene.pies_plus.faceCenterSnap_Pref:
                 bpy.ops.object.mode_set(mode='EDIT')
                 bpy.ops.mesh.select_all(action='SELECT')
                 bpy.ops.mesh.delete_loose()
@@ -232,7 +246,7 @@ if you undo and then redo after using the operation"""
         self.ts = context.scene.tool_settings
 
         self.savedBackface = self.ts.use_snap_backface_culling
-        self.savedUseSnap = self.ts.use_snap
+        #self.savedUseSnap = self.ts.use_snap
         self.savedSnapSettings = self.ts.snap_elements
         self.savedAlignSettings = self.ts.use_snap_align_rotation
         self.savedSelection = context.view_layer.objects.selected.keys()
@@ -243,7 +257,7 @@ if you undo and then redo after using the operation"""
         context.active_object.select_set(True)
 
         # BMesh (Add vertices to face centers)
-        if context.preferences.addons[__package__].preferences.faceCenterSnap_Pref:
+        if context.scene.pies_plus.faceCenterSnap_Pref:
             mesh = context.object.data
             verts = []
 
@@ -312,8 +326,14 @@ if you undo and then redo after using the operation"""
         self.ts.use_snap_align_rotation = False
         self.ts.snap_elements = {'VERTEX', 'EDGE', 'FACE', 'EDGE_MIDPOINT'}
 
+        #snap = True
+
         # Translate modal
-        bpy.ops.transform.translate('INVOKE_DEFAULT', snap = True)
+        bpy.ops.transform.translate('INVOKE_DEFAULT')
+
+        # Draw text handler
+        args = (self, context)
+        self._handle = bpy.types.SpaceView3D.draw_handler_add(draw_callback_px, args, 'WINDOW', 'POST_PIXEL')
 
         wm = context.window_manager
         wm.modal_handler_add(self)

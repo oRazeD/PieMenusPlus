@@ -1,11 +1,10 @@
-bl_info = {
-    "name": "Pie Menus Plus",
-    "description": "Additional / Improved Pie Menus for Blender 2.8+",
-    "author": "Ethan Simon-Law",
-    "version": (1, 2, 0),
-    "blender": (2, 83, 3),
-    "tracker_url": "https://discord.com/invite/wHAyVZG",
-    "category": "3D View"}
+bl_info = {"name": "Pie Menus Plus",
+           "description": "Additional / Improved Pie Menus for Blender 2.8+",
+           "author": "Ethan Simon-Law",
+           "version": (1, 2, 0),
+           "blender": (2, 90, 0),
+           "tracker_url": "https://discord.com/invite/wHAyVZG",
+           "category": "3D View"}
 
 
 import importlib
@@ -18,11 +17,13 @@ module_names = ("ui",
                 "pie_snapping",
                 "pie_active_tools",
                 "pie_origin_cursor",
-                "pie_apply_transforms",
+                "pie_transforms",
                 "pie_selection",
                 "pie_shading",
                 "pie_proportional",
-                "pie_keyframing")
+                "pie_keyframing",
+                "pie_save")
+
 modules = []
 
 for mod in module_names:
@@ -34,12 +35,12 @@ for mod in module_names:
 
 
 def register():
-    for module in modules:
-        module.register()
+    for mod in modules:
+        mod.register()
 
 def unregister():
-    for module in modules:
-        module.unregister()
+    for mod in modules:
+        mod.unregister()
 
 
 # ##### BEGIN GPL LICENSE BLOCK #####

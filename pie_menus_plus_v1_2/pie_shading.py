@@ -2,18 +2,17 @@ import bpy
 from bpy.types import Operator
 
 
-##############################
-#   OPERATORS    
-##############################
-
-
 class PIESPLUS_OT_auto_smooth(Operator):
     bl_idname = "pies_plus.auto_smooth"
-    bl_label = "Auto Smooth"
+    bl_label = "Quick Smooth"
     bl_description = "[BATCH] Automation for setting up meshes with Auto Smooth Normals. Also turns on Shade Smooth as it is a prerequisite for ASN"
     bl_options = {'UNDO'}
 
     def execute(self, context):
+        if not context.selected_objects and not context.active_object:
+            self.report({'ERROR'}, "Nothing is selected & there is no Active Object")
+            return{'FINISHED'}
+
         if context.active_object:
             modeCallback = context.object.mode
 
@@ -39,6 +38,10 @@ class PIESPLUS_OT_remove_auto_smooth(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
+        if not context.selected_objects and not context.active_object:
+            self.report({'ERROR'}, "Nothing is selected & there is no Active Object")
+            return{'FINISHED'}
+
         if context.active_object:
             modeCallback = context.object.mode
 
@@ -73,7 +76,7 @@ class PIESPLUS_OT_wire_shading(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        if context.preferences.addons[__package__].preferences.wireframeType_Pref == 'overlay':
+        if context.scene.pies_plus.wireframeType_Pref == 'overlay':
             for area in context.screen.areas:
                 if area.type == 'VIEW_3D':
                     for space in area.spaces:
@@ -228,7 +231,7 @@ class PIESPLUS_OT_auto_fwn(Operator):
             self.report({'ERROR'}, "Nothing is selected & there is no Active Object")
             return{'FINISHED'}
 
-        userPrefs = context.preferences.addons[__package__].preferences
+        pies_plus_prefs = context.scene.pies_plus
 
         if context.active_object:
             activeCallback = context.view_layer.objects.active
@@ -243,16 +246,16 @@ class PIESPLUS_OT_auto_fwn(Operator):
 
                 bpy.ops.object.shade_smooth()
                 ob.data.use_auto_smooth = True
-                ob.data.auto_smooth_angle = userPrefs.smoothAngle_Pref
+                ob.data.auto_smooth_angle = pies_plus_prefs.smoothAngle_Pref
                 
                 for mod in ob.modifiers:
                     if mod.type == 'WEIGHTED_NORMAL':
                         break
                 else:
                     ob.modifiers.new('Weighted Normal', 'WEIGHTED_NORMAL')
-                    ob.modifiers["Weighted Normal"].weight = userPrefs.weightValue_Pref
-                    ob.modifiers["Weighted Normal"].keep_sharp = userPrefs.keepSharp_Pref
-                    ob.modifiers["Weighted Normal"].face_influence = userPrefs.faceInf_Pref
+                    ob.modifiers["Weighted Normal"].weight = pies_plus_prefs.weightValue_Pref
+                    ob.modifiers["Weighted Normal"].keep_sharp = pies_plus_prefs.keepSharp_Pref
+                    ob.modifiers["Weighted Normal"].face_influence = pies_plus_prefs.faceInf_Pref
 
         if 'activeCallback' in locals():
             context.view_layer.objects.active = activeCallback
