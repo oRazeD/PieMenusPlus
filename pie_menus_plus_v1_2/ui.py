@@ -13,18 +13,15 @@ class PIESPLUS_MT_modes(Menu):
     bl_label = "Select Mode"
 
     def draw(self, context):
-        ts = context.tool_settings
-
-        # Get Active Object type (if active selected)
-        try:
-            obType = context.object.type
-        except:
-            pass
-
         layout = self.layout
         pie = layout.menu_pie()
 
-        pies_plus_prefs = context.scene.pies_plus
+        # Get Active type if one exists
+        if context.object:
+            obType = context.object.type
+
+        ts = context.tool_settings
+        pies_plus_prefs = context.preferences.addons[__package__].preferences
 
         if not context.active_object:
             # 4 - LEFT
@@ -63,7 +60,18 @@ class PIESPLUS_MT_modes(Menu):
             # 2 - BOTTOM
             pie.operator("pies_plus.edge", icon='EDGESEL')
             # 8 - TOP
-            pie.operator("object.editmode_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
+            if context.mode == "SCULPT":
+                pie.operator("sculpt.sculptmode_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
+            elif context.mode == "PAINT_WEIGHT":
+                pie.operator("paint.weight_paint_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
+            elif context.mode == "PAINT_VERTEX":
+                pie.operator("paint.vertex_paint_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
+            elif context.mode == "PAINT_TEXTURE":
+                pie.operator("paint.texture_paint_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
+            elif context.mode == "PARTICLE":
+                pie.operator("particle.particle_edit_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
+            else:
+                pie.operator("object.editmode_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
             # 7 - TOP - LEFT
             if not pies_plus_prefs.simpleContextMode_Pref:
                 pie.operator("view3d.toggle_xray", text = 'X-Ray Toggle', icon = 'XRAY')
@@ -84,29 +92,21 @@ class PIESPLUS_MT_modes(Menu):
             box = col.box().column()
             box.scale_y = 1.25
 
-            box.operator("sculpt.sculptmode_toggle",
-                         text="Sculpt Mode", icon='SCULPTMODE_HLT')
-            box.operator("pies_plus.weight_paint",
-                         text="Weight Paint", icon='WPAINT_HLT')
-            box.operator("pies_plus.texture_paint",
-                         text="Texture Paint", icon='TPAINT_HLT')
-            box.operator("pies_plus.vertex_paint",
-                         text="Vertex Paint", icon='VPAINT_HLT')
-            box.operator("particle.particle_edit_toggle",
-                         text="Particle Edit", icon='PARTICLEMODE')
+            box.operator("sculpt.sculptmode_toggle", text="Sculpt Mode", icon='SCULPTMODE_HLT')
+            box.operator("pies_plus.weight_paint", text="Weight Paint", icon='WPAINT_HLT')
+            box.operator("pies_plus.texture_paint", text="Texture Paint", icon='TPAINT_HLT')
+            box.operator("pies_plus.vertex_paint", text="Vertex Paint", icon='VPAINT_HLT')
+            box.operator("particle.particle_edit_toggle", text="Particle Edit", icon='PARTICLEMODE')
             # 3 - BOTTOM - RIGHT
             pie.prop(ts, "use_mesh_automerge", text="Auto Merge")
 
         elif obType == 'CAMERA':
             # 4 - LEFT
-            pie.prop(context.space_data, "lock_cursor",
-                     text="Lock Camera to Cursor", icon='PIVOT_CURSOR')
+            pie.prop(context.space_data, "lock_cursor", text="Lock Camera to Cursor", icon='PIVOT_CURSOR')
             # 6 - RIGHT
-            pie.prop(context.space_data, "lock_camera",
-                     text="Lock Camera to View", icon='OBJECT_DATAMODE')
+            pie.prop(context.space_data, "lock_camera", text="Lock Camera to View", icon='OBJECT_DATAMODE')
             # 2 - BOTTOM
-            pie.operator("ui.eyedropper_depth",
-                         text="DOF Distance", icon='EYEDROPPER')
+            pie.operator("ui.eyedropper_depth", text="DOF Distance", icon='EYEDROPPER')
             # 8 - TOP
             pie.operator("view3d.view_camera", icon='VIEW_CAMERA')
             # 7 - TOP - LEFT
@@ -123,28 +123,28 @@ class PIESPLUS_MT_modes(Menu):
         else:
             # 4 - LEFT
             if obType == 'GPENCIL':
-                pie.operator("gpencil.sculptmode_toggle",
-                             text="Sculpt Mode", icon='SCULPTMODE_HLT')
+                pie.operator("gpencil.sculptmode_toggle", text="Sculpt Mode", icon='SCULPTMODE_HLT')
             else:
                 pie.separator()
             # 6 - RIGHT
             if obType == 'ARMATURE':
-                pie.operator("object.posemode_toggle",
-                             text="Pose Mode", icon='POSE_HLT')
+                pie.operator("object.posemode_toggle", text="Pose Mode", icon='POSE_HLT')
             elif obType == 'GPENCIL':
-                pie.operator("gpencil.paintmode_toggle",
-                             text="Draw Mode", icon='GREASEPENCIL')
+                pie.operator("gpencil.paintmode_toggle", text="Draw Mode", icon='GREASEPENCIL')
             else:
                 pie.separator()
             # 2 - BOTTOM
             pie.separator()
             # 8 - TOP
-            if obType in {'CURVE', 'FONT', 'SURFACE', 'META', 'LATTICE', 'ARMATURE'}:
-                pie.operator("object.editmode_toggle",
-                             text="Edit / Object", icon='OBJECT_DATAMODE')
+            if obType == 'ARMATURE':
+                if context.mode == 'POSE':
+                    pie.operator("object.posemode_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
+                else:
+                    pie.operator("object.editmode_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
+            elif obType in {'CURVE', 'FONT', 'SURFACE', 'META', 'LATTICE'}:
+                pie.operator("object.editmode_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
             elif obType == 'GPENCIL':
-                pie.operator("gpencil.editmode_toggle",
-                             text="Edit / Object", icon='OBJECT_DATAMODE')
+                pie.operator("gpencil.editmode_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
             else:
                 pie.separator()
             # 7 - TOP - LEFT
@@ -159,8 +159,7 @@ class PIESPLUS_MT_modes(Menu):
                 pie.separator()
             # 1 - BOTTOM - LEFT
             if obType == 'GPENCIL':
-                pie.operator("gpencil.weightmode_toggle",
-                             text="Weight Paint", icon='WPAINT_HLT')
+                pie.operator("gpencil.weightmode_toggle", text="Weight Paint", icon='WPAINT_HLT')
             else:
                 pie.separator()
             # 3 - BOTTOM - RIGHT
@@ -186,22 +185,18 @@ class PIESPLUS_MT_UV_modes(Menu):
             pie.prop(context.scene.pies_plus, "uvSyncSelection", icon='UV_SYNC_SELECT')
         else:
             #4 - LEFT
-            pie.operator("pies_plus.uv_sel_change", text='Vertex',
-                         icon='VERTEXSEL').sel_choice = 'vertex'
+            pie.operator("pies_plus.uv_sel_change", text='Vertex', icon='VERTEXSEL').sel_choice = 'vertex'
             # 6 - RIGHT
-            pie.operator("pies_plus.uv_sel_change", text='Face',
-                         icon='FACESEL').sel_choice = 'face'
+            pie.operator("pies_plus.uv_sel_change", text='Face', icon='FACESEL').sel_choice = 'face'
             # 2 - BOTTOM
-            pie.operator("pies_plus.uv_sel_change", text='Edge',
-                         icon='EDGESEL').sel_choice = 'edge'
+            pie.operator("pies_plus.uv_sel_change", text='Edge', icon='EDGESEL').sel_choice = 'edge'
             # 8 - TOP
             pie.prop(context.scene.pies_plus, "uvSyncSelection", icon='UV_SYNC_SELECT')
             # 7 - TOP - LEFT
             pie.separator()
             # 9 - TOP - RIGHT
-            pie.operator("pies_plus.uv_sel_change", text='Island',
-                         icon='UV_ISLANDSEL').sel_choice = 'island'
-            
+            pie.operator("pies_plus.uv_sel_change", text='Island', icon='UV_ISLANDSEL').sel_choice = 'island'
+
 
 ########################################################################################################################
 # ACTIVE TOOLS - W
@@ -216,54 +211,40 @@ class PIESPLUS_MT_active_tools(Menu):
         layout = self.layout
         pie = layout.menu_pie()
 
-        pies_plus_prefs = context.scene.pies_plus
+        pies_plus_prefs = context.preferences.addons[__package__].preferences
 
         if pies_plus_prefs.gizmoSwitch_Pref == 'tool':
             #4 - LEFT
-            pie.operator("pies_plus.active_tools", text="Move",
-                         icon='ORIENTATION_GLOBAL').active_tools = 'tool_move'
+            pie.operator("pies_plus.active_tools", text="Move", icon='ORIENTATION_GLOBAL').active_tools = 'tool_move'
             #6 - RIGHT
-            pie.operator("pies_plus.active_tools", text="Rotate",
-                         icon='DRIVER_ROTATIONAL_DIFFERENCE').active_tools = 'tool_rotate'
+            pie.operator("pies_plus.active_tools", text="Rotate", icon='DRIVER_ROTATIONAL_DIFFERENCE').active_tools = 'tool_rotate'
             #2 - BOTTOM
-            pie.operator("pies_plus.active_tools", text="Scale",
-                         icon='SNAP_FACE').active_tools = 'tool_scale'
+            pie.operator("pies_plus.active_tools", text="Scale", icon='SNAP_FACE').active_tools = 'tool_scale'
             #8 - TOP
             if pies_plus_prefs.defaultTool_Pref == 'tweak_select':
-                pie.operator("pies_plus.active_tools", text="Tweak",
-                             icon='RESTRICT_SELECT_OFF').active_tools = 'select_tweak'
+                pie.operator("pies_plus.active_tools", text="Tweak", icon='RESTRICT_SELECT_OFF').active_tools = 'select_tweak'
             elif pies_plus_prefs.defaultTool_Pref == 'box_select':
-                pie.operator("pies_plus.active_tools", text="Box",
-                             icon='SELECT_SET').active_tools = 'select_box'
+                pie.operator("pies_plus.active_tools", text="Box", icon='SELECT_SET').active_tools = 'select_box'
             elif pies_plus_prefs.defaultTool_Pref == 'circle_select':
-                pie.operator("pies_plus.active_tools", text="Circle",
-                             icon='MESH_CIRCLE').active_tools = 'select_circle'
+                pie.operator("pies_plus.active_tools", text="Circle", icon='MESH_CIRCLE').active_tools = 'select_circle'
             else:
-                pie.operator("pies_plus.active_tools", text="Lasso",
-                             icon='GP_ONLY_SELECTED').active_tools = 'select_lasso'
+                pie.operator("pies_plus.active_tools", text="Lasso", icon='GP_ONLY_SELECTED').active_tools = 'select_lasso'
             #7 - TOP - LEFT
-            pie.operator("pies_plus.active_tools", text="All",
-                         icon='GIZMO').active_tools = 'tool_transform'
+            pie.operator("pies_plus.active_tools", text="All", icon='GIZMO').active_tools = 'tool_transform'
         else:  # Gizmo
             #4 - LEFT
-            pie.operator("pies_plus.active_tools", text="Move",
-                         icon='ORIENTATION_GLOBAL').active_tools = 'gizmo_move'
+            pie.operator("pies_plus.active_tools", text="Move", icon='ORIENTATION_GLOBAL').active_tools = 'gizmo_move'
             #6 - RIGHT
-            pie.operator("pies_plus.active_tools", text="Rotate",
-                         icon='DRIVER_ROTATIONAL_DIFFERENCE').active_tools = 'gizmo_rotate'
+            pie.operator("pies_plus.active_tools", text="Rotate", icon='DRIVER_ROTATIONAL_DIFFERENCE').active_tools = 'gizmo_rotate'
             #2 - BOTTOM
-            pie.operator("pies_plus.active_tools", text="Scale",
-                         icon='SNAP_FACE').active_tools = 'gizmo_scale'
+            pie.operator("pies_plus.active_tools", text="Scale", icon='SNAP_FACE').active_tools = 'gizmo_scale'
             #8 - TOP
             if pies_plus_prefs.defaultTool_Pref == 'tweak_select':
-                pie.operator("pies_plus.active_tools", text="Tweak",
-                             icon='RESTRICT_SELECT_OFF').active_tools = 'select_tweak'
+                pie.operator("pies_plus.active_tools", text="Tweak", icon='RESTRICT_SELECT_OFF').active_tools = 'select_tweak'
             elif pies_plus_prefs.defaultTool_Pref == 'box_select':
-                pie.operator("pies_plus.active_tools", text="Box",
-                             icon='SELECT_SET').active_tools = 'select_box'
+                pie.operator("pies_plus.active_tools", text="Box", icon='SELECT_SET').active_tools = 'select_box'
             elif pies_plus_prefs.defaultTool_Pref == 'circle_select':
-                pie.operator("pies_plus.active_tools", text="Circle",
-                             icon='MESH_CIRCLE').active_tools = 'select_circle'
+                pie.operator("pies_plus.active_tools", text="Circle", icon='MESH_CIRCLE').active_tools = 'select_circle'
             else:
                 pie.operator("pies_plus.active_tools", text="Lasso",
                              icon='GP_ONLY_SELECTED').active_tools = 'select_lasso'
@@ -284,30 +265,20 @@ class PIESPLUS_MT_active_tools(Menu):
         box.scale_y = 1.25
 
         if pies_plus_prefs.defaultTool_Pref == 'tweak_select':
-            box.operator("pies_plus.active_tools", text="Box",
-                         icon='SELECT_SET').active_tools = 'select_box'
-            box.operator("pies_plus.active_tools", text="Circle",
-                         icon='MESH_CIRCLE').active_tools = 'select_circle'
-            box.operator("pies_plus.active_tools", text="Lasso",
-                         icon='GP_ONLY_SELECTED').active_tools = 'select_lasso'
+            box.operator("pies_plus.active_tools", text="Box", icon='SELECT_SET').active_tools = 'select_box'
+            box.operator("pies_plus.active_tools", text="Circle", icon='MESH_CIRCLE').active_tools = 'select_circle'
+            box.operator("pies_plus.active_tools", text="Lasso", icon='GP_ONLY_SELECTED').active_tools = 'select_lasso'
         else:
-            box.operator("pies_plus.active_tools", text="Tweak",
-                         icon='RESTRICT_SELECT_OFF').active_tools = 'select_tweak'
+            box.operator("pies_plus.active_tools", text="Tweak", icon='RESTRICT_SELECT_OFF').active_tools = 'select_tweak'
             if pies_plus_prefs.defaultTool_Pref == 'box_select':
-                box.operator("pies_plus.active_tools", text="Circle",
-                             icon='MESH_CIRCLE').active_tools = 'select_circle'
-                box.operator("pies_plus.active_tools", text="Lasso",
-                             icon='GP_ONLY_SELECTED').active_tools = 'select_lasso'
+                box.operator("pies_plus.active_tools", text="Circle", icon='MESH_CIRCLE').active_tools = 'select_circle'
+                box.operator("pies_plus.active_tools", text="Lasso", icon='GP_ONLY_SELECTED').active_tools = 'select_lasso'
             elif pies_plus_prefs.defaultTool_Pref == 'circle_select':
-                box.operator("pies_plus.active_tools", text="Box",
-                             icon='SELECT_SET').active_tools = 'select_box'
-                box.operator("pies_plus.active_tools", text="Lasso",
-                             icon='GP_ONLY_SELECTED').active_tools = 'select_lasso'
+                box.operator("pies_plus.active_tools", text="Box", icon='SELECT_SET').active_tools = 'select_box'
+                box.operator("pies_plus.active_tools", text="Lasso", icon='GP_ONLY_SELECTED').active_tools = 'select_lasso'
             else:
-                box.operator("pies_plus.active_tools", text="Box",
-                             icon='SELECT_SET').active_tools = 'select_box'
-                box.operator("pies_plus.active_tools", text="Circle",
-                             icon='MESH_CIRCLE').active_tools = 'select_circle'
+                box.operator("pies_plus.active_tools", text="Box", icon='SELECT_SET').active_tools = 'select_box'
+                box.operator("pies_plus.active_tools", text="Circle", icon='MESH_CIRCLE').active_tools = 'select_circle'
 
 
 ########################################################################################################################
@@ -324,22 +295,17 @@ class PIESPLUS_MT_snapping(Menu):
         pie = layout.menu_pie()
 
         # 4 - LEFT
-        pie.operator("pies_plus.snap", text="Snap Vertex",
-                     icon='SNAP_VERTEX').snap_elements = 'vertex'
+        pie.operator("pies_plus.snap", text="Snap Vertex", icon='SNAP_VERTEX').snap_elements = 'vertex'
         # 6 - RIGHT
-        pie.operator("pies_plus.snap", text="Snap Face",
-                     icon='SNAP_FACE').snap_elements = 'face'
+        pie.operator("pies_plus.snap", text="Snap Face", icon='SNAP_FACE').snap_elements = 'face'
         # # 2 - BOTTOM
-        pie.operator("pies_plus.snap", text="Snap Edge",
-                     icon='SNAP_EDGE').snap_elements = 'edge'
+        pie.operator("pies_plus.snap", text="Snap Edge", icon='SNAP_EDGE').snap_elements = 'edge'
         # # 8 - TOP
         pie.prop(context.tool_settings, "use_snap", text="Snap Toggle")
         # # 7 - TOP - LEFT
-        pie.operator("pies_plus.snap", text="Snap Volume",
-                     icon='SNAP_VOLUME').snap_elements = 'volume'
+        pie.operator("pies_plus.snap", text="Snap Volume", icon='SNAP_VOLUME').snap_elements = 'volume'
         # # 9 - TOP - RIGHT
-        pie.operator("pies_plus.snap", text="Snap Increment",
-                     icon='SNAP_INCREMENT').snap_elements = 'increment'
+        pie.operator("pies_plus.snap", text="Snap Increment", icon='SNAP_INCREMENT').snap_elements = 'increment'
         # 1 - BOTTOM - LEFT
         if bpy.app.version >= (2, 81, 0):
             col = pie.column()
@@ -351,10 +317,8 @@ class PIESPLUS_MT_snapping(Menu):
             box = col.box().column()
             box.scale_y = 1.25
 
-            box.operator("pies_plus.snap", text="Snap Edge Center",
-                         icon='SNAP_MIDPOINT').snap_elements = 'edge_center'
-            box.operator("pies_plus.snap", text="Snap Edge Perp",
-                         icon='SNAP_PERPENDICULAR').snap_elements = 'edge_perp'
+            box.operator("pies_plus.snap", text="Snap Edge Center", icon='SNAP_MIDPOINT').snap_elements = 'edge_center'
+            box.operator("pies_plus.snap", text="Snap Edge Perp", icon='SNAP_PERPENDICULAR').snap_elements = 'edge_perp'
         else:
             pie.separator()
         # 3 - BOTTOM - RIGHT
@@ -370,11 +334,9 @@ class PIESPLUS_MT_UV_snapping(Menu):
         pie = layout.menu_pie()
 
         # 4 - LEFT
-        pie.operator("pies_plus.snap", text="Snap Vertex",
-                     icon='SNAP_VERTEX').snap_elements = 'uv_vertex'
+        pie.operator("pies_plus.snap", text="Snap Vertex", icon='SNAP_VERTEX').snap_elements = 'uv_vertex'
         # 6 - RIGHT
-        pie.operator("pies_plus.snap", text="Snap Increment",
-                     icon='SNAP_INCREMENT').snap_elements = 'uv_increment'
+        pie.operator("pies_plus.snap", text="Snap Increment", icon='SNAP_INCREMENT').snap_elements = 'uv_increment'
         # # 2 - BOTTOM
         pie.separator()
         # # 8 - TOP
@@ -413,15 +375,13 @@ class PIESPLUS_MT_looptools(Menu):
                 # # 8 - TOP
                 pie.operator("mesh.looptools_circle")
                 # # 7 - TOP - LEFT
-                pie.operator("mesh.looptools_bridge",
-                             text="Loft").loft = True
+                pie.operator("mesh.looptools_bridge", text="Loft").loft = True
                 # # 9 - TOP - RIGHT
                 pie.operator("mesh.looptools_gstretch")
                 # 1 - BOTTOM - LEFT
                 pie.operator("mesh.looptools_curve")
                 # 3 - BOTTOM - RIGHT
-                pie.operator("mesh.looptools_bridge",
-                             text="Bridge")
+                pie.operator("mesh.looptools_bridge", text="Bridge")
                 break
         else:
             pie.label(text="          WARNING: You do not have LoopTools enabled")
@@ -442,23 +402,17 @@ class PIESPLUS_MT_transforms(Menu):
 
         if context.selected_objects:
             #4 - LEFT
-            pie.operator("pies_plus.transforms", text="Clear All",
-                         icon='EMPTY_AXIS').tranforms_type = 'clear_all'
+            pie.operator("pies_plus.transforms", text="Clear All", icon='EMPTY_AXIS').tranforms_type = 'clear_all'
             #6 - RIGHT
-            pie.operator("pies_plus.transforms", text="Apply Scale",
-                         icon='FILE_TICK').tranforms_type = 'apply_scale'
+            pie.operator("pies_plus.transforms", text="Apply Scale", icon='FILE_TICK').tranforms_type = 'apply_scale'
             #2 - BOTTOM
-            pie.operator("pies_plus.transforms", text="Apply All",
-                         icon='FILE_TICK').tranforms_type = 'apply_all'
+            pie.operator("pies_plus.transforms", text="Apply All", icon='FILE_TICK').tranforms_type = 'apply_all'
             #8 - TOP
-            pie.operator("pies_plus.transforms", text="Apply Rot & Scale",
-                         icon='FILE_TICK').tranforms_type = 'apply_rot_scale'
+            pie.operator("pies_plus.transforms", text="Apply Rot & Scale", icon='FILE_TICK').tranforms_type = 'apply_rot_scale'
             #7 - TOP - LEFT
-            pie.operator("pies_plus.transforms", text="Apply Location",
-                         icon='FILE_TICK').tranforms_type = 'apply_loc'
+            pie.operator("pies_plus.transforms", text="Apply Location", icon='FILE_TICK').tranforms_type = 'apply_loc'
             #9 - TOP - RIGHT
-            pie.operator("pies_plus.transforms", text="Apply Rotation",
-                         icon='FILE_TICK').tranforms_type = 'apply_rot'
+            pie.operator("pies_plus.transforms", text="Apply Rotation", icon='FILE_TICK').tranforms_type = 'apply_rot'
             #1 - BOTTOM - LEFT
             col = pie.column()
 
@@ -481,10 +435,10 @@ class PIESPLUS_MT_transforms(Menu):
 
             box = col.box().column()
             box.scale_y = 1.25
-
+            
             box.operator("object.convert", text="Convert to...", icon='FILE_REFRESH')
+            box.operator("object.make_single_user", text="Make Single User...", icon='USER')
             box.operator("object.visual_transform_apply", text="Apply Visual Transforms", icon='FILE_TICK')
-            box.operator("object.duplicates_make_real", text="Make Duplicates Real", icon='USER')
         else:
             if not context.active_object:
                 pie.label(text="          WARNING: No Active selected")
@@ -505,8 +459,6 @@ class PIESPLUS_MT_origin_pivot(Menu):
         layout = self.layout
         pie = layout.menu_pie()
 
-        pies_plus_prefs = context.scene.pies_plus
-
         if not context.active_object:
             if context.selected_objects:
                 pie.label(text="          WARNING: No Active selected")
@@ -515,26 +467,17 @@ class PIESPLUS_MT_origin_pivot(Menu):
 
         if context.active_object:
             # 4 - LEFT
-            pie.operator("object.origin_set", text="Origin to Cursor",
-                         icon='PIVOT_CURSOR').type = 'ORIGIN_CURSOR'
+            pie.operator("object.origin_set", text="Origin to Cursor", icon='PIVOT_CURSOR').type = 'ORIGIN_CURSOR'
             # 6 - RIGHT
-            pie.operator("view3d.snap_cursor_to_selected",
-                         text="Cursor to Selection", icon='PIVOT_CURSOR')
+            pie.operator("view3d.snap_cursor_to_selected", text="Cursor to Selection", icon='PIVOT_CURSOR')
             # 2 - BOTTOM
-            pie.operator("pies_plus.origin_to_selection",
-                         icon='PIVOT_BOUNDBOX')
+            pie.operator("pies_plus.origin_to_selection", icon='PIVOT_BOUNDBOX')
             # 8 - TOP
-            if pies_plus_prefs.editOriginActivate_Pref:
-                pie.operator("pies_plus.edit_origin", icon='OBJECT_ORIGIN')
-            else:
-                pie.operator("view3d.snap_selected_to_cursor", text="Selection to Cursor",
-                             icon='RESTRICT_SELECT_OFF').use_offset = True
+            pie.operator("pies_plus.edit_origin", icon='OBJECT_ORIGIN').edit_type = 'origin'
             # 7 - TOP - LEFT
-            pie.operator("object.origin_set", text="Origin to Geo",
-                         icon='PIVOT_BOUNDBOX').type = 'ORIGIN_GEOMETRY'
+            pie.operator("object.origin_set", text="Origin to Geo", icon='PIVOT_BOUNDBOX').type = 'ORIGIN_GEOMETRY'
             # 9 - TOP - RIGHT
-            pie.operator("view3d.snap_cursor_to_active",
-                         text="Cursor to Active", icon='PIVOT_CURSOR')
+            pie.operator("view3d.snap_cursor_to_active", text="Cursor to Active", icon='PIVOT_CURSOR')
         else:
             # 4 - LEFT
             pie.separator()
@@ -560,22 +503,17 @@ class PIESPLUS_MT_origin_pivot(Menu):
 
             row = box.row()
             row.scale_y = 1.25
-            row.operator("pies_plus.reset_origin", text='Origin to 0,0,0',
-                         icon='PIVOT_BOUNDBOX').origin_reset_axis = 'origin_all'
+            row.operator("pies_plus.reset_origin", text='Origin to 0,0,0', icon='PIVOT_BOUNDBOX').origin_reset_axis = 'origin_all'
             row = box.row(align=True)
             row.scale_y = 1.1
-            row.operator("pies_plus.reset_origin",
-                         text='X').origin_reset_axis = 'origin_x'
-            row.operator("pies_plus.reset_origin",
-                         text='Y').origin_reset_axis = 'origin_y'
-            row.operator("pies_plus.reset_origin",
-                         text='Z').origin_reset_axis = 'origin_z'
+            row.operator("pies_plus.reset_origin", text='X').origin_reset_axis = 'origin_x'
+            row.operator("pies_plus.reset_origin", text='Y').origin_reset_axis = 'origin_y'
+            row.operator("pies_plus.reset_origin", text='Z').origin_reset_axis = 'origin_z'
 
             box = col.box().column()
             box.scale_y = 1.25
 
-            box.operator("object.origin_set", text="Geometry to Origin",
-                         icon='PIVOT_BOUNDBOX').type = 'GEOMETRY_ORIGIN'
+            box.operator("object.origin_set", text="Geometry to Origin", icon='PIVOT_BOUNDBOX').type = 'GEOMETRY_ORIGIN'
             box.operator("pies_plus.origin_to_com", icon='PIVOT_BOUNDBOX')
             box.operator("pies_plus.origin_to_bottom", icon='PIVOT_BOUNDBOX')
         else:
@@ -588,33 +526,24 @@ class PIESPLUS_MT_origin_pivot(Menu):
 
         gap = col.column()
         gap.separator()
-        if pies_plus_prefs.editOriginActivate_Pref:
-            gap.scale_y = 13
-        else:
-            gap.scale_y = 7
+        gap.scale_y = 13
 
         box = col.box().column(align=True)
         row = box.row()
         row.scale_y = 1.25
-        row.operator("pies_plus.reset_cursor", text='Cursor to 0,0,0',
-                     icon='PIVOT_CURSOR').cursor_reset_axis = 'cursor_all'
+        row.operator("pies_plus.reset_cursor", text='Cursor to 0,0,0', icon='PIVOT_CURSOR').cursor_reset_axis = 'cursor_all'
         row = box.row(align=True)
         row.scale_y = 1.1
-        row.operator("pies_plus.reset_cursor",
-                     text='X').cursor_reset_axis = 'cursor_x'
-        row.operator("pies_plus.reset_cursor",
-                     text='Y').cursor_reset_axis = 'cursor_y'
-        row.operator("pies_plus.reset_cursor",
-                     text='Z').cursor_reset_axis = 'cursor_z'
+        row.operator("pies_plus.reset_cursor", text='X').cursor_reset_axis = 'cursor_x'
+        row.operator("pies_plus.reset_cursor", text='Y').cursor_reset_axis = 'cursor_y'
+        row.operator("pies_plus.reset_cursor", text='Z').cursor_reset_axis = 'cursor_z'
 
         box = col.box().column()
         box.scale_y = 1.25
         box.operator("view3d.reset_cursor_rot", icon='PIVOT_CURSOR')
-        if pies_plus_prefs.editOriginActivate_Pref:
-            if context.active_object:
-                box.operator("view3d.snap_selected_to_cursor", text="Selection to Cursor",
-                            icon='RESTRICT_SELECT_OFF').use_offset = True
-                box.operator("pies_plus.edit_cursor", icon='PIVOT_CURSOR')
+        if context.active_object:
+            box.operator("view3d.snap_selected_to_cursor", text="Selection to Cursor", icon='RESTRICT_SELECT_OFF').use_offset = True
+            box.operator("pies_plus.edit_origin", text = 'Edit Cursor', icon='PIVOT_CURSOR').edit_type = 'cursor'
 
 
 ########################################################################################################################
@@ -635,23 +564,17 @@ class PIESPLUS_MT_delete(Menu):
         pie = layout.menu_pie()
 
         #4 - LEFT
-        pie.operator("mesh.delete", text="Delete Vertices",
-                     icon='VERTEXSEL').type = 'VERT'
+        pie.operator("mesh.delete", text="Delete Vertices", icon='VERTEXSEL').type = 'VERT'
         #6 - RIGHT
-        pie.operator("mesh.delete", text="Delete Faces",
-                     icon='FACESEL').type = 'FACE'
+        pie.operator("mesh.delete", text="Delete Faces", icon='FACESEL').type = 'FACE'
         #2 - BOTTOM
-        pie.operator("mesh.delete", text="Delete Edges",
-                     icon='EDGESEL').type = 'EDGE'
+        pie.operator("mesh.delete", text="Delete Edges", icon='EDGESEL').type = 'EDGE'
         #8 - TOP
-        pie.operator("mesh.dissolve_edges",
-                     text="Dissolve Edges", icon='SNAP_EDGE')
+        pie.operator("mesh.dissolve_edges", text="Dissolve Edges", icon='SNAP_EDGE')
         #7 - TOP - LEFT
-        pie.operator("mesh.dissolve_verts",
-                     text="Dissolve Vertices", icon='SNAP_VERTEX')
+        pie.operator("mesh.dissolve_verts", text="Dissolve Vertices", icon='SNAP_VERTEX')
         #9 - TOP - RIGHT
-        pie.operator("mesh.dissolve_limited",
-                     text="Limited Dissolve", icon='STICKY_UVS_LOC')
+        pie.operator("mesh.dissolve_limited", text="Limited Dissolve", icon='STICKY_UVS_LOC')
         #1 - BOTTOM - LEFT
         col = pie.column()
 
@@ -662,27 +585,21 @@ class PIESPLUS_MT_delete(Menu):
         box = col.box().column()
         box.scale_y = 1.25
 
-        box.operator("mesh.remove_doubles",
-                     text="Merge by Distance", icon='AUTOMERGE_ON')
+        box.operator("mesh.remove_doubles", text="Merge by Distance", icon='AUTOMERGE_ON')
 
         box2 = col.box().column()
         box2.scale_y = 1.25
 
-        box2.operator("mesh.delete_loose",
-                      text="Delete Loose", icon='STICKY_UVS_VERT')
+        box2.operator("mesh.delete_loose", text="Delete Loose", icon='STICKY_UVS_VERT')
 
         box2 = col.box().column()
         box2.scale_y = 1.25
 
-        box2.operator("mesh.dissolve_faces",
-                      text="Dissolve Faces", icon='SNAP_FACE')
-        box2.operator("mesh.delete", text="Only Edge & Faces",
-                      icon='SNAP_FACE').type = 'EDGE_FACE'
-        box2.operator("mesh.delete", text="Only Faces",
-                      icon='FACESEL').type = 'ONLY_FACE'
+        box2.operator("mesh.dissolve_faces", text="Dissolve Faces", icon='SNAP_FACE')
+        box2.operator("mesh.delete", text="Only Edge & Faces", icon='SNAP_FACE').type = 'EDGE_FACE'
+        box2.operator("mesh.delete", text="Only Faces", icon='FACESEL').type = 'ONLY_FACE'
         #3 - BOTTOM - RIGHT
-        pie.operator("mesh.edge_collapse",
-                     text="Edge Collapse", icon='UV_EDGESEL')
+        pie.operator("mesh.edge_collapse", text="Edge Collapse", icon='UV_EDGESEL')
 
 
 class PIESPLUS_MT_delete_curve(Menu):
@@ -719,17 +636,14 @@ class PIESPLUS_MT_selection_object_mode(Menu):
         #6 - RIGHT
         pie.separator()
         #2 - BOTTOM
-        pie.operator("object.select_all", text="Invert Selection",
-                     icon='SELECT_DIFFERENCE').action = 'INVERT'
+        pie.operator("object.select_all", text="Invert Selection", icon='SELECT_DIFFERENCE').action = 'INVERT'
         #8 - TOP
         pie.operator("pies_plus.mesh_selection", icon='RESTRICT_SELECT_OFF')
         #7 - TOP - LEFT
         pie.operator("pies_plus.frame_selected_all", icon='VIS_SEL_10')
         #9 - TOP - RIGHT
-        pie.operator("view3d.localview",
-                     text="Isolate Toggle", icon='CAMERA_DATA')
+        pie.operator("view3d.localview", text="Isolate Toggle", icon='CAMERA_DATA')
         #1 - BOTTOM - LEFT
-
         col = pie.column()
 
         gap = col.column()
@@ -738,15 +652,11 @@ class PIESPLUS_MT_selection_object_mode(Menu):
 
         box = col.box().column()
         box.scale_y = 1.25
-        box.operator("object.select_random",
-                     text="Select Random", icon='GROUP_VERTEX')
-        box.operator("object.select_by_type",
-                     text="Select By Type...", icon='SNAP_VOLUME')
-        box.operator("object.select_grouped",
-                     text="Select Grouped...", icon='GROUP_VERTEX')
+        box.operator("object.select_random", text="Select Random", icon='GROUP_VERTEX')
+        box.operator("object.select_by_type", text="Select By Type...", icon='SNAP_VOLUME')
+        box.operator("object.select_grouped", text="Select Grouped...", icon='GROUP_VERTEX')
         row = box.row(align=True)
-        row.operator("object.select_linked",
-                     text="Select Linked...", icon='CONSTRAINT_BONE')
+        row.operator("object.select_linked", text="Select Linked...", icon='CONSTRAINT_BONE')
         row.operator("pies_plus.make_links", text="", icon='PLUS')
         #1 - BOTTOM - LEFT
         pie.operator("object.join", text="Merge Selection", icon='OBJECT_DATA')
@@ -895,30 +805,24 @@ class PIESPLUS_MT_animation(Menu):
         pie = layout.menu_pie()
 
         # 4 - LEFT
-        pie.operator("screen.frame_jump", text="Jump REW",
-                     icon='REW').end = False
+        pie.operator("screen.frame_jump", text="Jump REW", icon='REW').end = False
         # 6 - RIGHT
         pie.operator("screen.frame_jump", text="Jump FF", icon='FF').end = True
         # 2 - BOTTOM
-        pie.prop(context.tool_settings, "use_keyframe_insert_auto",
-                 text="Auto Key", icon='REC')
+        pie.prop(context.tool_settings, "use_keyframe_insert_auto", text="Auto Key", icon='REC')
         # 8 - TOP
         if not context.screen.is_animation_playing:
             pie.operator("screen.animation_play", text="Play", icon='PLAY')
         else:
             pie.operator("screen.animation_play", text="Stop", icon='PAUSE')
         # 7 - TOP - LEFT
-        pie.operator("screen.keyframe_jump", text="Previous FR",
-                     icon='PREV_KEYFRAME').next = False
+        pie.operator("screen.keyframe_jump", text="Previous FR", icon='PREV_KEYFRAME').next = False
         # 9 - TOP - RIGHT
-        pie.operator("screen.keyframe_jump", text="Next FR",
-                     icon='NEXT_KEYFRAME').next = True
+        pie.operator("screen.keyframe_jump", text="Next FR", icon='NEXT_KEYFRAME').next = True
         # 1 - BOTTOM - LEFT
-        pie.operator("screen.animation_play", text="Reverse",
-                     icon='PLAY_REVERSE').reverse = True
+        pie.operator("screen.animation_play", text="Reverse", icon='PLAY_REVERSE').reverse = True
         # 3 - BOTTOM - RIGHT
-        pie.menu("VIEW3D_MT_object_animation",
-                 text="Keyframe...", icon="KEYINGSET")
+        pie.menu("VIEW3D_MT_object_animation", text="Keyframe...", icon="KEYINGSET")
 
 
 ########################################################################################################################
@@ -947,11 +851,9 @@ class PIESPLUS_MT_keyframing(Menu):
                     # 8 - TOP
                     pie.separator()
                     # 7 - TOP - LEFT
-                    pie.operator(
-                        "pies_plus.keyframing", text="Whole Character").key_choice = 'key_whole_char'
+                    pie.operator("pies_plus.keyframing", text="Whole Character").key_choice = 'key_whole_char'
                     # 9 - TOP - RIGHT
-                    pie.operator(
-                        "pies_plus.keyframing", text="Whole Selected").key_choice = 'key_whole_char_sel'
+                    pie.operator("pies_plus.keyframing", text="Whole Selected").key_choice = 'key_whole_char_sel'
                 else:
                     pie.label(text="          WARNING: No objects selected")
             else:
@@ -967,16 +869,14 @@ class PIESPLUS_MT_keyframing(Menu):
             pie.separator()
             # 8 - TOP
             if context.object.type in {'MESH', 'CURVE', 'FONT', 'SURFACE', 'META', 'LATTICE', 'ARMATURE'}:
-                pie.operator("object.editmode_toggle",
-                             text="Edit / Object", icon='OBJECT_DATAMODE')
+                pie.operator("object.editmode_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
             else:
                 pie.separator()
             # 7 - TOP - LEFT
             pie.separator()
             # 9 - TOP - RIGHT
             if context.object.type == "ARMATURE":
-                pie.operator("object.posemode_toggle",
-                             text="Pose Mode", icon='POSE_HLT')
+                pie.operator("object.posemode_toggle", text="Pose Mode", icon='POSE_HLT')
 
         elif context.mode == "POSE" and not context.selected_pose_bones:
             pie.label(text="          WARNING: No bones selected")
@@ -989,30 +889,22 @@ class PIESPLUS_MT_keyframing(Menu):
             # 8 - TOP
             pie.separator()
             # 7 - TOP - LEFT
-            pie.operator("pies_plus.keyframing",
-                         text="Whole Character").key_choice = 'key_whole_char'
+            pie.operator("pies_plus.keyframing", text="Whole Character").key_choice = 'key_whole_char'
             # 9 - TOP - RIGHT
-            pie.operator("pies_plus.keyframing",
-                         text="Whole Selected").key_choice = 'key_whole_char_sel'
+            pie.operator("pies_plus.keyframing", text="Whole Selected").key_choice = 'key_whole_char_sel'
         else:
             # 4 - LEFT
-            pie.operator("pies_plus.keyframing",
-                         text="Visual LocRot").key_choice = 'key_vis_locrot'
+            pie.operator("pies_plus.keyframing", text="Visual LocRot").key_choice = 'key_vis_locrot'
             # 6 - RIGHT
-            pie.operator("pies_plus.keyframing",
-                         text="LocRot").key_choice = 'key_locrot'
+            pie.operator("pies_plus.keyframing", text="LocRot").key_choice = 'key_locrot'
             # 2 - BOTTOM
-            pie.prop(context.tool_settings,
-                     "use_keyframe_insert_auto", text="Auto Key")
+            pie.prop(context.tool_settings, "use_keyframe_insert_auto", text="Auto Key")
             # 8 - TOP
-            pie.operator("pies_plus.keyframing",
-                         text="Rotation").key_choice = 'key_rot'
+            pie.operator("pies_plus.keyframing", text="Rotation").key_choice = 'key_rot'
             # 7 - TOP - LEFT
-            pie.operator("pies_plus.keyframing",
-                         text="Location").key_choice = 'key_loc'
+            pie.operator("pies_plus.keyframing", text="Location").key_choice = 'key_loc'
             # 9 - TOP - RIGHT
-            pie.operator("pies_plus.keyframing",
-                         text="Scale").key_choice = 'key_scale'
+            pie.operator("pies_plus.keyframing", text="Scale").key_choice = 'key_scale'
             # 1 - BOTTOM - LEFT
             col = pie.column()
 
@@ -1025,30 +917,21 @@ class PIESPLUS_MT_keyframing(Menu):
 
             box = col.box().column()
             box.scale_y = 1.25
-            box.operator("pies_plus.keyframing",
-                         text="Visual Location").key_choice = 'key_vis_loc'
-            box.operator("pies_plus.keyframing",
-                         text="Visual Rotation").key_choice = 'key_vis_rot'
-            box.operator("pies_plus.keyframing",
-                         text="Visual Scaling").key_choice = 'key_vis_scale'
-            box.operator("pies_plus.keyframing",
-                         text="Visual LocRotScale").key_choice = 'key_vis_locrotscale'
-            box.operator("pies_plus.keyframing",
-                         text="Visual LocScale").key_choice = 'key_vis_locscale'
-            box.operator("pies_plus.keyframing",
-                         text="Visual RotScale").key_choice = 'key_vis_rotscale'
+            box.operator("pies_plus.keyframing", text="Visual Location").key_choice = 'key_vis_loc'
+            box.operator("pies_plus.keyframing", text="Visual Rotation").key_choice = 'key_vis_rot'
+            box.operator("pies_plus.keyframing", text="Visual Scaling").key_choice = 'key_vis_scale'
+            box.operator("pies_plus.keyframing", text="Visual LocRotScale").key_choice = 'key_vis_locrotscale'
+            box.operator("pies_plus.keyframing", text="Visual LocScale").key_choice = 'key_vis_locscale'
+            box.operator("pies_plus.keyframing", text="Visual RotScale").key_choice = 'key_vis_rotscale'
 
             if context.mode == "POSE":
                 gap = col.column()
 
                 box = col.box().column()
                 box.scale_y = 1.25
-                box.operator("pies_plus.keyframing",
-                             text="BBone Shape").key_choice = 'key_bendy_bones'
-                box.operator("pies_plus.keyframing",
-                             text="Whole Character").key_choice = 'key_whole_char'
-                box.operator("pies_plus.keyframing",
-                             text="Whole Selected").key_choice = 'key_whole_char_sel'
+                box.operator("pies_plus.keyframing", text="BBone Shape").key_choice = 'key_bendy_bones'
+                box.operator("pies_plus.keyframing", text="Whole Character").key_choice = 'key_whole_char'
+                box.operator("pies_plus.keyframing", text="Whole Selected").key_choice = 'key_whole_char_sel'
             # 3 - BOTTOM - RIGHT
             col = pie.column()
 
@@ -1058,30 +941,23 @@ class PIESPLUS_MT_keyframing(Menu):
 
             box = col.box().column()
             box.scale_y = 1.25
-            box.operator("pies_plus.keyframing",
-                         text="Available").key_choice = 'key_available'
+            box.operator("pies_plus.keyframing", text="Available").key_choice = 'key_available'
 
             gap = col.column()
 
             box = col.box().column()
             box.scale_y = 1.25
-            box.operator("pies_plus.keyframing",
-                         text="LocRotScale").key_choice = 'key_locrotscale'
-            box.operator("pies_plus.keyframing",
-                         text="LocScale").key_choice = 'key_locscale'
-            box.operator("pies_plus.keyframing",
-                         text="RotScale").key_choice = 'key_rotscale'
+            box.operator("pies_plus.keyframing", text="LocRotScale").key_choice = 'key_locrotscale'
+            box.operator("pies_plus.keyframing", text="LocScale").key_choice = 'key_locscale'
+            box.operator("pies_plus.keyframing", text="RotScale").key_choice = 'key_rotscale'
 
             gap = col.column()
 
             box = col.box().column()
             box.scale_y = 1.25
-            box.operator("pies_plus.keyframing",
-                         text="Delta Location").key_choice = 'key_del_loc'
-            box.operator("pies_plus.keyframing",
-                         text="Delta Rotation").key_choice = 'key_del_rot'
-            box.operator("pies_plus.keyframing",
-                         text="Delta Scale").key_choice = 'key_del_scale'
+            box.operator("pies_plus.keyframing", text="Delta Location").key_choice = 'key_del_loc'
+            box.operator("pies_plus.keyframing", text="Delta Rotation").key_choice = 'key_del_rot'
+            box.operator("pies_plus.keyframing", text="Delta Scale").key_choice = 'key_del_scale'
 
 
 ########################################################################################################################
@@ -1094,20 +970,19 @@ class PIESPLUS_MT_proportional_edit_mode(Menu):
     bl_label = "Proportional (Edit Mode)"
 
     def draw(self, context):
-        ts = context.tool_settings
-
         layout = self.layout
         pie = layout.menu_pie()
 
+        ts = context.tool_settings
+
         # 4 - LEFT
-        pie.operator("proportional.smooth", icon='SMOOTHCURVE')
+        pie.operator("pies_plus.prop_smooth", icon='SMOOTHCURVE')
         # 6 - RIGHT
-        pie.operator("proportional.sphere", icon='SPHERECURVE')
+        pie.operator("pies_plus.prop_sphere", icon='SPHERECURVE')
         # 2 - BOTTOM
-        pie.operator("proportional.inverse_square", icon='INVERSESQUARECURVE')
+        pie.operator("pies_plus.prop_inverse_square", icon='INVERSESQUARECURVE')
         # 8 - TOP
-        pie.prop(ts, "use_proportional_edit",
-                 text="Proportional Toggle", icon='PROP_ON')
+        pie.prop(ts, "use_proportional_edit", text="Proportional Toggle", icon='PROP_ON')
         # 7 - TOP - LEFT
         pie.prop(ts, "use_proportional_connected", icon='PROP_CON')
         # 9 - TOP - RIGHT
@@ -1121,12 +996,12 @@ class PIESPLUS_MT_proportional_edit_mode(Menu):
 
         box = col.box().column()
         box.scale_y = 1.25
-        box.operator("proportional.constant", icon='NOCURVE')
-        box.operator("proportional.random", icon='RNDCURVE')
-        box.operator("proportional.sharp", icon='SHARPCURVE')
-        box.operator("proportional.linear", icon='LINCURVE')
+        box.operator("pies_plus.prop_constant", icon='NOCURVE')
+        box.operator("pies_plus.prop_random", icon='RNDCURVE')
+        box.operator("pies_plus.prop_sharp", icon='SHARPCURVE')
+        box.operator("pies_plus.prop_linear", icon='LINCURVE')
         # 3 - BOTTOM - RIGHT
-        pie.operator("proportional.root", icon='ROOTCURVE')
+        pie.operator("pies_plus.prop_root", icon='ROOTCURVE')
 
 
 class PIESPLUS_MT_proportional_object_mode(Menu):
@@ -1134,24 +1009,23 @@ class PIESPLUS_MT_proportional_object_mode(Menu):
     bl_label = "Proportional (Object Mode)"
 
     def draw(self, context):
-        ts = context.tool_settings
-
         layout = self.layout
         pie = layout.menu_pie()
 
+        ts = context.tool_settings
+
         # 4 - LEFT
-        pie.operator("proportional.smooth", icon='SMOOTHCURVE')
+        pie.operator("pies_plus.prop_smooth", icon='SMOOTHCURVE')
         # 6 - RIGHT
-        pie.operator("proportional.sphere", icon='SPHERECURVE')
+        pie.operator("pies_plus.prop_sphere", icon='SPHERECURVE')
         # 2 - BOTTOM
-        pie.operator("proportional.inverse_square", icon='INVERSESQUARECURVE')
+        pie.operator("pies_plus.prop_inverse_square", icon='INVERSESQUARECURVE')
         # 8 - TOP
-        pie.prop(ts, "use_proportional_edit_objects",
-                 text="Proportional Toggle")
+        pie.prop(ts, "use_proportional_edit_objects", text="Proportional Toggle")
         # 7 - TOP - LEFT
-        pie.operator("proportional.sharp", icon='SHARPCURVE')
+        pie.operator("pies_plus.prop_sharp", icon='SHARPCURVE')
         # 9 - TOP - RIGHT
-        pie.operator("proportional.linear", icon='LINCURVE')
+        pie.operator("pies_plus.prop_linear", icon='LINCURVE')
         # 1 - BOTTOM - LEFT
         col = pie.column()
 
@@ -1161,10 +1035,10 @@ class PIESPLUS_MT_proportional_object_mode(Menu):
 
         box = col.box().column()
         box.scale_y = 1.25
-        box.operator("proportional.constant", icon='NOCURVE')
-        box.operator("proportional.random", icon='RNDCURVE')
+        box.operator("pies_plus.prop_constant", icon='NOCURVE')
+        box.operator("pies_plus.prop_random", icon='RNDCURVE')
         # 3 - BOTTOM - RIGHT
-        pie.operator("proportional.root", icon='ROOTCURVE')
+        pie.operator("pies_plus.prop_root", icon='ROOTCURVE')
 
 
 ########################################################################################################################
@@ -1179,55 +1053,43 @@ class PIESPLUS_MT_sculpt(Menu):
     def draw(self, context):
         if bpy.app.version >= (2, 81, 0):
             global brush_icons
+
         layout = self.layout
         pie = layout.menu_pie()
         layout.scale_y = 1.2
 
         if bpy.app.version >= (2, 81, 0):
             # 4 - LEFT
-            pie.operator("paint.brush_select", text="    Crease",
-                         icon_value=brush_icons["crease"]).sculpt_tool = 'CREASE'
+            pie.operator("paint.brush_select", text="    Crease", icon_value=brush_icons["crease"]).sculpt_tool = 'CREASE'
             # 6 - RIGHT
-            pie.operator("paint.brush_select", text="    Blob",
-                         icon_value=brush_icons["blob"]).sculpt_tool = 'BLOB'
+            pie.operator("paint.brush_select", text="    Blob", icon_value=brush_icons["blob"]).sculpt_tool = 'BLOB'
             # 2 - BOTTOM
             pie.menu("PIESPLUS_MT_sculpt_more", text="    More...")
             # 8 - TOP
-            pie.operator("paint.brush_select", text="    Draw",
-                         icon_value=brush_icons["draw"]).sculpt_tool = 'DRAW'
+            pie.operator("paint.brush_select", text="    Draw", icon_value=brush_icons["draw"]).sculpt_tool = 'DRAW'
             # 7 - TOP - LEFT
-            pie.operator("paint.brush_select", text="    Clay",
-                         icon_value=brush_icons["clay"]).sculpt_tool = 'CLAY'
+            pie.operator("paint.brush_select", text="    Clay", icon_value=brush_icons["clay"]).sculpt_tool = 'CLAY'
             # 9 - TOP - RIGHT
-            pie.operator("paint.brush_select", text="    Clay Strips",
-                         icon_value=brush_icons["clay_strips"]).sculpt_tool = 'CLAY_STRIPS'
+            pie.operator("paint.brush_select", text="    Clay Strips", icon_value=brush_icons["clay_strips"]).sculpt_tool = 'CLAY_STRIPS'
             # 1 - BOTTOM - LEFT
-            pie.operator("paint.brush_select", text="    Inflate / Deflate",
-                         icon_value=brush_icons["inflate"]).sculpt_tool = 'INFLATE'
+            pie.operator("paint.brush_select", text="    Inflate / Deflate", icon_value=brush_icons["inflate"]).sculpt_tool = 'INFLATE'
             # 3 - BOTTOM - RIGHT
-            pie.menu("PIESPLUS_MT_sculpt_grab", text="    Grab...",
-                     icon_value=brush_icons["grab"])
+            pie.menu("PIESPLUS_MT_sculpt_grab", text="    Grab...", icon_value=brush_icons["grab"])
         else:
             # 4 - LEFT
-            pie.operator("paint.brush_select",
-                         text="    Crease").sculpt_tool = 'CREASE'
+            pie.operator("paint.brush_select", text="    Crease").sculpt_tool = 'CREASE'
             # 6 - RIGHT
-            pie.operator("paint.brush_select",
-                         text="    Blob").sculpt_tool = 'BLOB'
+            pie.operator("paint.brush_select", text="    Blob").sculpt_tool = 'BLOB'
             # 2 - BOTTOM
             pie.menu("PIESPLUS_MT_sculpt_more", text="    More...")
             # 8 - TOP
-            pie.operator("paint.brush_select",
-                         text="    Draw").sculpt_tool = 'DRAW'
+            pie.operator("paint.brush_select", text="    Draw").sculpt_tool = 'DRAW'
             # 7 - TOP - LEFT
-            pie.operator("paint.brush_select",
-                         text="    Clay").sculpt_tool = 'CLAY'
+            pie.operator("paint.brush_select", text="    Clay").sculpt_tool = 'CLAY'
             # 9 - TOP - RIGHT
-            pie.operator("paint.brush_select",
-                         text="    Clay Strips").sculpt_tool = 'CLAY_STRIPS'
+            pie.operator("paint.brush_select", text="    Clay Strips").sculpt_tool = 'CLAY_STRIPS'
             # 1 - BOTTOM - LEFT
-            pie.operator("paint.brush_select",
-                         text="    Inflate / Deflate").sculpt_tool = 'INFLATE'
+            pie.operator("paint.brush_select", text="    Inflate / Deflate").sculpt_tool = 'INFLATE'
             # 3 - BOTTOM - RIGHT
             pie.menu("PIESPLUS_MT_sculpt_grab", text="    Grab...")
 
@@ -1239,42 +1101,28 @@ class PIESPLUS_MT_sculpt_more(Menu):
     def draw(self, context):
         if bpy.app.version >= (2, 81, 0):
             global brush_icons
+
         layout = self.layout
         layout.scale_y = 1.2
 
         if bpy.app.version >= (2, 81, 0):
-            layout.operator("paint.brush_select", text='    Smooth',
-                            icon_value=brush_icons["smooth"]).sculpt_tool = 'SMOOTH'
-            layout.operator("paint.brush_select", text='    Flatten',
-                            icon_value=brush_icons["flatten"]).sculpt_tool = 'FLATTEN'
-            layout.operator("paint.brush_select", text='    Scrape / Peaks',
-                            icon_value=brush_icons["scrape"]).sculpt_tool = 'SCRAPE'
-            layout.operator("paint.brush_select", text='    Fill / Deepen',
-                            icon_value=brush_icons["fill"]).sculpt_tool = 'FILL'
+            layout.operator("paint.brush_select", text='    Smooth', icon_value=brush_icons["smooth"]).sculpt_tool = 'SMOOTH'
+            layout.operator("paint.brush_select", text='    Flatten', icon_value=brush_icons["flatten"]).sculpt_tool = 'FLATTEN'
+            layout.operator("paint.brush_select", text='    Scrape / Peaks', icon_value=brush_icons["scrape"]).sculpt_tool = 'SCRAPE'
+            layout.operator("paint.brush_select", text='    Fill / Deepen', icon_value=brush_icons["fill"]).sculpt_tool = 'FILL'
             if bpy.app.version >= (2, 83, 0):
-                layout.operator("paint.brush_select", text='    Clay Thumb',
-                                icon_value=brush_icons["clay_thumb"]).sculpt_tool = 'CLAY_THUMB'
-                layout.operator("paint.brush_select", text='    Cloth',
-                                icon_value=brush_icons["cloth"]).sculpt_tool = 'CLOTH'
-                layout.operator("paint.brush_select", text='    Face Sets',
-                                icon_value=brush_icons["draw_face_sets"]).sculpt_tool = 'DRAW_FACE_SETS'
-            layout.operator("paint.brush_select", text='    Layer',
-                            icon_value=brush_icons["layer"]).sculpt_tool = 'LAYER'
-            layout.operator("paint.brush_select", text='    Mask',
-                            icon_value=brush_icons["mask"]).sculpt_tool = 'MASK'
+                layout.operator("paint.brush_select", text='    Clay Thumb', icon_value=brush_icons["clay_thumb"]).sculpt_tool = 'CLAY_THUMB'
+                layout.operator("paint.brush_select", text='    Cloth', icon_value=brush_icons["cloth"]).sculpt_tool = 'CLOTH'
+                layout.operator("paint.brush_select", text='    Face Sets', icon_value=brush_icons["draw_face_sets"]).sculpt_tool = 'DRAW_FACE_SETS'
+            layout.operator("paint.brush_select", text='    Layer', icon_value=brush_icons["layer"]).sculpt_tool = 'LAYER'
+            layout.operator("paint.brush_select", text='    Mask', icon_value=brush_icons["mask"]).sculpt_tool = 'MASK'
         else:
-            layout.operator("paint.brush_select",
-                            text='    Smooth').sculpt_tool = 'SMOOTH'
-            layout.operator("paint.brush_select",
-                            text='    Flatten').sculpt_tool = 'FLATTEN'
-            layout.operator("paint.brush_select",
-                            text='    Scrape / Peaks').sculpt_tool = 'SCRAPE'
-            layout.operator("paint.brush_select",
-                            text='    Fill / Deepen').sculpt_tool = 'FILL'
-            layout.operator("paint.brush_select",
-                            text='    Layer').sculpt_tool = 'LAYER'
-            layout.operator("paint.brush_select",
-                            text='    Mask').sculpt_tool = 'MASK'
+            layout.operator("paint.brush_select", text='    Smooth').sculpt_tool = 'SMOOTH'
+            layout.operator("paint.brush_select", text='    Flatten').sculpt_tool = 'FLATTEN'
+            layout.operator("paint.brush_select", text='    Scrape / Peaks').sculpt_tool = 'SCRAPE'
+            layout.operator("paint.brush_select", text='    Fill / Deepen').sculpt_tool = 'FILL'
+            layout.operator("paint.brush_select", text='    Layer').sculpt_tool = 'LAYER'
+            layout.operator("paint.brush_select", text='    Mask').sculpt_tool = 'MASK'
 
 
 class PIESPLUS_MT_sculpt_grab(Menu):
@@ -1284,39 +1132,26 @@ class PIESPLUS_MT_sculpt_grab(Menu):
     def draw(self, context):
         if bpy.app.version >= (2, 81, 0):
             global brush_icons
+
         layout = self.layout
         layout.scale_y = 1.2
 
         if bpy.app.version >= (2, 81, 0):
-            layout.operator("paint.brush_select", text='    Grab',
-                            icon_value=brush_icons["grab"]).sculpt_tool = 'GRAB'
-            layout.operator("paint.brush_select", text='    Pinch / Magnify',
-                            icon_value=brush_icons["pinch"]).sculpt_tool = 'PINCH'
-            layout.operator("paint.brush_select", text='    Elastic Deform',
-                            icon_value=brush_icons["elastic_deform"]).sculpt_tool = 'ELASTIC_DEFORM'
-            layout.operator("paint.brush_select", text='    Snake Hook',
-                            icon_value=brush_icons["snake_hook"]).sculpt_tool = 'SNAKE_HOOK'
-            layout.operator("paint.brush_select", text='    Thumb',
-                            icon_value=brush_icons["thumb"]).sculpt_tool = 'THUMB'
-            layout.operator("paint.brush_select", text='    Pose',
-                            icon_value=brush_icons["pose"]).sculpt_tool = 'POSE'
-            layout.operator("paint.brush_select", text='    Nudge',
-                            icon_value=brush_icons["nudge"]).sculpt_tool = 'NUDGE'
-            layout.operator("paint.brush_select", text='    Rotate',
-                            icon_value=brush_icons["rotate"]).sculpt_tool = 'ROTATE'
+            layout.operator("paint.brush_select", text='    Grab', icon_value=brush_icons["grab"]).sculpt_tool = 'GRAB'
+            layout.operator("paint.brush_select", text='    Pinch / Magnify', icon_value=brush_icons["pinch"]).sculpt_tool = 'PINCH'
+            layout.operator("paint.brush_select", text='    Elastic Deform', icon_value=brush_icons["elastic_deform"]).sculpt_tool = 'ELASTIC_DEFORM'
+            layout.operator("paint.brush_select", text='    Snake Hook', icon_value=brush_icons["snake_hook"]).sculpt_tool = 'SNAKE_HOOK'
+            layout.operator("paint.brush_select", text='    Thumb', icon_value=brush_icons["thumb"]).sculpt_tool = 'THUMB'
+            layout.operator("paint.brush_select", text='    Pose', icon_value=brush_icons["pose"]).sculpt_tool = 'POSE'
+            layout.operator("paint.brush_select", text='    Nudge', icon_value=brush_icons["nudge"]).sculpt_tool = 'NUDGE'
+            layout.operator("paint.brush_select", text='    Rotate', icon_value=brush_icons["rotate"]).sculpt_tool = 'ROTATE'
         else:
-            layout.operator("paint.brush_select",
-                            text='    Grab').sculpt_tool = 'GRAB'
-            layout.operator("paint.brush_select",
-                            text='    Pinch / Magnify').sculpt_tool = 'PINCH'
-            layout.operator("paint.brush_select",
-                            text='    Snake Hook').sculpt_tool = 'SNAKE_HOOK'
-            layout.operator("paint.brush_select",
-                            text='    Thumb').sculpt_tool = 'THUMB'
-            layout.operator("paint.brush_select",
-                            text='    Nudge').sculpt_tool = 'NUDGE'
-            layout.operator("paint.brush_select",
-                            text='    Rotate').sculpt_tool = 'ROTATE'
+            layout.operator("paint.brush_select", text='    Grab').sculpt_tool = 'GRAB'
+            layout.operator("paint.brush_select", text='    Pinch / Magnify').sculpt_tool = 'PINCH'
+            layout.operator("paint.brush_select", text='    Snake Hook').sculpt_tool = 'SNAKE_HOOK'
+            layout.operator("paint.brush_select", text='    Thumb').sculpt_tool = 'THUMB'
+            layout.operator("paint.brush_select", text='    Nudge').sculpt_tool = 'NUDGE'
+            layout.operator("paint.brush_select", text='    Rotate').sculpt_tool = 'ROTATE'
 
 
 ########################################################################################################################
@@ -1330,9 +1165,7 @@ class PIESPLUS_MT_save(Menu):
 
     def draw(self, context):
         layout = self.layout
-
         pie = layout.menu_pie()
-        layout.scale_y = 1.2
 
         # 4 - LEFT
         pie.operator("wm.open_mainfile", text="Open...", icon='FILEBROWSER')
@@ -1351,23 +1184,23 @@ class PIESPLUS_MT_save(Menu):
 
         gap = col.column()
         gap.separator()
-        gap.scale_y = 6
+        gap.scale_y = 8.1
 
         box = col.box().column()
-        box.scale_y = 1.1
+        box.scale_y = 1.25
         row = box.row(align = True)
         row.operator("wm.call_menu", text="Open Recent...").name = "TOPBAR_MT_file_open_recent"
-        row.operator("wm.recover_last_session", text="Last")
+        row.operator("pies_plus.open_last", text="Open Last", icon='LOOP_BACK')
 
         box = col.box().column()
-        box.scale_y = 1.1
+        box.scale_y = 1.25
         row = box.row(align = True)
-        row.operator("wm.recover_auto_save", text="Auto Save...")
-        #row.operator("wm.recover_last_session", text="Last")
+        row.operator("wm.recover_auto_save", text="Auto Save... ")
+        row.operator("wm.recover_last_session", text='Rec Last', icon='RECOVER_LAST')
 
         box = col.box().column()
         row = box.row(align = True)
-        box.scale_y = 1.1
+        box.scale_y = 1.25
         row.operator("wm.link", text="Link...", icon='LINK_BLEND')
         row.operator("wm.append", text="Append...", icon='APPEND_BLEND')
         # 3 - BOTTOM - RIGHT
@@ -1388,19 +1221,46 @@ class PIESPLUS_MT_save(Menu):
         box2.menu("TOPBAR_MT_file_import", icon='IMPORT', text="Import                       -->")
 
         row = box.row(align = True)
+        box.scale_y = 1.25
+
         row.label(text = 'Batch:')
 
-        row.operator("pies_plus.batch_import", text='FBX')
-        row.operator("pies_plus.batch_import", text='OBJ')
+        row.operator("pies_plus.batch_import", text='FBX').import_type = 'fbx'
+        row.operator("pies_plus.batch_import", text='OBJ').import_type = 'obj'
 
 
 ########################################################################################################################
-# TRANSFORM ORIENTATIONS - ALT + W (V1.3 ?)
+# TRANSFORM ORIENTATIONS - CTRL + W
 ########################################################################################################################
 
 
-#bpy.context.scene.transform_orientation_slots[0].type = 'LOCAL'
-# (popover VIEW3D_PT_transform_orientations)
+class PIESPLUS_MT_transform_orientation(Menu):
+    bl_idname = "PIESPLUS_MT_transform_orientation"
+    bl_label = "Transform Orientations"
+
+    def draw(self, context):
+        layout = self.layout
+        pie = layout.menu_pie()
+
+        to = context.scene.transform_orientation_slots[0]
+
+        # 4 - LEFT
+        pie.prop_enum(to, "type", 'CURSOR')
+        # 6 - RIGHT
+        pie.prop_enum(to, "type", 'LOCAL')
+        # 2 - BOTTOM
+        pie.prop_enum(to, "type", 'NORMAL')
+        # 8 - TOP
+        pie.prop_enum(to, "type", 'GLOBAL')
+        # 7 - TOP - LEFT
+        pie.prop_enum(to, "type", 'VIEW')
+        # 9 - TOP - RIGHT
+        pie.prop_enum(to, "type", 'GIMBAL')
+
+    # Future Custom Transform Orientations idea
+
+    #context.scene.transform_orientation_slots[0].type = 'LOCAL'
+    #(popover VIEW3D_PT_transform_orientations)
 
 
 ##############################
@@ -1414,6 +1274,7 @@ brush_icons = {}
 def create_icons():
     if bpy.app.version >= (2, 81, 0):
         global brush_icons
+
         icons_directory = bpy.utils.system_resource('DATAFILES', "icons")
 
         brushes = ["crease", "blob", "smooth", "draw", "clay", "clay_strips", "inflate", "grab", "nudge", "thumb",
@@ -1430,6 +1291,7 @@ def create_icons():
 def release_icons():
     if bpy.app.version >= (2, 81, 0):
         global brush_icons
+
         for value in brush_icons.values():
             bpy.app.icons.release(value)
 
@@ -1455,7 +1317,8 @@ classes = (PIESPLUS_MT_modes,
            PIESPLUS_MT_sculpt,
            PIESPLUS_MT_sculpt_grab,
            PIESPLUS_MT_sculpt_more,
-           PIESPLUS_MT_save)
+           PIESPLUS_MT_save,
+           PIESPLUS_MT_transform_orientation)
 
 
 def register():
