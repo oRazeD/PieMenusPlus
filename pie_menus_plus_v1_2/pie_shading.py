@@ -4,7 +4,7 @@ from bpy.types import Operator
 
 class PIESPLUS_OT_auto_smooth(Operator):
     bl_idname = "pies_plus.auto_smooth"
-    bl_label = "Quick Smooth"
+    bl_label = " Auto Smooth+"
     bl_description = "[BATCH] Automation for setting up meshes with Auto Smooth Normals. Also turns on Shade Smooth as it is a prerequisite for ASN"
     bl_options = {'UNDO'}
 
@@ -58,35 +58,6 @@ class PIESPLUS_OT_remove_auto_smooth(Operator):
         return {'FINISHED'}
 
 
-class PIESPLUS_OT_solid_shading(Operator):
-    bl_idname = "pies_plus.solid"
-    bl_label = "Solid"
-    bl_description = "Sets the viewport shading type to Solid"
-    bl_options = {'REGISTER'}
-
-    def execute(self, context):
-        context.space_data.shading.type = 'SOLID'
-        return {'FINISHED'}
-
-
-class PIESPLUS_OT_wire_shading(Operator):
-    bl_idname = "pies_plus.wireframe"
-    bl_label = "Wireframe"
-    bl_description = "Sets the viewport shading type to Wireframe"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        if context.scene.pies_plus.wireframeType_Pref == 'overlay':
-            for area in context.screen.areas:
-                if area.type == 'VIEW_3D':
-                    for space in area.spaces:
-                        space.overlay.show_wireframes = not space.overlay.show_wireframes
-                        break
-        else:
-            context.space_data.shading.type = 'WIREFRAME'
-        return {'FINISHED'}
-
-
 class PIESPLUS_OT_wire_per_obj(Operator):
     bl_idname = "pies_plus.wire_per_obj"
     bl_label = "Wireframe (per obj)"
@@ -98,6 +69,7 @@ class PIESPLUS_OT_wire_per_obj(Operator):
             ob.show_wire = not ob.show_wire
         return {'FINISHED'}
 
+
 class PIESPLUS_OT_remove_wire_per_obj(Operator):
     bl_idname = "pies_plus.remove_wire_per_obj"
     bl_label = ""
@@ -107,28 +79,6 @@ class PIESPLUS_OT_remove_wire_per_obj(Operator):
     def execute(self, context):
         for ob in context.selected_objects:
             ob.show_wire = False
-        return {'FINISHED'}
-
-
-class PIESPLUS_OT_mat_preview_shading(Operator):
-    bl_idname = "pies_plus.mat_preview"
-    bl_label = "Material Preview"
-    bl_description = "Sets the viewport shading type to Material Preview"
-    bl_options = {'REGISTER'}
-
-    def execute(self, context):
-        context.space_data.shading.type = 'MATERIAL'
-        return {'FINISHED'}
-
-
-class PIESPLUS_OT_rendered_shading(Operator):
-    bl_idname = "pies_plus.rendered"
-    bl_label = "Rendered"
-    bl_description = "Sets the viewport shading type to Rendered"
-    bl_options = {'REGISTER'}
-
-    def execute(self, context):
-        context.space_data.shading.type = 'RENDERED'
         return {'FINISHED'}
 
 
@@ -231,7 +181,7 @@ class PIESPLUS_OT_auto_fwn(Operator):
             self.report({'ERROR'}, "Nothing is selected & there is no Active Object")
             return{'FINISHED'}
 
-        pies_plus_prefs = context.scene.pies_plus
+        pies_plus_prefs = context.preferences.addons[__package__].preferences
 
         if context.active_object:
             activeCallback = context.view_layer.objects.active
@@ -262,7 +212,7 @@ class PIESPLUS_OT_auto_fwn(Operator):
             
             bpy.ops.object.mode_set(mode = modeCallback)
         
-        self.report({'INFO'}, "Automatically FWN'd selection")
+        self.report({'INFO'}, "Automatically Face Weighted selection")
         return{'FINISHED'}
 
 
@@ -296,12 +246,8 @@ class PIESPLUS_OT_remove_custom_normals(Operator):
 
 classes = (PIESPLUS_OT_auto_smooth,
            PIESPLUS_OT_remove_auto_smooth,
-           PIESPLUS_OT_solid_shading,
            PIESPLUS_OT_wire_per_obj,
            PIESPLUS_OT_remove_wire_per_obj,
-           PIESPLUS_OT_wire_shading,
-           PIESPLUS_OT_mat_preview_shading,
-           PIESPLUS_OT_rendered_shading,
            PIESPLUS_OT_recalc_normals,
            PIESPLUS_OT_shade_smooth,
            PIESPLUS_OT_shade_flat,

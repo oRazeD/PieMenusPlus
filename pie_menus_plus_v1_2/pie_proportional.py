@@ -3,7 +3,7 @@ from bpy.types import Operator
 
 
 class PIESPLUS_OT_proportional_smooth(Operator):
-    bl_idname = "proportional.smooth"
+    bl_idname = "pies_plus.prop_smooth"
     bl_label = "Smooth"
     bl_description = "Changes the proportional editing method to Smooth"
     bl_options = {'REGISTER', 'UNDO'}
@@ -20,7 +20,7 @@ class PIESPLUS_OT_proportional_smooth(Operator):
 
 
 class PIESPLUS_OT_proportional_sphere(Operator):
-    bl_idname = "proportional.sphere"
+    bl_idname = "pies_plus.prop_sphere"
     bl_label = "Sphere"
     bl_description = "Changes the proportional editing method to Sphere"
     bl_options = {'REGISTER', 'UNDO'}
@@ -37,7 +37,7 @@ class PIESPLUS_OT_proportional_sphere(Operator):
 
 
 class PIESPLUS_OT_proportional_root(Operator):
-    bl_idname = "proportional.root"
+    bl_idname = "pies_plus.prop_root"
     bl_label = "Root"
     bl_description = "Changes the proportional editing method to Root"
     bl_options = {'REGISTER', 'UNDO'}
@@ -54,7 +54,7 @@ class PIESPLUS_OT_proportional_root(Operator):
 
 
 class PIESPLUS_OT_proportional_sharp(Operator):
-    bl_idname = "proportional.sharp"
+    bl_idname = "pies_plus.prop_sharp"
     bl_label = "Sharp"
     bl_description = "Changes the proportional editing method to Sharp"
     bl_options = {'REGISTER', 'UNDO'}
@@ -71,7 +71,7 @@ class PIESPLUS_OT_proportional_sharp(Operator):
 
 
 class PIESPLUS_OT_proportional_linear(Operator):
-    bl_idname = "proportional.linear"
+    bl_idname = "pies_plus.prop_linear"
     bl_label = "Linear"
     bl_description = "Changes the proportional editing method to Linear"
     bl_options = {'REGISTER', 'UNDO'}
@@ -88,7 +88,7 @@ class PIESPLUS_OT_proportional_linear(Operator):
 
 
 class PIESPLUS_OT_proportional_constant(Operator):
-    bl_idname = "proportional.constant"
+    bl_idname = "pies_plus.prop_constant"
     bl_label = "Constant"
     bl_description = "Changes the proportional editing method to Constant"
     bl_options = {'REGISTER', 'UNDO'}
@@ -105,7 +105,7 @@ class PIESPLUS_OT_proportional_constant(Operator):
 
 
 class PIESPLUS_OT_proportional_random(Operator):
-    bl_idname = "proportional.random"
+    bl_idname = "pies_plus.prop_random"
     bl_label = "Random"
     bl_description = "Changes the proportional editing method to Random"
     bl_options = {'REGISTER', 'UNDO'}
@@ -122,7 +122,7 @@ class PIESPLUS_OT_proportional_random(Operator):
 
 
 class PIESPLUS_OT_proportional_inverse_square(Operator):
-    bl_idname = "proportional.inverse_square"
+    bl_idname = "pies_plus.prop_inverse_square"
     bl_label = "Inverse Square"
     bl_description = "Changes the proportional editing method to Inverse Square"
     bl_options = {'REGISTER', 'UNDO'}

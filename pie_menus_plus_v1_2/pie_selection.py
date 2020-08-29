@@ -46,7 +46,7 @@ class PIESPLUS_OT_mesh_selection(Operator):
 
         else:
             if context.mode == 'EDIT_MESH':
-                if context.scene.pies_plus.invertSelection_Pref:
+                if context.preferences.addons[__package__].preferences.invertSelection_Pref:
                     verts_hidden = 0
 
                     for ob in context.selected_objects:
@@ -65,7 +65,8 @@ class PIESPLUS_OT_mesh_selection(Operator):
                     return {'FINISHED'}
                 bpy.ops.mesh.select_all(action='TOGGLE')
                 return {'FINISHED'}
-            if context.scene.pies_plus.invertSelection_Pref:
+
+            if context.preferences.addons[__package__].preferences.invertSelection_Pref:
                 if len([ob for ob in context.view_layer.objects if ob.visible_get()]) == len(context.selected_objects):
                     bpy.ops.object.select_all(action='DESELECT')
                 else:
@@ -101,9 +102,10 @@ class PIESPLUS_OT_select_seamed(Operator):
         bpy.ops.object.mode_set(mode='OBJECT')
 
         for ob in context.selected_objects:
-            for edge in ob.data.edges:
-                if edge.use_seam:
-                    edge.select = True
+            if ob.type == 'MESH':
+                for edge in ob.data.edges:
+                    if edge.use_seam:
+                        edge.select = True
 
         bpy.ops.object.mode_set(mode='EDIT')
         return {'FINISHED'}
@@ -120,9 +122,10 @@ class PIESPLUS_OT_select_sharped(Operator):
         bpy.ops.object.mode_set(mode='OBJECT')
 
         for ob in context.selected_objects:
-            for edge in ob.data.edges:
-                if edge.use_edge_sharp:
-                    edge.select = True
+            if ob.type == 'MESH':
+                for edge in ob.data.edges:
+                    if edge.use_edge_sharp:
+                        edge.select = True
 
         bpy.ops.object.mode_set(mode='EDIT')
         return {'FINISHED'}

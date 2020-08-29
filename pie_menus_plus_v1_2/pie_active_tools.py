@@ -68,19 +68,18 @@ class PIESPLUS_OT_active_tools(bpy.types.Operator):
         else:  # 3D Cursor
             bpy.ops.wm.tool_set_by_id(name="builtin.cursor")
 
-        pies_plus_prefs = context.scene.pies_plus.defaultTool_Pref
-        tools = context.workspace.tools
-        current_active_tool = tools.from_space_view3d_mode(context.mode).idname
+        pies_plus_prefs = context.preferences.addons[__package__].preferences
+        current_active_tool = context.workspace.tools.from_space_view3d_mode(context.mode).idname
 
         if self.active_tools.startswith("gizmo"):
             if current_active_tool not in {'builtin.select', 'builtin.select_box', 'builtin.select_circle', 'builtin.select_lasso'}:
-                if pies_plus_prefs == 'tweak_select':
+                if pies_plus_prefs.defaultTool_Pref == 'tweak_select':
                     bpy.ops.wm.tool_set_by_id(name="builtin.select")
-                elif pies_plus_prefs == 'box_select':
+                elif pies_plus_prefs.defaultTool_Pref == 'box_select':
                     bpy.ops.wm.tool_set_by_id(name="builtin.select_box")
-                elif pies_plus_prefs == 'circle_select':
+                elif pies_plus_prefs.defaultTool_Pref == 'circle_select':
                     bpy.ops.wm.tool_set_by_id(name="builtin.select_circle")
-                else:  # Lasso
+                else: # Lasso
                     bpy.ops.wm.tool_set_by_id(name="builtin.select_lasso")
         return {'FINISHED'}
 
