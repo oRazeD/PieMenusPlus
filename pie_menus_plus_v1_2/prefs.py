@@ -16,7 +16,7 @@ class PIESPLUS_property_group(bpy.types.PropertyGroup):
     def update_uvSyncSelection(self, context):
         context.scene.tool_settings.use_uv_select_sync = self.uvSyncSelection
 
-        if self.preserveUVSelection_Pref:
+        if context.preferences.addons[__package__].preferences.preserveUVSelection_Pref:
             if not context.scene.tool_settings.use_uv_select_sync:
                 old_area_type = context.area.type
                     
@@ -30,8 +30,6 @@ class PIESPLUS_property_group(bpy.types.PropertyGroup):
 
     uvSyncSelection: BoolProperty(name = "UV Sync Selection", default = False, update = update_uvSyncSelection)
 
-    # User Preferences
-
     dropdownDelete: BoolProperty()
     dropdownSelection: BoolProperty()
     dropdownProportional: BoolProperty()
@@ -44,52 +42,7 @@ class PIESPLUS_property_group(bpy.types.PropertyGroup):
     dropdownTransform: BoolProperty()
     dropdownLT: BoolProperty()
     dropdownSave: BoolProperty()
-    
-    gizmoSwitch_Pref: EnumProperty(items=(('tool', "Tool", "Changes the tool"),
-                                          ('gizmo', "Gizmo", "Changes the gizmo instead of the tool (preferred workflow, will set your tool to tweak if using a different tool that isn't box, lasso or circle select)")))
-
-    wireframeType_Pref: EnumProperty(items=(('viewport_shading', "VP Shading (Blender)", "Uses the standard wireframe shading mode"),
-                                            ('overlay', "Overlay (Max, Maya)", "Uses the alternate wireframe method that overlays a wireframe over all meshes (similar functionality to Max or Maya)")))
-
-    defaultTool_Pref: EnumProperty(items=(('tweak_select', "Tweak", "Tweak"),
-                                          ('box_select', "Box", "Box Select"),
-                                          ('circle_select', "Circle", "Circle Select"),
-                                          ('lasso_select', "Lasso", "Lasso Select")))
-
-    keepSharp_Pref: BoolProperty(
-        description = "Toggles whether the FWN Modifier accounts for Sharps on each mesh", default = True)
-
-    weightValue_Pref: IntProperty(name="Weight", default = 100, min = 1, max = 100)
-
-    faceInf_Pref: BoolProperty(
-        description = "Use influence of face for weighting", default = False)
-
-    smoothAngle_Pref: IntProperty(
-        name = "Smooth Angle", default = 60, min = 0, max = 180)
-
-    autoSnap_Pref: BoolProperty(
-        description = "Automatically enables snapping when you change any settings within the pie", default = True)
-
-    autoAbsoluteGridSnap_Pref: BoolProperty(
-        description = "Automatically enables Absolute Grid Snap when you switch to incremental snapping within the pie", default = False)
-
-    resetRot_Pref: BoolProperty(
-        description = "Decide whether the 3D Cursors rotation resets when you reset per axis", default = True)
-
-    editOriginActivate_Pref: BoolProperty(
-        description = "Edit Origin & 3D Cursor allows you to move the Actives origin (or 3D Cursor) with a modal. This used to be on by default but the undo system can be a bit unreliable. The tool is safe to use, avoid undos if you can <3")
-
-    faceCenterSnap_Pref: BoolProperty(
-        description = "Allows snapping directly to the center of any face on the object being edited (WARNING: This operation can be very slow in bigger scenes)")
-
-    invertSelection_Pref: BoolProperty(
-        description = "Only deselect all objects if all object are selected (versus deselecting if any selection is made)")
-
-    preserveUVSelection_Pref: BoolProperty(
-        description = "Selects all faces when you leave UV Sync", default = False)
-
-    simpleContextMode_Pref: BoolProperty(
-        description = "A simple version of the context mode pie, which removes xray and overlay toggle (in case you keep using it on accident)", default = False)
+    dropdownTransformOrient: BoolProperty()
 
 
 ##################################
@@ -211,6 +164,7 @@ class PIESPLUS_addon_keymaps:
         originUsed = 0
         ltUsed = 0
         saveUsed = 0
+        transformOrientUsed = 0
 
         for name, items in PIESPLUS_addon_keymaps._keymaps.items():
             drawKeymap = 0
@@ -365,6 +319,20 @@ class PIESPLUS_addon_keymaps:
                 if pies_plus.dropdownTransform:
                     drawKeymap = 1
 
+            elif name.startswith('Transform Orientations'):
+                if not transformOrientUsed:
+                    transformOrientUsed = 1
+                    boxProp = layout.box()
+                    row = boxProp.row()
+                    row.prop(pies_plus, 'dropdownTransformOrient', icon_only=True, emboss=False,
+                             icon="DOWNARROW_HLT" if pies_plus.dropdownTransformOrient else "RIGHTARROW")
+                    row.label(text="Transform Orientations Pies")
+                    row.label(text="[3D View]")
+                    if pies_plus.dropdownTransformOrient:
+                        row = boxProp.row()
+                if pies_plus.dropdownTransformOrient:
+                    drawKeymap = 1
+
             # LoopTools
             elif name.startswith('LoopTools'):
                 if not ltUsed:
@@ -434,10 +402,40 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
     Tabs: EnumProperty(items=(('general', "General", "Information & Settings"),
                               ('keymaps', "Keymaps", "Keymapping")))
 
+    gizmoSwitch_Pref: EnumProperty(items=(('tool', "Tool", "Changes the tool"),
+                                          ('gizmo', "Gizmo", "Changes the gizmo instead of the tool (preferred workflow, will set your tool to tweak if using a different tool that isn't box, lasso or circle select)")))
+
+    defaultTool_Pref: EnumProperty(items=(('tweak_select', "Tweak", "Tweak"),
+                                          ('box_select', "Box", "Box Select"),
+                                          ('circle_select', "Circle", "Circle Select"),
+                                          ('lasso_select', "Lasso", "Lasso Select")))
+
+    keepSharp_Pref: BoolProperty(description = "Toggles whether the FWN Modifier accounts for Sharps on each mesh", default = True)
+
+    weightValue_Pref: IntProperty(name="Weight", default = 100, min = 1, max = 100)
+
+    faceInf_Pref: BoolProperty(description = "Use influence of face for weighting", default = False)
+
+    smoothAngle_Pref: IntProperty(name = "Smooth Angle", default = 60, min = 0, max = 180)
+
+    autoSnap_Pref: BoolProperty(description = "Automatically enables snapping when you change any settings within the pie", default = True)
+
+    autoAbsoluteGridSnap_Pref: BoolProperty(description = "Automatically enables Absolute Grid Snap when you switch to incremental snapping within the pie", default = False)
+
+    resetRot_Pref: BoolProperty(description = "Decide whether the 3D Cursors rotation resets when you reset per axis", default = True)
+
+    faceCenterSnap_Pref: BoolProperty(description = "Allows snapping directly to the center of any face on the object being edited (WARNING: This operation can be very slow in bigger scenes)")
+
+    invertSelection_Pref: BoolProperty(description = "Only deselect all objects if all object are selected (versus deselecting if any selection is made)")
+
+    preserveUVSelection_Pref: BoolProperty(description = "Selects all faces when you leave UV Sync", default = False)
+
+    simpleContextMode_Pref: BoolProperty(description = "A simple version of the context mode pie, which removes xray and overlay toggle (in case you keep using it on accident)", default = False)
+
     def draw(self, context):
         layout = self.layout
 
-        pies_plus = context.scene.pies_plus
+        pies_plus = context.preferences.addons[__package__].preferences
 
         row = layout.row()
         row.prop(self, "Tabs", expand=True)
@@ -448,25 +446,15 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             row = layout.row()
             row.separator()
 
-            flow = layout.grid_flow()
-            box = flow.box()
-
-            box.label(text="Pie Menus Plus is an add-on structured around creating a fully functioning pie menu")
-            box.label(text="ecosystem that extends usability beyond what the built-in pie menus are capable of.")
-
-            flow.separator(factor = 2)
-
             box_main = layout.box()
 
             row = box_main.row()
             row.label(text="        Select Mode Pie Settings:")
             box = box_main.box()
             row = box.row()
-            row.prop(pies_plus, "preserveUVSelection_Pref",
-                     text="Preserve UV selection when exiting UV Sync mode")
+            row.prop(pies_plus, "preserveUVSelection_Pref", text="Preserve UV selection when exiting UV Sync mode")
             row = box.row()
-            row.prop(pies_plus, "simpleContextMode_Pref",
-                     text="Use Simple Select Mode Pie")
+            row.prop(pies_plus, "simpleContextMode_Pref", text="Use Simple Select Mode Pie")
 
             row = box_main.row()
             row.label(text="        Gizmo / Tool Pie Settings:")
@@ -482,18 +470,10 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             row = box_main.row()
             row.label(text="        Origin / Cursor Pie Settings:")
             box = box_main.box()
-            if bpy.app.version >= (2, 81, 0):
-                row = box.row()
-                row.prop(pies_plus, "editOriginActivate_Pref",
-                         text="Enable Edit Origin & 3D Cursor Tool (README)")
-                if pies_plus.editOriginActivate_Pref:
-                    row = box.row()
-                    row.prop(pies_plus, "faceCenterSnap_Pref",
-                             text="[EXPERIMENTAL] Edit Origin snapping to center of faces (Slow in big scenes)")
-                    row = box.row()
             row = box.row()
-            row.prop(pies_plus, "resetRot_Pref",
-                     text="Reset 3D Cursor rotation when resetting location")
+            row.prop(pies_plus, "faceCenterSnap_Pref", text="[EXPERIMENTAL] Edit Origin Tool Snapping to Center of faces (Slow in big scenes)")
+            row = box.row()
+            row.prop(pies_plus, "resetRot_Pref", text="Reset 3D Cursor Rotation when Resetting Location")
 
             row = box_main.row()
             row.label(text="        Snapping Pie Settings:")
@@ -513,23 +493,17 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
                      text="Invert selection toggle")
 
             row = box_main.row()
-            row.label(text="        Shading Pie Settings:")
+            row.label(text="        Quick FWN Settings (Shading Pie):")
             box = box_main.box()
-            row = box.row()
-            row.label(text="Wireframe method:")
-            row.prop(pies_plus, "wireframeType_Pref", expand=True)
-
-            row = box.row()
-            box.label(text="    Quick FWN:")
             row = box.row()
             row.label(text="Weight:")
             row.scale_x = 2
             row.prop(pies_plus, "weightValue_Pref")
             row = box.row()
-            row.label(text="Smooth Angle:")
-            row.scale_x = 2
-            row.prop(pies_plus, "smoothAngle_Pref")
-            row = box.row()
+            #row.label(text="Smooth Angle:")
+            #row.scale_x = 2
+            #row.prop(pies_plus, "smoothAngle_Pref")
+            #row = box.row()
             row.prop(pies_plus, "keepSharp_Pref", text="Keep Sharps")
             row.prop(pies_plus, "faceInf_Pref", text="Face Influence")
 
@@ -635,6 +609,10 @@ def register():
                                       '3D View', 'VIEW_3D', 'WINDOW',
                                       'Z', 'PRESS', False, False, False)
 
+    PIESPLUS_addon_keymaps.new_keymap('Save Pie', 'wm.call_menu_pie', 'PIESPLUS_MT_save',
+                                      '3D View', 'VIEW_3D', 'WINDOW',
+                                      'S', 'PRESS', True, False, False)
+
     PIESPLUS_addon_keymaps.new_keymap('Origin / Cursor Change Pie', 'wm.call_menu_pie', 'PIESPLUS_MT_origin_pivot',
                                       '3D View', 'VIEW_3D', 'WINDOW',
                                       'S', 'PRESS', False, True, False)
@@ -647,13 +625,9 @@ def register():
                                       'Mesh', 'EMPTY', 'WINDOW',
                                       'Q', 'PRESS', False, True, False)
 
-    PIESPLUS_addon_keymaps.new_keymap('Save Pie', 'wm.call_menu_pie', 'PIESPLUS_MT_save',
+    PIESPLUS_addon_keymaps.new_keymap('Transform Orientations Pie', 'wm.call_menu_pie', 'PIESPLUS_MT_transform_orientation',
                                       '3D View', 'VIEW_3D', 'WINDOW',
-                                      'S', 'PRESS', True, False, False)
-
-#    PIESPLUS_addon_keymaps.new_keymap('Transform Orientations Pie', 'wm.call_menu_pie', 'PIESPLUS_MT_shading',
-#                                      '3D View', 'VIEW_3D', 'WINDOW',
-#                                      'W', 'PRESS', False, False, True)
+                                      'W', 'PRESS', True, False, False)
 
     PIESPLUS_addon_keymaps.register_keymaps()  # Keymap Setup
 
