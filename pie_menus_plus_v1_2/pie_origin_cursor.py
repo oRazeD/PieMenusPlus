@@ -3,8 +3,6 @@ from bpy.types import Operator
 from bpy.props import EnumProperty
 from bpy_extras import view3d_utils
 import bmesh
-import bgl
-import blf
 
 
 class PIESPLUS_OT_origin_to_selection(Operator):
@@ -126,17 +124,19 @@ class PIESPLUS_OT_reset_cursor(Operator):
                                            ('cursor_z', "Z", "")), name = 'Reset Axis')
 
     def execute(self, context):
-        if self.cursor_reset_axis == 'cursor_all':
-            context.scene.cursor.location = (0, 0, 0)
-        elif self.cursor_reset_axis == 'cursor_x':
-            context.scene.cursor.location[0] = 0
-        elif self.cursor_reset_axis == 'cursor_y':
-            context.scene.cursor.location[1] = 0
-        else:
-            context.scene.cursor.location[2] = 0
+        cursor = context.scene.cursor
 
-        if context.scene.pies_plus.resetRot_Pref:
-            context.scene.cursor.rotation_euler = (0, 0, 0)
+        if self.cursor_reset_axis == 'cursor_all':
+            cursor.location = (0, 0, 0)
+        elif self.cursor_reset_axis == 'cursor_x':
+            cursor.location[0] = 0
+        elif self.cursor_reset_axis == 'cursor_y':
+            cursor.location[1] = 0
+        else:
+            cursor.location[2] = 0
+
+        if context.preferences.addons[__package__].preferences.resetRot_Pref:
+            cursor.rotation_euler = (0, 0, 0)
         return{'FINISHED'}
 
 
@@ -151,54 +151,43 @@ class PIESPLUS_OT_reset_cursor_rot(Operator):
         return{'FINISHED'}
 
 
-def draw_callback_px(self, context):
-    font_id = 0
-
-    blf.position(font_id, 15, 140, 0)
-    blf.size(font_id, 26, 72)
-    blf.draw(font_id, "EDIT ORIGIN")
-
-    blf.position(font_id, 15, 100, 0)
-    blf.size(font_id, 18, 72)
-    blf.draw(font_id, " ")
-
 class PIESPLUS_OT_edit_origin(Operator):
-    """Manually edit the origin
-
-Due to an error in the Python API with turning on snapping, snapping may be
-turned on if you undo into another undo state where you used Edit Origin or
-if you undo and then redo after using the operation"""
     bl_idname = "pies_plus.edit_origin"
     bl_label = "Edit Origin"
+    bl_description = "Manually edit the origin or cursor with a translate modal"
     bl_options = {'REGISTER'}
+
+    edit_type: EnumProperty(items=(('origin', "Origin", ""),
+                                   ('cursor', "Cursor", "")), name = 'Edit Type')
 
     def modal(self, context, event):
         if self.finished:
-            bpy.types.SpaceView3D.draw_handler_remove(self._handle, 'WINDOW')
-            #self.ts.use_snap = self.savedUseSnap
             return {'CANCELLED'}
 
         if event.type in {'LEFTMOUSE', 'RET', 'RIGHTMOUSE', 'ESC'}:
             # Refresh snapping options
+            if bpy.app.version >= (2, 82, 0):
+                self.ts.use_snap_backface_culling = self.savedBackface
+
             self.ts.snap_elements = self.savedSnapSettings
-            self.ts.use_snap_backface_culling = self.savedBackface
             self.ts.use_snap_align_rotation = self.savedAlignSettings
 
             context.view_layer.objects.active = self.savedActive
             bpy.data.objects[self.savedActive.name].select_set(True)
 
-            if event.type in {'LEFTMOUSE', 'RET'}:
-                self.piv = (self.cursor_loc[0], self.cursor_loc[1], self.cursor_loc[2])
-                context.scene.cursor.location = self.piv_loc
+            if self.edit_type == 'origin':
+                if event.type in {'LEFTMOUSE', 'RET'}:
+                    self.piv = (self.cursor_loc[0], self.cursor_loc[1], self.cursor_loc[2])
+                    context.scene.cursor.location = self.piv_loc
 
-                bpy.ops.object.origin_set(type='ORIGIN_CURSOR', center='MEDIAN')
-                context.scene.cursor.location = (self.piv[0], self.piv[1], self.piv[2])
+                    bpy.ops.object.origin_set(type='ORIGIN_CURSOR', center='MEDIAN')
+                    context.scene.cursor.location = (self.piv[0], self.piv[1], self.piv[2])
 
-            # Deselect the Active Object rather than having to loop through every selected object later
-            bpy.data.objects[self.savedActive.name].select_set(False)
+                # Deselect the Active Object rather than having to loop through every selected object later
+                bpy.data.objects[self.savedActive.name].select_set(False)
 
-            # Delete the pivot
-            bpy.data.objects.remove(bpy.data.objects[self.pivot.name], do_unlink=True)
+                # Delete the pivot
+                bpy.data.objects.remove(bpy.data.objects[self.pivot.name], do_unlink=True)
 
             # Refresh wireframe settings
             for area in context.screen.areas:
@@ -221,14 +210,15 @@ if you undo and then redo after using the operation"""
                 ob = context.scene.objects.get(o)
                 ob.select_set(True)
 
+            if self.edit_type == 'origin':
+                # If the experimental mode is on, remove the loose vertices on the mesh
+                if context.preferences.addons[__package__].preferences.faceCenterSnap_Pref:
+                    bpy.ops.object.mode_set(mode='EDIT')
+                    bpy.ops.mesh.select_all(action='SELECT')
+                    bpy.ops.mesh.delete_loose()
+            
             context.view_layer.objects.active = self.savedActive
 
-            # If the experimental mode is on, remove the loose vertices on the mesh
-            if context.scene.pies_plus.faceCenterSnap_Pref:
-                bpy.ops.object.mode_set(mode='EDIT')
-                bpy.ops.mesh.select_all(action='SELECT')
-                bpy.ops.mesh.delete_loose()
-            
             # Refresh Context Mode
             bpy.ops.object.mode_set(mode=self.modeCallback)
 
@@ -245,8 +235,11 @@ if you undo and then redo after using the operation"""
         self.finished = False
         self.ts = context.scene.tool_settings
 
-        self.savedBackface = self.ts.use_snap_backface_culling
-        #self.savedUseSnap = self.ts.use_snap
+        if bpy.app.version >= (2, 82, 0):
+            self.savedBackface = self.ts.use_snap_backface_culling
+
+            self.ts.use_snap_backface_culling = True
+
         self.savedSnapSettings = self.ts.snap_elements
         self.savedAlignSettings = self.ts.use_snap_align_rotation
         self.savedSelection = context.view_layer.objects.selected.keys()
@@ -255,26 +248,6 @@ if you undo and then redo after using the operation"""
         # Save the Active Object & Make sure it is selected
         self.savedActive = context.view_layer.objects.active
         context.active_object.select_set(True)
-
-        # BMesh (Add vertices to face centers)
-        if context.scene.pies_plus.faceCenterSnap_Pref:
-            mesh = context.object.data
-            verts = []
-
-            for p in mesh.polygons:
-                verts.append((p.center[0], p.center[1], p.center[2]))
-
-            bm = bmesh.new()
-
-            bpy.ops.object.mode_set(mode='EDIT') # Convert the current mesh to a bmesh (must be in edit mode)
-            bm.from_mesh(mesh)
-            bpy.ops.object.mode_set(mode='OBJECT')
-
-            for v in verts:
-                bm.verts.new(v) # Add a new vert
-
-            bm.to_mesh(mesh) # Make the bmesh the object's mesh
-            bm.free() # Always do this when finished
 
         # Save & set the Context Mode
         self.modeCallback = context.object.mode
@@ -298,21 +271,7 @@ if you undo and then redo after using the operation"""
 
             if ob != context.active_object:
                 ob.select_set(False)
-
-        # Create new empty & scale (would rather it be super small than super large)
-        bpy.ops.object.empty_add(location = self.savedActive.location)
-        context.object.scale = (.0001, .0001, .0001)
-
-        # Save Active Object pivot to a variable
-        self.pivot = context.active_object
-
-        # Set the variables name to the ob
-        self.pivot.name = self.savedActive.name + ".OriginHelper"
-
-        # Magic (not really sure how it works yet)
-        self.piv_loc = self.pivot.location
-        self.cursor_loc = context.scene.cursor.location
-
+            
         # Enable wireframe
         for area in context.screen.areas:
             if area.type == 'VIEW_3D':
@@ -321,134 +280,69 @@ if you undo and then redo after using the operation"""
                     space.overlay.show_wireframes = True
                     break
 
-        # Change snap settings & enable editable origin
-        self.ts.use_snap_backface_culling = True
-        self.ts.use_snap_align_rotation = False
-        self.ts.snap_elements = {'VERTEX', 'EDGE', 'FACE', 'EDGE_MIDPOINT'}
+        if self.edit_type == 'origin':
+            # BMesh (Add vertices to face centers)
+            if context.preferences.addons[__package__].preferences.faceCenterSnap_Pref:
+                mesh = context.object.data
+                verts = []
 
-        #snap = True
+                for poly in mesh.polygons:
+                    verts.append((poly.center[0], poly.center[1], poly.center[2]))
 
-        # Translate modal
-        bpy.ops.transform.translate('INVOKE_DEFAULT')
+                bm = bmesh.new()
 
-        # Draw text handler
-        args = (self, context)
-        self._handle = bpy.types.SpaceView3D.draw_handler_add(draw_callback_px, args, 'WINDOW', 'POST_PIXEL')
+                bpy.ops.object.mode_set(mode='EDIT') # Convert the current mesh to a bmesh (must be in edit mode)
+                bm.from_mesh(mesh)
+                bpy.ops.object.mode_set(mode='OBJECT')
 
-        wm = context.window_manager
-        wm.modal_handler_add(self)
-        return {'RUNNING_MODAL'}
+                for v in verts:
+                    bm.verts.new(v) # Add a new vert
 
+                bm.to_mesh(mesh) # Make the bmesh the object's mesh
+                bm.free() # Always do this when finished
 
-class PIESPLUS_OT_edit_cursor(Operator):
-    """Manually edit the 3D Cursor
-    
-Due to an error in the Python API with turning on snapping, snapping may be
-turned on if you undo into another undo state where you used Edit Cursor or
-if you undo and then redo after using the operation"""
-    bl_idname = "pies_plus.edit_cursor"
-    bl_label = "Edit Cursor"
-    bl_options = {'REGISTER'}
+            # Create new empty
+            bpy.ops.object.empty_add(location = self.savedActive.location)
 
-    def modal(self, context, event):
-        if self.finished:
-            self.ts.use_snap = self.savedUseSnap
-            return {'CANCELLED'}
+            # Scale down the object(would rather it be super small than super large)
+            context.object.scale = (.00001, .00001, .00001)
 
-        if event.type in {'LEFTMOUSE', 'RET', 'RIGHTMOUSE', 'ESC'}:
-            self.ts.snap_elements = self.savedSnapSettings
-            self.ts.use_snap_backface_culling = self.savedBackface
-            self.ts.use_snap_align_rotation = self.savedAlignSettings
+            # Save Active Object pivot to a variable
+            self.pivot = context.active_object
 
-            for area in context.screen.areas:
-                if area.type == 'VIEW_3D':
-                    for space in area.spaces:
-                        space.overlay.show_wireframes = self.savedWireframe
-                        break
+            # Set the variables name to the ob
+            self.pivot.name = self.savedActive.name + ".OriginHelper"
 
-            for ob in self.subsurf_check_list:
-                context.view_layer.objects.active = bpy.data.objects[ob]
-                context.object.modifiers["Subdivision"].show_viewport = True
+            # Save the location of the newly made empty
+            self.piv_loc = self.pivot.location
 
-            for ob in self.mirror_check_list:
-                context.view_layer.objects.active = bpy.data.objects[ob]
-                context.object.modifiers["Mirror"].show_viewport = True
+            # Save the 3D Cursor location
+            self.cursor_loc = context.scene.cursor.location
 
-            for o in self.savedSelection:
-                ob = context.scene.objects.get(o)
-                ob.select_set(True)
+            # Change snap settings & enable editable origin
+            self.ts.use_snap_align_rotation = False
 
-            bpy.ops.object.mode_set(mode=self.modeCallback)
+            if bpy.app.version >= (2, 81, 0):
+                self.ts.snap_elements = {'VERTEX', 'EDGE', 'FACE', 'EDGE_MIDPOINT'}
+            else:
+                self.ts.snap_elements = {'VERTEX', 'EDGE', 'FACE'}
 
-            self.finished = True
-            return {'PASS_THROUGH'}
-        return {'PASS_THROUGH'}
-        
-    def invoke(self, context, event):
-        # Safety check for if user searches the operation
-        if not context.active_object:
-            self.report({'ERROR'}, "No Active Object selected")
-            return{'FINISHED'}
+            # Translate modal
+            bpy.ops.transform.translate('INVOKE_DEFAULT')
+        else:
+            # Reset 3D Cursor rotation
+            context.scene.cursor.rotation_euler = (0, 0, 0)
 
-        self.finished = False
-        self.ts = context.scene.tool_settings
+            # Change snap settings & enable editable origin
+            self.ts.use_snap_align_rotation = True
 
-        self.savedBackface = self.ts.use_snap_backface_culling
-        self.savedAlignSettings = self.ts.use_snap_align_rotation
-        self.savedSnapSettings = self.ts.snap_elements
-        self.savedUseSnap = self.ts.use_snap
-        self.savedSelection = context.view_layer.objects.selected.keys()
-        self.modeCallback = context.object.mode
+            if bpy.app.version >= (2, 81, 0):
+                self.ts.snap_elements = {'VERTEX', 'FACE', 'EDGE_MIDPOINT'}
+            else:
+                self.ts.snap_elements = {'VERTEX', 'FACE'}
 
-        # Save & set the Context Mode
-        self.modeCallback = context.object.mode
-        bpy.ops.object.mode_set(mode='OBJECT')
-
-        # Make sure Active Object is selected
-        context.active_object.select_set(True)
-
-        # Lists for saving which objects had subsurf/mirror enabled and which didn't
-        self.subsurf_check_list = []
-        self.mirror_check_list = []
-
-        # Deselect objects that aren't the Active, Toggle modifiers if turned on & save to list
-        for ob in context.view_layer.objects:
-            for mod in ob.modifiers:
-                if(mod.type == "SUBSURF"):
-                    if ob.modifiers["Subdivision"].show_viewport:
-                        ob.modifiers["Subdivision"].show_viewport = False
-                        if ob.select_get():
-                            self.subsurf_check_list.append(ob.name)
-                if(mod.type == "MIRROR"):
-                    if ob.modifiers["Mirror"].show_viewport:
-                        ob.modifiers["Mirror"].show_viewport = False
-                        if ob.select_get():
-                            self.mirror_check_list.append(ob.name)
-
-            if ob != context.active_object:
-                ob.select_set(False)
-
-        # Enable wireframe
-        for area in context.screen.areas:
-            if area.type == 'VIEW_3D':
-                for space in area.spaces:
-                    self.savedWireframe = space.overlay.show_wireframes
-                    space.overlay.show_wireframes = True
-                    break
-
-        # Reset 3D Cursor rotation
-        context.scene.cursor.rotation_euler = (0, 0, 0)
-
-        # Change snap settings & enable editable origin
-        self.ts.use_snap_backface_culling = True
-        self.ts.use_snap_align_rotation = True
-        self.ts.snap_elements = {'VERTEX', 'FACE', 'EDGE_MIDPOINT'}
-
-        # Enable here or else projection snapping will not work
-        self.ts.use_snap = True
-
-        # Translate modal
-        bpy.ops.transform.translate('INVOKE_DEFAULT', cursor_transform=True)
+            # Translate modal
+            bpy.ops.transform.translate('INVOKE_DEFAULT', cursor_transform=True)
 
         wm = context.window_manager
         wm.modal_handler_add(self)
@@ -466,8 +360,7 @@ classes = (PIESPLUS_OT_origin_to_selection,
            PIESPLUS_OT_reset_origin,
            PIESPLUS_OT_reset_cursor,
            PIESPLUS_OT_reset_cursor_rot,
-           PIESPLUS_OT_edit_origin,
-           PIESPLUS_OT_edit_cursor)
+           PIESPLUS_OT_edit_origin)
 
 def register():
     for cls in classes:
