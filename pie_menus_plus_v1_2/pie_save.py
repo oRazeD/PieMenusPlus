@@ -5,22 +5,27 @@ import os
 class PIESPLUS_OT_batch_import(bpy.types.Operator):
     bl_idname = "pies_plus.batch_import"
     bl_label = "Batch Import"
-    bl_description = ""
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_description = "Batch import files based on a selected directory"
+    bl_options = {'REGISTER'}
 
     import_type: bpy.props.EnumProperty(items=(('fbx', "FBX", ""),
                                                ('obj', "OBJ", ""),
                                                ('both',"Both","")), name = 'File Type')
 
-    include_subdirs: bpy.props.BoolProperty(default = False, name = 'Include Subdirectories')
-
-    clear_normals: bpy.props.BoolProperty(default = False, name = 'Clear Normals')
-
-    remove_uv_maps: bpy.props.BoolProperty(default = False, name = 'Clear UV Maps')
-
+    include_subdirs: bpy.props.BoolProperty(default = False, name = 'Include Subdirectories', description = 'Include subdirectories of the selected directory')
     group_into_colls: bpy.props.BoolProperty(default = False, name = 'Collection per Import', description = 'Create a new collection for every file imported and link them')
+    remove_uv_maps: bpy.props.BoolProperty(default = False, name = 'Clear UV Maps', description = 'Remove all UV Maps from all imported models')
+    #clear_normals: bpy.props.BoolProperty(default = False, name = 'Clear Normals', description = 'Clear custom normals from all imported models')
 
     directory: bpy.props.StringProperty()
+
+    def settings_app(self,context):
+        if self.remove_uv_maps:
+            for ob in context.selected_objects:
+                if ob.type == 'MESH':
+                    context.view_layer.objects.active = ob
+
+                    bpy.ops.mesh.uv_texture_remove()
 
     def new_coll(self,context):
         new_coll = bpy.data.collections.new(name = self.file_name[:-4])
@@ -29,41 +34,40 @@ class PIESPLUS_OT_batch_import(bpy.types.Operator):
 
         context.view_layer.active_layer_collection = context.view_layer.layer_collection.children[-1]
 
-        for ob in context.selected_objects:
-            new_coll.objects.link(ob)
-
-            context.scene.collection.objects.unlink(ob)
-
     def import_file(self, context):
         if self.import_type == 'fbx':
             for self.file_name in self.dir_contents:
                 if self.file_name.upper().endswith(".FBX"):
+                    self.new_coll(context)
+
                     bpy.ops.import_scene.fbx(filepath=os.path.join(self.dir_name, self.file_name))
 
-                    if self.group_into_colls:
-                        self.new_coll(context)
+                    self.settings_app(context)
 
         elif self.import_type == 'obj':
             for self.file_name in self.dir_contents:
                 if self.file_name.upper().endswith(".OBJ"):
+                    self.new_coll(context)
+
                     bpy.ops.import_scene.obj(filepath=os.path.join(self.dir_name, self.file_name))
 
-                    if self.group_into_colls:
-                        self.new_coll(context)
+                    self.settings_app(context)
 
         else: # Both
             for self.file_name in self.dir_contents:
                 if self.file_name.upper().endswith(".FBX"):
+                    self.new_coll(context)
+                    
                     bpy.ops.import_scene.fbx(filepath=os.path.join(self.dir_name, self.file_name))
 
-                    if self.group_into_colls:
-                        self.new_coll(context)
-                    
+                    self.settings_app(context)
+
                 if self.file_name.upper().endswith(".OBJ"):
+                    self.new_coll(context)
+
                     bpy.ops.import_scene.obj(filepath=os.path.join(self.dir_name, self.file_name))
 
-                    if self.group_into_colls:
-                        self.new_coll(context)
+                    self.settings_app(context)
 
     def execute(self, context):
         if self.include_subdirs:
@@ -90,6 +94,28 @@ class PIESPLUS_OT_batch_import(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
 
+class PIESPLUS_OT_open_last(bpy.types.Operator):
+    bl_idname = "pies_plus.open_last"
+    bl_label = "Open Last"
+    bl_description = "Opens the most recently opened file"
+    bl_options = {'REGISTER'}
+
+    def execute(self, context):
+        recent_file_paths = bpy.utils.user_resource('CONFIG', "recent-files.txt")
+
+        try:
+            with open(recent_file_paths) as file:
+                recent_files = file.read().splitlines()
+        except (IOError, OSError, FileNotFoundError):
+            recent_files = []
+
+        if recent_files:
+            most_recent = recent_files[0]
+
+            bpy.ops.wm.open_mainfile(filepath=most_recent)
+        return{'FINISHED'}
+
+
 ##############################
 #   REGISTRATION
 ##############################
@@ -97,9 +123,11 @@ class PIESPLUS_OT_batch_import(bpy.types.Operator):
 
 def register():
     bpy.utils.register_class(PIESPLUS_OT_batch_import)
+    bpy.utils.register_class(PIESPLUS_OT_open_last)
 
 def unregister():
     bpy.utils.unregister_class(PIESPLUS_OT_batch_import)
+    bpy.utils.unregister_class(PIESPLUS_OT_open_last)
 
 
 # ##### BEGIN GPL LICENSE BLOCK #####
