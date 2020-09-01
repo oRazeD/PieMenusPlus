@@ -467,13 +467,13 @@ class PIESPLUS_MT_origin_pivot(Menu):
 
         if context.active_object:
             # 4 - LEFT
-            pie.operator("object.origin_set", text="Origin to Cursor", icon='PIVOT_CURSOR').type = 'ORIGIN_CURSOR'
+            pie.operator("object.origin_set", text="Origin to Cursor", icon='PIVOT_BOUNDBOX').type = 'ORIGIN_CURSOR'
             # 6 - RIGHT
             pie.operator("view3d.snap_cursor_to_selected", text="Cursor to Selection", icon='PIVOT_CURSOR')
             # 2 - BOTTOM
             pie.operator("pies_plus.origin_to_selection", icon='PIVOT_BOUNDBOX')
             # 8 - TOP
-            pie.operator("pies_plus.edit_origin", icon='OBJECT_ORIGIN').edit_type = 'origin'
+            pie.operator("view3d.snap_selected_to_cursor", text="Sel to Cursor (O)", icon='RESTRICT_SELECT_OFF').use_offset = True
             # 7 - TOP - LEFT
             pie.operator("object.origin_set", text="Origin to Geo", icon='PIVOT_BOUNDBOX').type = 'ORIGIN_GEOMETRY'
             # 9 - TOP - RIGHT
@@ -497,7 +497,7 @@ class PIESPLUS_MT_origin_pivot(Menu):
 
             gap = col.column()
             gap.separator()
-            gap.scale_y = 13
+            gap.scale_y = 15.7
 
             box = col.box().column(align=True)
 
@@ -505,7 +505,7 @@ class PIESPLUS_MT_origin_pivot(Menu):
             row.scale_y = 1.25
             row.operator("pies_plus.reset_origin", text='Origin to 0,0,0', icon='PIVOT_BOUNDBOX').origin_reset_axis = 'origin_all'
             row = box.row(align=True)
-            row.scale_y = 1.1
+            row.scale_y = 1.05
             row.operator("pies_plus.reset_origin", text='X').origin_reset_axis = 'origin_x'
             row.operator("pies_plus.reset_origin", text='Y').origin_reset_axis = 'origin_y'
             row.operator("pies_plus.reset_origin", text='Z').origin_reset_axis = 'origin_z'
@@ -513,6 +513,7 @@ class PIESPLUS_MT_origin_pivot(Menu):
             box = col.box().column()
             box.scale_y = 1.25
 
+            box.operator("pies_plus.edit_origin", icon='OBJECT_ORIGIN').edit_type = 'origin'
             box.operator("object.origin_set", text="Geometry to Origin", icon='PIVOT_BOUNDBOX').type = 'GEOMETRY_ORIGIN'
             box.operator("pies_plus.origin_to_com", icon='PIVOT_BOUNDBOX')
             box.operator("pies_plus.origin_to_bottom", icon='PIVOT_BOUNDBOX')
@@ -526,25 +527,24 @@ class PIESPLUS_MT_origin_pivot(Menu):
 
         gap = col.column()
         gap.separator()
-        gap.scale_y = 13
+        gap.scale_y = 12.7
 
         box = col.box().column(align=True)
         row = box.row()
         row.scale_y = 1.25
         row.operator("pies_plus.reset_cursor", text='Cursor to 0,0,0', icon='PIVOT_CURSOR').cursor_reset_axis = 'cursor_all'
         row = box.row(align=True)
-        row.scale_y = 1.1
+        row.scale_y = 1.05
         row.operator("pies_plus.reset_cursor", text='X').cursor_reset_axis = 'cursor_x'
         row.operator("pies_plus.reset_cursor", text='Y').cursor_reset_axis = 'cursor_y'
         row.operator("pies_plus.reset_cursor", text='Z').cursor_reset_axis = 'cursor_z'
 
         box = col.box().column()
         box.scale_y = 1.25
+        box.operator("pies_plus.edit_origin", text = 'Edit Cursor', icon='OBJECT_ORIGIN').edit_type = 'cursor'
         box.operator("view3d.reset_cursor_rot", icon='PIVOT_CURSOR')
-        if context.active_object:
-            box.operator("view3d.snap_selected_to_cursor", text="Selection to Cursor", icon='RESTRICT_SELECT_OFF').use_offset = True
-            box.operator("pies_plus.edit_origin", text = 'Edit Cursor', icon='PIVOT_CURSOR').edit_type = 'cursor'
-
+        box.operator("view3d.snap_selected_to_cursor", text="Sel to Cursor", icon='RESTRICT_SELECT_OFF')
+        
 
 ########################################################################################################################
 # DELETE - X

@@ -7,7 +7,7 @@ import bmesh
 
 class PIESPLUS_OT_origin_to_selection(Operator):
     bl_idname = "pies_plus.origin_to_selection"
-    bl_label = "Origin To Selection"
+    bl_label = "Origin to Selection"
     bl_description = "[BATCH] Sets the Active Objects Origin to the current selection"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -102,7 +102,7 @@ class PIESPLUS_OT_reset_origin(Operator):
 
 class PIESPLUS_OT_origin_to_com(Operator):
     bl_idname = "pies_plus.origin_to_com"
-    bl_label = "Origin to Center Mass"
+    bl_label = "Origin to Mass"
     bl_description = "[BATCH] Sends the 3D Cursor to the center of mass"
     bl_options = {'REGISTER', 'UNDO'}
 
