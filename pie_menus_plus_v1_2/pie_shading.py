@@ -50,8 +50,9 @@ class PIESPLUS_OT_remove_auto_smooth(Operator):
         for ob in context.selected_objects:
             if ob.type == 'MESH':
                 ob.data.use_auto_smooth = False
-            
-        bpy.ops.object.shade_flat()
+
+        if context.preferences.addons[__package__].preferences.autoSmoothShadeFlat_Pref:
+            bpy.ops.object.shade_flat()
 
         if 'modeCallback' in locals():
             bpy.ops.object.mode_set(mode = modeCallback)

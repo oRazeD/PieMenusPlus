@@ -432,10 +432,10 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
 
     simpleContextMode_Pref: BoolProperty(description = "A simple version of the context mode pie, which removes xray and overlay toggle (in case you keep using it on accident)", default = False)
 
+    autoSmoothShadeFlat_Pref: BoolProperty(name="Shade Flat objects that have Auto Smooth+ removed", description = "Automatically set objects that have Auto Smooth+ remove to Shade Flat. Having this off will keep the objects Shade Smooth state after removing Auto Smooth Normals", default = True)
+
     def draw(self, context):
         layout = self.layout
-
-        pies_plus = context.preferences.addons[__package__].preferences
 
         row = layout.row()
         row.prop(self, "Tabs", expand=True)
@@ -452,60 +452,62 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             row.label(text="        Select Mode Pie Settings:")
             box = box_main.box()
             row = box.row()
-            row.prop(pies_plus, "preserveUVSelection_Pref", text="Preserve UV selection when exiting UV Sync mode")
+            row.prop(self, "preserveUVSelection_Pref", text="Preserve UV selection when exiting UV Sync mode")
             row = box.row()
-            row.prop(pies_plus, "simpleContextMode_Pref", text="Use Simple Select Mode Pie")
+            row.prop(self, "simpleContextMode_Pref", text="Use Simple Select Mode Pie")
 
             row = box_main.row()
             row.label(text="        Gizmo / Tool Pie Settings:")
             box = box_main.box()
             row = box.row()
             row.label(text="Gizmo change method:")
-            row.prop(pies_plus, "gizmoSwitch_Pref", expand=True)
+            row.prop(self, "gizmoSwitch_Pref", expand=True)
             row = box.row()
             row.scale_x = 2
             row.label(text="Default Selection Tool:")
-            row.prop(pies_plus, "defaultTool_Pref", expand=True)
+            row.prop(self, "defaultTool_Pref", expand=True)
 
             row = box_main.row()
             row.label(text="        Origin / Cursor Pie Settings:")
             box = box_main.box()
             row = box.row()
-            row.prop(pies_plus, "faceCenterSnap_Pref", text="[EXPERIMENTAL] Edit Origin Tool Snapping to Center of faces (Slow in big scenes)")
+            row.prop(self, "faceCenterSnap_Pref", text="[EXPERIMENTAL] Edit Origin Tool Snapping to Center of faces (Slow in big scenes)")
             row = box.row()
-            row.prop(pies_plus, "resetRot_Pref", text="Reset 3D Cursor Rotation when Resetting Location")
+            row.prop(self, "resetRot_Pref", text="Reset 3D Cursor Rotation when Resetting Location")
 
             row = box_main.row()
             row.label(text="        Snapping Pie Settings:")
             box = box_main.box()
             row = box.row()
-            row.prop(pies_plus, "autoSnap_Pref",
+            row.prop(self, "autoSnap_Pref",
                      text="Automatically enable snap when changing snapping settings")
             row = box.row()
-            row.prop(pies_plus, "autoAbsoluteGridSnap_Pref",
+            row.prop(self, "autoAbsoluteGridSnap_Pref",
                      text="Automatically enable Absolute Grid Snap when you turn on Incremental snapping")
 
             row = box_main.row()
             row.label(text="        Selection Pie Settings:")
             box = box_main.box()
             row = box.row()
-            row.prop(pies_plus, "invertSelection_Pref",
+            row.prop(self, "invertSelection_Pref",
                      text="Invert selection toggle")
 
             row = box_main.row()
-            row.label(text="        Quick FWN Settings (Shading Pie):")
+            row.label(text="        Shading Pie Settings:")
             box = box_main.box()
+
+            row = box.row()
+            row.prop(self, "autoSmoothShadeFlat_Pref")
+
+            row = box.row()
+            row.label(text = "  Quick FWN:")
             row = box.row()
             row.label(text="Weight:")
             row.scale_x = 2
-            row.prop(pies_plus, "weightValue_Pref")
+            row.prop(self, "weightValue_Pref")
             row = box.row()
-            #row.label(text="Smooth Angle:")
-            #row.scale_x = 2
-            #row.prop(pies_plus, "smoothAngle_Pref")
-            #row = box.row()
-            row.prop(pies_plus, "keepSharp_Pref", text="Keep Sharps")
-            row.prop(pies_plus, "faceInf_Pref", text="Face Influence")
+            row.prop(self, "keepSharp_Pref", text="Keep Sharps")
+            row.prop(self, "faceInf_Pref", text="Face Influence")
 
             row = box_main.row()
             row.label(text="        General Settings:")
