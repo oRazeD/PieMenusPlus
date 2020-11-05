@@ -295,34 +295,50 @@ class PIESPLUS_MT_snapping(Menu):
         pie = layout.menu_pie()
 
         # 4 - LEFT
-        pie.operator("pies_plus.snap", text="Snap Vertex", icon='SNAP_VERTEX').snap_elements = 'vertex'
+        pie.operator("pies_plus.snap", text="Vertex", icon='SNAP_VERTEX').snap_elements = 'vertex'
         # 6 - RIGHT
-        pie.operator("pies_plus.snap", text="Snap Face", icon='SNAP_FACE').snap_elements = 'face'
+        pie.operator("pies_plus.snap", text="Increment", icon='SNAP_INCREMENT').snap_elements = 'increment'
         # # 2 - BOTTOM
-        pie.operator("pies_plus.snap", text="Snap Edge", icon='SNAP_EDGE').snap_elements = 'edge'
+        pie.operator("pies_plus.snap", text="Edge", icon='SNAP_EDGE').snap_elements = 'edge'
         # # 8 - TOP
         pie.prop(context.tool_settings, "use_snap", text="Snap Toggle")
         # # 7 - TOP - LEFT
-        pie.operator("pies_plus.snap", text="Snap Volume", icon='SNAP_VOLUME').snap_elements = 'volume'
+        pie.operator("pies_plus.snap", text="Volume", icon='SNAP_VOLUME').snap_elements = 'volume'
         # # 9 - TOP - RIGHT
-        pie.operator("pies_plus.snap", text="Snap Increment", icon='SNAP_INCREMENT').snap_elements = 'increment'
+        pie.operator("pies_plus.snap", text="Face", icon='SNAP_FACE').snap_elements = 'face'
         # 1 - BOTTOM - LEFT
-        if bpy.app.version >= (2, 81, 0):
-            col = pie.column()
+        col = pie.column()
 
-            gap = col.column()
-            gap.separator()
-            gap.scale_y = 3.5
+        gap = col.column()
+        gap.separator()
+
+        if bpy.app.version >= (2, 81, 0):
+            gap.scale_y = 13
 
             box = col.box().column()
             box.scale_y = 1.25
 
-            box.operator("pies_plus.snap", text="Snap Edge Center", icon='SNAP_MIDPOINT').snap_elements = 'edge_center'
-            box.operator("pies_plus.snap", text="Snap Edge Perp", icon='SNAP_PERPENDICULAR').snap_elements = 'edge_perp'
+            box.operator("pies_plus.snap", text="Edge Center", icon='SNAP_MIDPOINT').snap_elements = 'edge_center'
+            box.operator("pies_plus.snap", text="Edge Perpendicular", icon='SNAP_PERPENDICULAR').snap_elements = 'edge_perp'
         else:
-            pie.separator()
+            gap.scale_y = 6.5
+
+        box = col.box().column()
+        box.scale_y = 1.25
+        box.scale_x = .9
+
+        ts = context.tool_settings
+
+        box.label(text="Snap With:")
+
+        row = box.row(align = True)
+        row.prop_enum(ts, "snap_target", 'CLOSEST')
+        row.prop_enum(ts, "snap_target", 'CENTER')
+        row = box.row(align = True)
+        row.prop_enum(ts, "snap_target", 'MEDIAN')
+        row.prop_enum(ts, "snap_target", 'ACTIVE')
         # 3 - BOTTOM - RIGHT
-        pie.popover(panel="VIEW3D_PT_snapping", text="More...")
+        pie.popover(panel="VIEW3D_PT_snapping", text="Snap Panel...")
 
 
 class PIESPLUS_MT_UV_snapping(Menu):
@@ -334,9 +350,9 @@ class PIESPLUS_MT_UV_snapping(Menu):
         pie = layout.menu_pie()
 
         # 4 - LEFT
-        pie.operator("pies_plus.snap", text="Snap Vertex", icon='SNAP_VERTEX').snap_elements = 'uv_vertex'
+        pie.operator("pies_plus.snap", text="Vertex", icon='SNAP_VERTEX').snap_elements = 'uv_vertex'
         # 6 - RIGHT
-        pie.operator("pies_plus.snap", text="Snap Increment", icon='SNAP_INCREMENT').snap_elements = 'uv_increment'
+        pie.operator("pies_plus.snap", text="Increment", icon='SNAP_INCREMENT').snap_elements = 'uv_increment'
         # # 2 - BOTTOM
         pie.separator()
         # # 8 - TOP
@@ -346,9 +362,29 @@ class PIESPLUS_MT_UV_snapping(Menu):
         # # 9 - TOP - RIGHT
         pie.separator()
         # 1 - BOTTOM - LEFT
-        pie.separator()
+        col = pie.column()
+
+        gap = col.column()
+        gap.separator()
+
+        gap.scale_y = 6.5
+
+        box = col.box().column()
+        box.scale_y = 1.25
+        box.scale_x = .9
+
+        ts = context.tool_settings
+
+        box.label(text="Snap With:")
+
+        row = box.row(align = True)
+        row.prop_enum(ts, "snap_target", 'CLOSEST')
+        row.prop_enum(ts, "snap_target", 'CENTER')
+        row = box.row(align = True)
+        row.prop_enum(ts, "snap_target", 'MEDIAN')
+        row.prop_enum(ts, "snap_target", 'ACTIVE')
         # 3 - BOTTOM - RIGHT
-        pie.popover(panel="IMAGE_PT_snapping", text="More...")
+        pie.popover(panel="IMAGE_PT_snapping", text="Snap Panel...")
 
 
 ########################################################################################################################
@@ -767,7 +803,7 @@ class PIESPLUS_MT_shading(Menu):
 
         col_right = split.column()
         col_right_row = col_right.row()
-        col_right_row.prop(context.scene.pies_plus, "smoothAngle")
+        col_right_row.prop(context.scene.pies_plus, "smoothAngle", text = "")
         col_right_row.operator("pies_plus.remove_auto_smooth", text = "", icon = 'REMOVE')
 
         row = box.row(align = True)
@@ -832,7 +868,7 @@ class PIESPLUS_MT_animation(Menu):
 
 class PIESPLUS_MT_keyframing(Menu):
     bl_idname = "PIESPLUS_MT_keyframing"
-    bl_label = "Animation (Keyframing)"
+    bl_label = "Keyframing"
 
     def draw(self, context):
         layout = self.layout
@@ -1213,12 +1249,12 @@ class PIESPLUS_MT_save(Menu):
         box = col.box().column()
         box2 = box.box()
         box2.scale_y = 1.25
-        box2.menu("TOPBAR_MT_file_export", icon='EXPORT', text="Export                       -->")
+        box2.menu("TOPBAR_MT_file_export", icon='EXPORT', text="Export                      -->")
 
         box = col.box().column()
         box2 = box.box()
         box2.scale_y = 1.25
-        box2.menu("TOPBAR_MT_file_import", icon='IMPORT', text="Import                       -->")
+        box2.menu("TOPBAR_MT_file_import", icon='IMPORT', text="Import                      -->")
 
         row = box.row(align = True)
         box.scale_y = 1.25
@@ -1230,37 +1266,60 @@ class PIESPLUS_MT_save(Menu):
 
 
 ########################################################################################################################
-# TRANSFORM ORIENTATIONS - CTRL + W
+# ALIGN - SHIFT + X
 ########################################################################################################################
 
 
-class PIESPLUS_MT_transform_orientation(Menu):
-    bl_idname = "PIESPLUS_MT_transform_orientation"
-    bl_label = "Transform Orientations"
+class PIESPLUS_MT_align(Menu):
+    bl_idname = "PIESPLUS_MT_align"
+    bl_label = "Align"
 
     def draw(self, context):
         layout = self.layout
         pie = layout.menu_pie()
 
-        to = context.scene.transform_orientation_slots[0]
-
         # 4 - LEFT
-        pie.prop_enum(to, "type", 'CURSOR')
+        pie.operator("pies_plus.world_align", text = "Align Global X", icon = 'AXIS_FRONT').align_axis = 'align_x'
         # 6 - RIGHT
-        pie.prop_enum(to, "type", 'LOCAL')
+        pie.operator("pies_plus.world_align", text = "Align Global Y", icon = 'AXIS_SIDE').align_axis = 'align_y'
         # 2 - BOTTOM
-        pie.prop_enum(to, "type", 'NORMAL')
-        # 8 - TOP
-        pie.prop_enum(to, "type", 'GLOBAL')
+        pie.operator("pies_plus.world_align", text = "Align Global Z", icon = 'AXIS_TOP').align_axis = 'align_z'
+        # 8 - TOP\
+        pie.operator("pies_plus.quick_world_align", icon = 'EMPTY_DATA')
         # 7 - TOP - LEFT
-        pie.prop_enum(to, "type", 'VIEW')
+        pie.operator("pies_plus.active_face_align", icon = 'PIVOT_ACTIVE')
         # 9 - TOP - RIGHT
-        pie.prop_enum(to, "type", 'GIMBAL')
+        pie.operator("pies_plus.normal_z_align", icon = 'ORIENTATION_NORMAL')
+        # 1 - BOTTOM - LEFT
+        col = pie.column()
 
-    # Future Custom Transform Orientations idea
+        gap = col.column()
+        gap.separator()
+        gap.scale_y = 7
 
-    #context.scene.transform_orientation_slots[0].type = 'LOCAL'
-    #(popover VIEW3D_PT_transform_orientations)
+        box = col.box().column(align=True)
+
+        row = box.row()
+        row.scale_y = 1.25
+        row.label(text = "Align to Local Axis:", icon = 'ORIENTATION_LOCAL')
+        row = box.row(align=True)
+        row.scale_y = 1.2
+        row.operator("pies_plus.local_align", text = "X").align_axis = 'align_x'
+        row.operator("pies_plus.local_align", text = "Y").align_axis = 'align_y'
+        row.operator("pies_plus.local_align", text = "Z").align_axis = 'align_z'
+
+        box = col.box().column(align=True)
+
+        row = box.row()
+        row.scale_y = 1.25
+        row.label(text = "Align to Active Vert:", icon = 'PIVOT_ACTIVE')
+        row = box.row(align=True)
+        row.scale_y = 1.2
+        row.operator("pies_plus.active_vert_align", text='X').align_axis = 'align_x'
+        row.operator("pies_plus.active_vert_align", text='Y').align_axis = 'align_y'
+        row.operator("pies_plus.active_vert_align", text='Z').align_axis = 'align_z'
+        # 3 - BOTTOM - RIGHT
+        pie.separator()
 
 
 ##############################
@@ -1318,7 +1377,7 @@ classes = (PIESPLUS_MT_modes,
            PIESPLUS_MT_sculpt_grab,
            PIESPLUS_MT_sculpt_more,
            PIESPLUS_MT_save,
-           PIESPLUS_MT_transform_orientation)
+           PIESPLUS_MT_align)
 
 
 def register():
