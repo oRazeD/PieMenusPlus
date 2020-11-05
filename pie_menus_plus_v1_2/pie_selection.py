@@ -50,11 +50,12 @@ class PIESPLUS_OT_mesh_selection(Operator):
                     verts_hidden = 0
 
                     for ob in context.selected_objects:
-                        bm = bmesh.from_edit_mesh(ob.data)
+                        if ob.type == 'MESH':
+                            bm = bmesh.from_edit_mesh(ob.data)
 
-                        for v in bm.verts:
-                            if v.hide:
-                                verts_hidden += 1
+                            for v in bm.verts:
+                                if v.hide:
+                                    verts_hidden += 1
 
                     scene_verts = context.scene.statistics(context.view_layer).split(" | ")[1]
 
