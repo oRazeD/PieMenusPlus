@@ -15,14 +15,10 @@ class PIESPLUS_OT_snapping(bpy.types.Operator):
                ('increment', "Increment", ""),
                ('volume', "Volume", ""),
                ('edge_center', "Edge Center", ""),
-               ('edge_perp', "Edge Perp", ""),
-               ('active', "Active", ""),
-               ('median', "Median", ""),
-               ('center', "Center", ""),
-               ('closest', "Closest", ""),
-               ('uv_increment', "Increment", ""),
-               ('uv_vertex', "Vertex", "")),
-               default='vertex')
+               ('edge_perp', "Edge Perpendicular", ""),
+               ('uv_increment', "UV Increment", ""),
+               ('uv_vertex', "UV Vertex", "")),
+               default='vertex', name = 'Snap Element')
 
     def execute(self, context):
         ts = context.scene.tool_settings
@@ -46,16 +42,6 @@ class PIESPLUS_OT_snapping(bpy.types.Operator):
             ts.snap_elements = {'EDGE_MIDPOINT'}
         elif self.snap_elements == 'edge_perp':
             ts.snap_elements = {'EDGE_PERPENDICULAR'}
-
-        # Snap Target
-        elif self.snap_elements == 'active':
-            ts.snap_target = 'ACTIVE'
-        elif self.snap_elements == 'median':
-            ts.snap_target = 'MEDIAN'
-        elif self.snap_elements == 'center':
-            ts.snap_target = 'CENTER'
-        elif self.snap_elements == 'closest':
-            ts.snap_target = 'CLOSEST'
 
         # UV
         elif self.snap_elements == 'uv_increment':
