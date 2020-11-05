@@ -29,7 +29,7 @@ class PIESPLUS_OT_keyframing(bpy.types.Operator):
                                     ('key_bendy_bones', "BBone Shape", ""),
                                     ('key_whole_char', "Whole Character", ""),
                                     ('key_whole_char_sel', "Whole Character Selected", "")),
-                             default='key_loc')
+                                    default = 'key_loc', name = 'Keyframe Type')
 
     def execute(self, context):
         # Non-visual
