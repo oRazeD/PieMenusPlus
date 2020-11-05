@@ -15,6 +15,8 @@ class PIESPLUS_OT_batch_import(bpy.types.Operator):
     include_subdirs: bpy.props.BoolProperty(default = False, name = 'Include Subdirectories', description = 'Include subdirectories of the selected directory')
     group_into_colls: bpy.props.BoolProperty(default = False, name = 'Collection per Import', description = 'Create a new collection for every file imported and link them')
     remove_uv_maps: bpy.props.BoolProperty(default = False, name = 'Clear UV Maps', description = 'Remove all UV Maps from all imported models')
+
+    # To-do for v1.3
     #clear_normals: bpy.props.BoolProperty(default = False, name = 'Clear Normals', description = 'Clear custom normals from all imported models')
 
     directory: bpy.props.StringProperty()
