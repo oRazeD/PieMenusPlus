@@ -1,7 +1,7 @@
 bl_info = {"name": "Pie Menus Plus",
            "description": "Additional / Improved Pie Menus for Blender 2.8+",
            "author": "Ethan Simon-Law",
-           "version": (1, 2, 0),
+           "version": (1, 25),
            "blender": (2, 90, 0),
            "tracker_url": "https://discord.com/invite/wHAyVZG",
            "category": "3D View"}
@@ -22,7 +22,8 @@ module_names = ("ui",
                 "pie_shading",
                 "pie_proportional",
                 "pie_keyframing",
-                "pie_save")
+                "pie_save",
+                "pie_align")
 
 modules = []
 
