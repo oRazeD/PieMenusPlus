@@ -26,7 +26,7 @@ class PIESPLUS_property_group(bpy.types.PropertyGroup):
 
                 context.area.type = old_area_type
 
-    smoothAngle: bpy.props.IntProperty(name = "", default=60, min=0, max=180, update = update_smoothAngle)
+    smoothAngle: IntProperty(name = "Smooth Angle", default = 60, min = 0, max = 180, update = update_smoothAngle)
 
     uvSyncSelection: BoolProperty(name = "UV Sync Selection", default = False, update = update_uvSyncSelection)
 
@@ -42,7 +42,7 @@ class PIESPLUS_property_group(bpy.types.PropertyGroup):
     dropdownTransform: BoolProperty()
     dropdownLT: BoolProperty()
     dropdownSave: BoolProperty()
-    dropdownTransformOrient: BoolProperty()
+    dropdownAlign: BoolProperty()
 
 
 ##################################
@@ -164,7 +164,7 @@ class PIESPLUS_addon_keymaps:
         originUsed = 0
         ltUsed = 0
         saveUsed = 0
-        transformOrientUsed = 0
+        alignUsed = 0
 
         for name, items in PIESPLUS_addon_keymaps._keymaps.items():
             drawKeymap = 0
@@ -319,20 +319,6 @@ class PIESPLUS_addon_keymaps:
                 if pies_plus.dropdownTransform:
                     drawKeymap = 1
 
-            elif name.startswith('Transform Orientations'):
-                if not transformOrientUsed:
-                    transformOrientUsed = 1
-                    boxProp = layout.box()
-                    row = boxProp.row()
-                    row.prop(pies_plus, 'dropdownTransformOrient', icon_only=True, emboss=False,
-                             icon="DOWNARROW_HLT" if pies_plus.dropdownTransformOrient else "RIGHTARROW")
-                    row.label(text="Transform Orientations Pies")
-                    row.label(text="[3D View]")
-                    if pies_plus.dropdownTransformOrient:
-                        row = boxProp.row()
-                if pies_plus.dropdownTransformOrient:
-                    drawKeymap = 1
-
             # LoopTools
             elif name.startswith('LoopTools'):
                 if not ltUsed:
@@ -361,6 +347,21 @@ class PIESPLUS_addon_keymaps:
                     if pies_plus.dropdownSave:
                         row = boxProp.row()
                 if pies_plus.dropdownSave:
+                    drawKeymap = 1
+
+            # Align
+            elif name.startswith('Align'):
+                if not alignUsed:
+                    alignUsed = 1
+                    boxProp = layout.box()
+                    row = boxProp.row()
+                    row.prop(pies_plus, 'dropdownAlign', icon_only=True, emboss=False,
+                             icon="DOWNARROW_HLT" if pies_plus.dropdownAlign else "RIGHTARROW")
+                    row.label(text="Align Pies")
+                    row.label(text="[Edit]")
+                    if pies_plus.dropdownAlign:
+                        row = boxProp.row()
+                if pies_plus.dropdownAlign:
                     drawKeymap = 1
 
             if drawKeymap:
@@ -432,7 +433,7 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
 
     simpleContextMode_Pref: BoolProperty(description = "A simple version of the context mode pie, which removes xray and overlay toggle (in case you keep using it on accident)", default = False)
 
-    autoSmoothShadeFlat_Pref: BoolProperty(name="Shade Flat objects that have Auto Smooth+ removed", description = "Automatically set objects that have Auto Smooth+ remove to Shade Flat. Having this off will keep the objects Shade Smooth state after removing Auto Smooth Normals", default = True)
+    autoSmoothShadeFlat_Pref: BoolProperty(name="Shade Flat objects when Auto Smooth+ is removed", description = "Automatically set objects that have Auto Smooth+ remove to Shade Flat. Having this off will keep the objects Shade Smooth state after removing Auto Smooth Normals", default = False)
 
     def draw(self, context):
         layout = self.layout
@@ -452,7 +453,7 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             row.label(text="        Select Mode Pie Settings:")
             box = box_main.box()
             row = box.row()
-            row.prop(self, "preserveUVSelection_Pref", text="Preserve UV selection when exiting UV Sync mode")
+            row.prop(self, "preserveUVSelection_Pref", text="Preserve UV Selection when Exiting UV Sync Mode")
             row = box.row()
             row.prop(self, "simpleContextMode_Pref", text="Use Simple Select Mode Pie")
 
@@ -460,7 +461,7 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             row.label(text="        Gizmo / Tool Pie Settings:")
             box = box_main.box()
             row = box.row()
-            row.label(text="Gizmo change method:")
+            row.label(text="Gizmo Change Method:")
             row.prop(self, "gizmoSwitch_Pref", expand=True)
             row = box.row()
             row.scale_x = 2
@@ -471,7 +472,7 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             row.label(text="        Origin / Cursor Pie Settings:")
             box = box_main.box()
             row = box.row()
-            row.prop(self, "faceCenterSnap_Pref", text="[EXPERIMENTAL] Edit Origin Tool Snapping to Center of faces (Slow in big scenes)")
+            row.prop(self, "faceCenterSnap_Pref", text="[EXPERIMENTAL] Edit Origin Tool Snapping to Center of Faces (Slow in Big Scenes)")
             row = box.row()
             row.prop(self, "resetRot_Pref", text="Reset 3D Cursor Rotation when Resetting Location")
 
@@ -480,17 +481,17 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             box = box_main.box()
             row = box.row()
             row.prop(self, "autoSnap_Pref",
-                     text="Automatically enable snap when changing snapping settings")
+                     text="Automatically Enable Snap when Changing Snap Pie Settings")
             row = box.row()
             row.prop(self, "autoAbsoluteGridSnap_Pref",
-                     text="Automatically enable Absolute Grid Snap when you turn on Incremental snapping")
+                     text="Automatically Enable Absolute Grid Snap when you Turn on Incremental Snapping")
 
             row = box_main.row()
             row.label(text="        Selection Pie Settings:")
             box = box_main.box()
             row = box.row()
             row.prop(self, "invertSelection_Pref",
-                     text="Invert selection toggle")
+                     text="Invert Selection Toggle")
 
             row = box_main.row()
             row.label(text="        Shading Pie Settings:")
@@ -500,7 +501,7 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             row.prop(self, "autoSmoothShadeFlat_Pref")
 
             row = box.row()
-            row.label(text = "  Quick FWN:")
+            row.label(text = "  Quick Weighted Normals:")
             row = box.row()
             row.label(text="Weight:")
             row.scale_x = 2
@@ -516,15 +517,15 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             box = flow.box()
             box.scale_y = .97
 
-            box.label(text="Dev Note: I personally recommend 0 for Animation Timeout and 125+")
-            box.label(text="for Radius, but I have not changed any of your User Preferences.")
-
             view = context.preferences.view
 
+            box.label(text="Animation Timeout Recommended: 0  -  Removes Animations")
             box.prop(view, "pie_animation_timeout")
+            box.label(text="Radius Recommended: 125  -  Fixes UI Clipping")
+            box.prop(view, "pie_menu_radius")
+            box.separator()
             box.prop(view, "pie_tap_timeout")
             box.prop(view, "pie_initial_timeout")
-            box.prop(view, "pie_menu_radius")
             box.prop(view, "pie_menu_threshold")
             box.prop(view, "pie_menu_confirm")
 
@@ -599,11 +600,11 @@ def register():
                                       'Sculpt', 'EMPTY', 'WINDOW',
                                       'W', 'PRESS', False, False, False)
 
-    PIESPLUS_addon_keymaps.new_keymap('Animation (Playback)', 'wm.call_menu_pie', 'PIESPLUS_MT_animation',
+    PIESPLUS_addon_keymaps.new_keymap('Animation Playback', 'wm.call_menu_pie', 'PIESPLUS_MT_animation',
                                       'Object Non-modal', 'EMPTY', 'WINDOW',
                                       'SPACE', 'PRESS', False, True, False)
 
-    PIESPLUS_addon_keymaps.new_keymap('Animation (Keyframing)', 'wm.call_menu_pie', 'PIESPLUS_MT_keyframing',
+    PIESPLUS_addon_keymaps.new_keymap('Keyframing', 'wm.call_menu_pie', 'PIESPLUS_MT_keyframing',
                                       'Object Non-modal', 'EMPTY', 'WINDOW',
                                       'SPACE', 'PRESS', False, False, True)
 
@@ -627,9 +628,9 @@ def register():
                                       'Mesh', 'EMPTY', 'WINDOW',
                                       'Q', 'PRESS', False, True, False)
 
-    PIESPLUS_addon_keymaps.new_keymap('Transform Orientations Pie', 'wm.call_menu_pie', 'PIESPLUS_MT_transform_orientation',
-                                      '3D View', 'VIEW_3D', 'WINDOW',
-                                      'W', 'PRESS', True, False, False)
+    PIESPLUS_addon_keymaps.new_keymap('Align Pie (Object Mode)', 'wm.call_menu_pie', 'PIESPLUS_MT_align',
+                                      'Mesh', 'EMPTY', 'WINDOW',
+                                      'X', 'PRESS', False, False, True)
 
     PIESPLUS_addon_keymaps.register_keymaps()  # Keymap Setup
 
