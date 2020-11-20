@@ -790,10 +790,10 @@ class PIESPLUS_MT_shading(Menu):
 
         gap = col.column()
         gap.separator()
-        gap.scale_y = 16.5
+        gap.scale_y = 19.5
 
         box = col.box().column()
-        box.scale_y = 1.1
+        box.scale_y = 1.2
 
         split = box.split(factor=.55)
 
@@ -812,16 +812,18 @@ class PIESPLUS_MT_shading(Menu):
         row.operator("pies_plus.shade_flat", text = "Flat")
 
         box = col.box().column()
-        box.scale_y = 1.25
+        box.scale_y = 1.2
         box.operator("pies_plus.recalc_normals", icon='NORMALS_FACE')
-        box.operator("pies_plus.auto_fwn", icon='MOD_NORMALEDIT')
+        box.operator("pies_plus.auto_fwn", icon='NORMALS_VERTEX_FACE')
         box.operator("pies_plus.remove_custom_normals", icon='X')
 
         box = col.box().column()
-        box.scale_y = 1.25
-
+        box.scale_y = 1.2
+        
         row = box.row()
-        row.operator("pies_plus.wire_per_obj", icon='MOD_WIREFRAME')
+        row.prop(space.overlay, "show_face_orientation", text = 'Face Orientation Overlay')
+        row = box.row()
+        row.operator("pies_plus.wire_per_obj", text = 'Wire Overlay Per Object', icon='MOD_WIREFRAME')
         row.operator("pies_plus.remove_wire_per_obj", icon='REMOVE')
         # 3 - BOTTOM - RIGHT
         pie.prop(space.overlay, "show_wireframes", text = 'Wire Overlay', icon = 'MOD_WIREFRAME')
