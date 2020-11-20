@@ -232,8 +232,9 @@ class PIESPLUS_OT_remove_custom_normals(Operator):
             activeCallback = context.view_layer.objects.active.name
 
         for ob in context.selected_objects:
-            context.view_layer.objects.active = ob
-            bpy.ops.mesh.customdata_custom_splitnormals_clear()
+            if ob.type == 'MESH':
+                context.view_layer.objects.active = ob
+                bpy.ops.mesh.customdata_custom_splitnormals_clear()
 
         if 'activeCallback' in locals():
             context.view_layer.objects.active = bpy.data.objects[activeCallback]
