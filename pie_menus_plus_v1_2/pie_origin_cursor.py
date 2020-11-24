@@ -4,6 +4,31 @@ from bpy.props import EnumProperty
 from bpy_extras import view3d_utils
 import bmesh
 
+class PIESPLUS_OT_reset_3d_cursor(Operator):
+    bl_idname = "pies_plus.reset_3d_cursor"
+    bl_label = "Reset Cursor Rot"
+    bl_description = "Reset the 3D Cursor's Rotation"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        cursor = context.scene.cursor
+
+        if cursor.rotation_mode == 'QUATERNION':
+            cursor.rotation_quaternion[0] = 1
+            cursor.rotation_quaternion[1] = 0
+            cursor.rotation_quaternion[2] = 0
+            cursor.rotation_quaternion[3] = 0
+
+        elif cursor.rotation_mode == 'AXIS_ANGLE':
+            cursor.rotation_axis_angle[0] = 0
+            cursor.rotation_axis_angle[1] = 0
+            cursor.rotation_axis_angle[2] = 1
+            cursor.rotation_axis_angle[3] = 0
+
+        else:
+            bpy.ops.view3d.reset_cursor_rot()
+        return {'FINISHED'}
+
 
 class PIESPLUS_OT_origin_to_selection(Operator):
     bl_idname = "pies_plus.origin_to_selection"
@@ -360,7 +385,8 @@ classes = (PIESPLUS_OT_origin_to_selection,
            PIESPLUS_OT_reset_origin,
            PIESPLUS_OT_reset_cursor,
            PIESPLUS_OT_reset_cursor_rot,
-           PIESPLUS_OT_edit_origin)
+           PIESPLUS_OT_edit_origin,
+           PIESPLUS_OT_reset_3d_cursor)
 
 def register():
     for cls in classes:
