@@ -178,7 +178,7 @@ class PIESPLUS_addon_keymaps:
                     row.prop(pies_plus, 'dropdownTools', icon_only=True, emboss=False,
                              icon="DOWNARROW_HLT" if pies_plus.dropdownTools else "RIGHTARROW")
                     row.label(text="Active Tool Pies")
-                    row.label(text="[3D View, Sculpt]")
+                    row.label(text="Context: [3D View, Sculpt]")
                     if pies_plus.dropdownTools:
                         row = boxProp.row()
                 if pies_plus.dropdownTools:
@@ -193,7 +193,7 @@ class PIESPLUS_addon_keymaps:
                     row.prop(pies_plus, 'dropdownAlign', icon_only=True, emboss=False,
                              icon="DOWNARROW_HLT" if pies_plus.dropdownAlign else "RIGHTARROW")
                     row.label(text="Align Pies")
-                    row.label(text="[Edit]")
+                    row.label(text="Context: [Mesh]")
                     if pies_plus.dropdownAlign:
                         row = boxProp.row()
                 if pies_plus.dropdownAlign:
@@ -207,8 +207,8 @@ class PIESPLUS_addon_keymaps:
                     row = boxProp.row()
                     row.prop(pies_plus, 'dropdownAnimation', icon_only=True, emboss=False,
                              icon="DOWNARROW_HLT" if pies_plus.dropdownAnimation else "RIGHTARROW")
-                    row.label(text="Animation Pies")
-                    row.label(text="[Playback, Keyframing]")
+                    row.label(text="Anim Playback & Keyframing Pies")
+                    row.label(text="Context: [3D View]")
                     if pies_plus.dropdownAnimation:
                         row = boxProp.row()
                 if pies_plus.dropdownAnimation:
@@ -223,7 +223,7 @@ class PIESPLUS_addon_keymaps:
                     row.prop(pies_plus, 'dropdownDelete', icon_only=True, emboss=False,
                              icon="DOWNARROW_HLT" if pies_plus.dropdownDelete else "RIGHTARROW")
                     row.label(text="Delete Pies")
-                    row.label(text="[Mesh, Curve]")
+                    row.label(text="Context: [Mesh, Curve]")
                     if pies_plus.dropdownDelete:
                         row = boxProp.row()
                 if pies_plus.dropdownDelete:
@@ -238,7 +238,7 @@ class PIESPLUS_addon_keymaps:
                     row.prop(pies_plus, 'dropdownLT', icon_only=True, emboss=False,
                              icon="DOWNARROW_HLT" if pies_plus.dropdownLT else "RIGHTARROW")
                     row.label(text="LoopTools Pies")
-                    row.label(text="[Edit]")
+                    row.label(text="Context: [Mesh]")
                     if pies_plus.dropdownLT:
                         row = boxProp.row()
                 if pies_plus.dropdownLT:
@@ -253,7 +253,7 @@ class PIESPLUS_addon_keymaps:
                     row.prop(pies_plus, 'dropdownOrigin', icon_only=True, emboss=False,
                              icon="DOWNARROW_HLT" if pies_plus.dropdownOrigin else "RIGHTARROW")
                     row.label(text="Origin / Cursor Pies")
-                    row.label(text="[3D View]")
+                    row.label(text="Context: [3D View]")
                     if pies_plus.dropdownOrigin:
                         row = boxProp.row()
                 if pies_plus.dropdownOrigin:
@@ -268,7 +268,7 @@ class PIESPLUS_addon_keymaps:
                     row.prop(pies_plus, 'dropdownProportional', icon_only=True, emboss=False,
                              icon="DOWNARROW_HLT" if pies_plus.dropdownProportional else "RIGHTARROW")
                     row.label(text="Proportional Pies")
-                    row.label(text="[Object, Edit]")
+                    row.label(text="Context: [Object, Mesh]")
                     if pies_plus.dropdownProportional:
                         row = boxProp.row()
                 if pies_plus.dropdownProportional:
@@ -283,7 +283,7 @@ class PIESPLUS_addon_keymaps:
                     row.prop(pies_plus, 'dropdownSave', icon_only=True, emboss=False,
                              icon="DOWNARROW_HLT" if pies_plus.dropdownSave else "RIGHTARROW")
                     row.label(text="Save Pies")
-                    row.label(text="[3D View]")
+                    row.label(text="Context: [3D View]")
                     if pies_plus.dropdownSave:
                         row = boxProp.row()
                 if pies_plus.dropdownSave:
@@ -298,7 +298,7 @@ class PIESPLUS_addon_keymaps:
                     row.prop(pies_plus, 'dropdownSelectMode', icon_only=True, emboss=False,
                              icon="DOWNARROW_HLT" if pies_plus.dropdownSelectMode else "RIGHTARROW")
                     row.label(text="Select Mode Pies")
-                    row.label(text="[3D View, UV]")
+                    row.label(text="Context: [3D View, UV Editor]")
                     if pies_plus.dropdownSelectMode:
                         row = boxProp.row()
                 if pies_plus.dropdownSelectMode:
@@ -313,7 +313,7 @@ class PIESPLUS_addon_keymaps:
                     row.prop(pies_plus, 'dropdownSelection', icon_only=True, emboss=False,
                              icon="DOWNARROW_HLT" if pies_plus.dropdownSelection else "RIGHTARROW")
                     row.label(text="Selection Pies")
-                    row.label(text="[Object, Mesh]")
+                    row.label(text="Context: [Object, Mesh]")
                     if pies_plus.dropdownSelection:
                         row = boxProp.row()
                 if pies_plus.dropdownSelection:
@@ -328,7 +328,7 @@ class PIESPLUS_addon_keymaps:
                     row.prop(pies_plus, 'dropdownShading', icon_only=True, emboss=False,
                              icon="DOWNARROW_HLT" if pies_plus.dropdownShading else "RIGHTARROW")
                     row.label(text="Shading Pies")
-                    row.label(text="[3D View]")
+                    row.label(text="Context: [3D View]")
                     if pies_plus.dropdownShading:
                         row = boxProp.row()
                 if pies_plus.dropdownShading:
@@ -343,7 +343,7 @@ class PIESPLUS_addon_keymaps:
                     row.prop(pies_plus, 'dropdownSnapping', icon_only=True, emboss=False,
                              icon="DOWNARROW_HLT" if pies_plus.dropdownSnapping else "RIGHTARROW")
                     row.label(text="Snapping Pies")
-                    row.label(text="[3D View, UV]")
+                    row.label(text="Context: [3D View, UV Editor]")
                     if pies_plus.dropdownSnapping:
                         row = boxProp.row()
                 if pies_plus.dropdownSnapping:
@@ -358,7 +358,7 @@ class PIESPLUS_addon_keymaps:
                     row.prop(pies_plus, 'dropdownTransform', icon_only=True, emboss=False,
                              icon="DOWNARROW_HLT" if pies_plus.dropdownTransform else "RIGHTARROW")
                     row.label(text="Transform Pies")
-                    row.label(text="[Object]")
+                    row.label(text="Context: [Object]")
                     if pies_plus.dropdownTransform:
                         row = boxProp.row()
                 if pies_plus.dropdownTransform:
