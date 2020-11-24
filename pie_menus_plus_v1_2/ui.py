@@ -578,9 +578,9 @@ class PIESPLUS_MT_origin_pivot(Menu):
         box = col.box().column()
         box.scale_y = 1.25
         box.operator("pies_plus.edit_origin", text = 'Edit Cursor', icon='OBJECT_ORIGIN').edit_type = 'cursor'
-        box.operator("view3d.reset_cursor_rot", icon='PIVOT_CURSOR')
-        box.operator("view3d.snap_selected_to_cursor", text="Sel to Cursor", icon='RESTRICT_SELECT_OFF')
-        
+        box.operator("pies_plus.reset_3d_cursor", icon='PIVOT_CURSOR')
+        box.operator("view3d.snap_selected_to_cursor", text="Sel to Cursor", icon='RESTRICT_SELECT_OFF').use_offset = False
+
 
 ########################################################################################################################
 # DELETE - X
