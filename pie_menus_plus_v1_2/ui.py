@@ -732,11 +732,11 @@ class PIESPLUS_MT_selection_edit_mode(Menu):
         box.scale_y = 1.25
         box.operator("mesh.select_random", text="Select Random", icon='GROUP_VERTEX')
         box.operator("mesh.region_to_loop", text="Select Boundary Loop", icon='MESH_PLANE')
-        box.operator("pies_plus.select_loop_inner_region", icon='FACESEL')
+        box.operator("pies_plus.select_loop_inner_region", icon='SNAP_FACE_CENTER')
         box.operator("mesh.select_similar", text="Select Similar...", icon='PIVOT_INDIVIDUAL')
         box.operator("mesh.edges_select_sharp", text="Select by Edge Angle", icon='MOD_EDGESPLIT')
         row = box.row(align=True)
-        row.scale_x = .875
+        row.scale_x = .7
         row.label(text="Select:")
         row.operator("pies_plus.select_seamed", text="Seams")
         row.operator("pies_plus.select_sharped", text="Sharps")
@@ -819,7 +819,6 @@ class PIESPLUS_MT_shading(Menu):
 
         box = col.box().column()
         box.scale_y = 1.2
-        
         row = box.row()
         row.prop(space.overlay, "show_face_orientation", text = 'Face Orientation Overlay')
         row = box.row()
@@ -999,7 +998,7 @@ class PIESPLUS_MT_keyframing(Menu):
 
 
 ########################################################################################################################
-# PROPORTIONAL EDITING - O
+# PROPORTIONAL EDITING - ALT + O
 ########################################################################################################################
 
 
