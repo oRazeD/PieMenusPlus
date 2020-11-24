@@ -9,20 +9,19 @@ class PIESPLUS_OT_active_tools(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     active_tools: EnumProperty(
-        items=(('tool_transform', "Transform", ""),
-               ('tool_move', "Move", ""),
-               ('tool_rotate', "Rotate", ""),
-               ('tool_scale', "Scale", ""),
-               ('gizmo_transform', "Transform", ""),
-               ('gizmo_move', "Move", ""),
-               ('gizmo_rotate', "Rotate", ""),
-               ('gizmo_scale', "Scale", ""),
-               ('select_tweak', "Select", ""),
-               ('select_circle', "Select Circle", ""),
-               ('select_lasso', "Select Lasso", ""),
-               ('select_box', "select Box", ""),
-               ('cursor', "Cursor", "")),
-        default='tool_transform')
+        items=(('tool_transform', "Tool All", ""),
+               ('tool_move', "Tool Move", ""),
+               ('tool_rotate', "Tool Rotate", ""),
+               ('tool_scale', "Tool Scale", ""),
+               ('gizmo_transform', "Gizmo All", ""),
+               ('gizmo_move', "Gizmo Move", ""),
+               ('gizmo_rotate', "Gizmo Rotate", ""),
+               ('gizmo_scale', "Gizmo Scale", ""),
+               ('select_tweak', "Tweak Select", ""),
+               ('select_circle', "Circle Select", ""),
+               ('select_lasso', "Lasso Select", ""),
+               ('select_box', "Box Select", "")),
+        default='tool_transform', name = 'Active Tool')
 
     def execute(self, context):
         # Affect Tool

@@ -221,17 +221,10 @@ class PIESPLUS_MT_active_tools(Menu):
             #2 - BOTTOM
             pie.operator("pies_plus.active_tools", text="Scale", icon='SNAP_FACE').active_tools = 'tool_scale'
             #8 - TOP
-            if pies_plus_prefs.defaultTool_Pref == 'tweak_select':
-                pie.operator("pies_plus.active_tools", text="Tweak", icon='RESTRICT_SELECT_OFF').active_tools = 'select_tweak'
-            elif pies_plus_prefs.defaultTool_Pref == 'box_select':
-                pie.operator("pies_plus.active_tools", text="Box", icon='SELECT_SET').active_tools = 'select_box'
-            elif pies_plus_prefs.defaultTool_Pref == 'circle_select':
-                pie.operator("pies_plus.active_tools", text="Circle", icon='MESH_CIRCLE').active_tools = 'select_circle'
-            else:
-                pie.operator("pies_plus.active_tools", text="Lasso", icon='GP_ONLY_SELECTED').active_tools = 'select_lasso'
+            pie.operator("pies_plus.active_tools", text="Tweak", icon='RESTRICT_SELECT_OFF').active_tools = 'select_tweak'
             #7 - TOP - LEFT
             pie.operator("pies_plus.active_tools", text="All", icon='GIZMO').active_tools = 'tool_transform'
-        else:  # Gizmo
+        else: # Gizmo
             #4 - LEFT
             pie.operator("pies_plus.active_tools", text="Move", icon='ORIENTATION_GLOBAL').active_tools = 'gizmo_move'
             #6 - RIGHT
@@ -239,46 +232,15 @@ class PIESPLUS_MT_active_tools(Menu):
             #2 - BOTTOM
             pie.operator("pies_plus.active_tools", text="Scale", icon='SNAP_FACE').active_tools = 'gizmo_scale'
             #8 - TOP
-            if pies_plus_prefs.defaultTool_Pref == 'tweak_select':
-                pie.operator("pies_plus.active_tools", text="Tweak", icon='RESTRICT_SELECT_OFF').active_tools = 'select_tweak'
-            elif pies_plus_prefs.defaultTool_Pref == 'box_select':
-                pie.operator("pies_plus.active_tools", text="Box", icon='SELECT_SET').active_tools = 'select_box'
-            elif pies_plus_prefs.defaultTool_Pref == 'circle_select':
-                pie.operator("pies_plus.active_tools", text="Circle", icon='MESH_CIRCLE').active_tools = 'select_circle'
-            else:
-                pie.operator("pies_plus.active_tools", text="Lasso",
-                             icon='GP_ONLY_SELECTED').active_tools = 'select_lasso'
+            pie.operator("pies_plus.active_tools", text="Tweak", icon='RESTRICT_SELECT_OFF').active_tools = 'select_tweak'
             #7 - TOP - LEFT
-            pie.operator("pies_plus.active_tools", text="All",
-                         icon='GIZMO').active_tools = 'gizmo_transform'
+            pie.operator("pies_plus.active_tools", text="All", icon='GIZMO').active_tools = 'gizmo_transform'
         #9 - TOP - RIGHT
-        pie.operator("pies_plus.active_tools", text="Cursor",
-                     icon='PIVOT_CURSOR').active_tools = 'cursor'
+        pie.operator("pies_plus.active_tools", text="Box", icon='SELECT_SET').active_tools = 'select_box'
         # 1 - BOTTOM - LEFT
-        col = pie.column()
-
-        gap = col.column()
-        gap.separator()
-        gap.scale_y = 6.5
-
-        box = col.box().column()
-        box.scale_y = 1.25
-
-        if pies_plus_prefs.defaultTool_Pref == 'tweak_select':
-            box.operator("pies_plus.active_tools", text="Box", icon='SELECT_SET').active_tools = 'select_box'
-            box.operator("pies_plus.active_tools", text="Circle", icon='MESH_CIRCLE').active_tools = 'select_circle'
-            box.operator("pies_plus.active_tools", text="Lasso", icon='GP_ONLY_SELECTED').active_tools = 'select_lasso'
-        else:
-            box.operator("pies_plus.active_tools", text="Tweak", icon='RESTRICT_SELECT_OFF').active_tools = 'select_tweak'
-            if pies_plus_prefs.defaultTool_Pref == 'box_select':
-                box.operator("pies_plus.active_tools", text="Circle", icon='MESH_CIRCLE').active_tools = 'select_circle'
-                box.operator("pies_plus.active_tools", text="Lasso", icon='GP_ONLY_SELECTED').active_tools = 'select_lasso'
-            elif pies_plus_prefs.defaultTool_Pref == 'circle_select':
-                box.operator("pies_plus.active_tools", text="Box", icon='SELECT_SET').active_tools = 'select_box'
-                box.operator("pies_plus.active_tools", text="Lasso", icon='GP_ONLY_SELECTED').active_tools = 'select_lasso'
-            else:
-                box.operator("pies_plus.active_tools", text="Box", icon='SELECT_SET').active_tools = 'select_box'
-                box.operator("pies_plus.active_tools", text="Circle", icon='MESH_CIRCLE').active_tools = 'select_circle'
+        pie.operator("pies_plus.active_tools", text="Circle", icon='MESH_CIRCLE').active_tools = 'select_circle'
+        # 3 - BOTTOM - RIGHT
+        pie.operator("pies_plus.active_tools", text="Lasso", icon='GP_ONLY_SELECTED').active_tools = 'select_lasso'
 
 
 ########################################################################################################################
@@ -695,7 +657,7 @@ class PIESPLUS_MT_selection_object_mode(Menu):
         row.operator("object.select_linked", text="Select Linked...", icon='CONSTRAINT_BONE')
         row.operator("pies_plus.make_links", text="", icon='PLUS')
         #1 - BOTTOM - LEFT
-        pie.operator("object.join", text="Merge Selection", icon='OBJECT_DATA')
+        pie.operator("object.join", text="Merge To Active", icon='OBJECT_DATA')
 
 
 class PIESPLUS_MT_selection_edit_mode(Menu):
