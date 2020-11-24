@@ -83,7 +83,7 @@ class PIESPLUS_OT_select_loop_inner_region(Operator):
         Specials:
     ALT - Invert"""
     bl_idname = 'pies_plus.select_loop_inner_region'
-    bl_label = "Select Loop Inner Region"
+    bl_label = "Select Boundary Fill"
     bl_options = {'REGISTER', 'UNDO'}
 
     def invoke(self, context, event):
