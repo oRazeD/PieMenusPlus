@@ -182,7 +182,7 @@ class PIESPLUS_OT_auto_fwn(Operator):
             self.report({'ERROR'}, "Nothing is selected & there is no Active Object")
             return{'FINISHED'}
 
-        pies_plus_prefs = context.preferences.addons[__package__].preferences
+        piesPlus = context.preferences.addons[__package__].preferences
 
         if context.active_object:
             activeCallback = context.view_layer.objects.active
@@ -197,16 +197,19 @@ class PIESPLUS_OT_auto_fwn(Operator):
 
                 bpy.ops.object.shade_smooth()
                 ob.data.use_auto_smooth = True
-                ob.data.auto_smooth_angle = pies_plus_prefs.smoothAngle_Pref
+                ob.data.auto_smooth_angle = piesPlus.smoothAngle_Pref
                 
                 for mod in ob.modifiers:
                     if mod.type == 'WEIGHTED_NORMAL':
                         break
                 else:
                     ob.modifiers.new('Weighted Normal', 'WEIGHTED_NORMAL')
-                    ob.modifiers["Weighted Normal"].weight = pies_plus_prefs.weightValue_Pref
-                    ob.modifiers["Weighted Normal"].keep_sharp = pies_plus_prefs.keepSharp_Pref
-                    ob.modifiers["Weighted Normal"].face_influence = pies_plus_prefs.faceInf_Pref
+                    ob.modifiers["Weighted Normal"].weight = piesPlus.weightValue_Pref
+                    ob.modifiers["Weighted Normal"].keep_sharp = piesPlus.keepSharp_Pref
+                    if bpy.app.version > (2, 90, 1):
+                        ob.modifiers["Weighted Normal"].use_face_influence = piesPlus.faceInf_Pref
+                    else:
+                        ob.modifiers["Weighted Normal"].face_influence = piesPlus.faceInf_Pref
 
         if 'activeCallback' in locals():
             context.view_layer.objects.active = activeCallback
