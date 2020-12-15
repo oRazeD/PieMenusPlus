@@ -2,50 +2,16 @@ import bpy
 from bpy.types import Operator
 
 
-class PIESPLUS_OT_object_mode(Operator):
-    bl_idname = "pies_plus.object_mode"
+class PIESPLUS_OT_edit_mode(Operator):
+    bl_idname = "pies_plus.edit_mode"
     bl_label = "Object Mode"
     bl_description = "Changes the Context Mode to Object Mode"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        bpy.ops.object.mode_set(mode="OBJECT")
-        return {'FINISHED'}
+        context.view_layer.objects.active = context.selected_objects[0]
 
-
-class PIESPLUS_OT_texture_paint(Operator):
-    bl_idname = "pies_plus.texture_paint"
-    bl_label = "Texture Paint"
-    bl_description = "Changes the Context Mode to Texture Paint Mode"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        bpy.ops.object.mode_set(mode="OBJECT")
-        bpy.ops.paint.texture_paint_toggle()
-        return {'FINISHED'}
-
-
-class PIESPLUS_OT_weight_paint(Operator):
-    bl_idname = "pies_plus.weight_paint"
-    bl_label = "Weight Paint"
-    bl_description = "Changes the Context Mode to Weight Paint Mode"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        bpy.ops.object.mode_set(mode="OBJECT")
-        bpy.ops.paint.weight_paint_toggle()
-        return {'FINISHED'}
-
-
-class PIESPLUS_OT_vertex_paint(Operator):
-    bl_idname = "pies_plus.vertex_paint"
-    bl_label = "Vertex Paint"
-    bl_description = "Changes the Context Mode to Vertex Paint Mode"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        bpy.ops.object.mode_set(mode="OBJECT")
-        bpy.ops.paint.vertex_paint_toggle()
+        bpy.ops.object.mode_set(mode="EDIT")
         return {'FINISHED'}
 
 
@@ -134,35 +100,18 @@ class PIESPLUS_OT_overlays(Operator):
         return {'FINISHED'}
 
 
-class PIESPLUS_OT_auto_active(Operator):
-    bl_idname = "pies_plus.auto_active"
-    bl_label = "Auto-Select Active"
-    bl_description = "Automatically selects the Active Object from one of the currently selected objects"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        for ob in context.selected_objects:
-            context.view_layer.objects.active = ob
-            break
-        return {'FINISHED'}
-
-
 ##############################
 #   REGISTRATION    
 ##############################
 
 
-classes = (PIESPLUS_OT_object_mode,
-           PIESPLUS_OT_texture_paint,
-           PIESPLUS_OT_weight_paint,
-           PIESPLUS_OT_vertex_paint,
+classes = (PIESPLUS_OT_edit_mode,
            PIESPLUS_OT_particle_edit,
            PIESPLUS_OT_vertex,
            PIESPLUS_OT_edge,
            PIESPLUS_OT_face,
            PIESPLUS_OT_UV_sel_change,
-           PIESPLUS_OT_overlays,
-           PIESPLUS_OT_auto_active)
+           PIESPLUS_OT_overlays)
 
 def register():
     for cls in classes:

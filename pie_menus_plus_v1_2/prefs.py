@@ -416,7 +416,7 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
     invertSelection_Pref: BoolProperty(description = "Only deselect all objects if all object are selected (versus deselecting if any selection is made)")
     preserveUVSelection_Pref: BoolProperty(description = "Selects all faces when you leave UV Sync so you don't need to select the mesh again as you would normally", default = False)
     simpleContextMode_Pref: BoolProperty(description = "A simple version of the context mode pie, which removes xray and overlay toggle (in case you keep using it on accident)", default = False)
-    autoSmoothShadeFlat_Pref: BoolProperty(name="Shade Flat Objects when Auto Smooth+ is Removed", description = "Automatically set objects that have Auto Smooth+ remove to Shade Flat. Having this off will keep the objects Shade Smooth state after removing Auto Smooth Normals", default = False)
+    autoSmoothShadeFlat_Pref: BoolProperty(description = "Automatically set objects that have Auto Smooth+ remove to Shade Flat. Having this off will keep the objects Shade Smooth state after removing Auto Smooth Normals", default = False)
 
     def draw(self, context):
         layout = self.layout
@@ -442,9 +442,9 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             col = layout.column(align = True)
             col.label(text="        Select Mode Pie Settings:")
             box = col.box()
-            box.prop(self, "preserveUVSelection_Pref", text="Select Full Mesh when Exiting UV Sync Mode")
+            box.prop(self, "preserveUVSelection_Pref", text="Select Entire Mesh in 3D View when Exiting UV Sync Mode")
             box.prop(self, "simpleContextMode_Pref", text="Use Simple Select Mode Pie")
-
+            
             col = layout.column(align = True)
             col.label(text="        Selection Pie Settings:")
             box = col.box()
@@ -453,7 +453,7 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             col = layout.column(align = True)
             col.label(text="        Shading Pie Settings:")
             box = col.box()
-            box.prop(self, "autoSmoothShadeFlat_Pref")
+            box.prop(self, "autoSmoothShadeFlat_Pref", text="Shade Flat Objects when Auto Smooth+ is Removed")
             box = col.box()
             box.label(text = "Quick Weighted Normals:")
             row = box.row()
@@ -471,15 +471,15 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             box.prop(self, "autoAbsoluteGridSnap_Pref", text="Automatically Enable Absolute Grid Snap when Turning on Incremental Snapping")
 
             col = layout.column(align = True)
-            col.label(text="        General Settings:")
+            col.label(text="    General Settings:")
             box = col.box()
 
             view = context.preferences.view
 
             col = box.column()
-            col.label(text="Animation Timeout Recommended: 0  -  Removes Animations")
+            col.label(text = "Animation Timeout Recommended: 0  -  Removes Animations")
             col.prop(view, "pie_animation_timeout")
-            col.label(text="Radius Recommended: 125  -  Fixes UI Clipping")
+            col.label(text = "Radius Recommended: 125  -  Fixes UI Clipping")
             col.prop(view, "pie_menu_radius")
             col.separator(factor = 1.5)
             col.prop(view, "pie_tap_timeout")

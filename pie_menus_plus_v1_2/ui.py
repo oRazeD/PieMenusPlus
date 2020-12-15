@@ -21,9 +21,9 @@ class PIESPLUS_MT_modes(Menu):
             obType = context.object.type
 
         ts = context.tool_settings
-        pies_plus_prefs = context.preferences.addons[__package__].preferences
+        piesPlus = context.preferences.addons[__package__].preferences
 
-        if not context.active_object:
+        if not context.object:
             # 4 - LEFT
             pie.separator()
             # 6 - RIGHT
@@ -31,26 +31,22 @@ class PIESPLUS_MT_modes(Menu):
             # 2 - BOTTOM
             pie.separator()
             # 8 - TOP
-            pie.separator()
+            if context.selected_objects:
+                pie.operator("pies_plus.edit_mode", text="Edit / Object", icon='OBJECT_DATAMODE')
+            else:
+                pie.separator()
             # 7 - TOP - LEFT
-            if not pies_plus_prefs.simpleContextMode_Pref:
+            if not piesPlus.simpleContextMode_Pref:
                 pie.operator("view3d.toggle_xray", text = 'X-Ray Toggle', icon = 'XRAY')
             else:
                 pie.separator()
             # 9 - TOP - RIGHT
-            if not pies_plus_prefs.simpleContextMode_Pref:
+            if not piesPlus.simpleContextMode_Pref:
                 pie.operator("pies_plus.overlay", icon='OVERLAY')
             else:
                 pie.separator()
             # 1 - BOTTOM - LEFT
-            if context.selected_objects:
-                pie.operator("pies_plus.auto_active")
-                pie.label(text="          WARNING: No Active selected")
-            else:
-                pie.separator()
-                pie.label(text="          WARNING: No objects selected")
-            # 3 - BOTTOM - RIGHT
-            pie.prop(ts, "use_mesh_automerge", text="Auto Merge")
+            pie.separator()
 
         elif obType == 'MESH':
             # 4 - LEFT
@@ -60,25 +56,17 @@ class PIESPLUS_MT_modes(Menu):
             # 2 - BOTTOM
             pie.operator("pies_plus.edge", icon='EDGESEL')
             # 8 - TOP
-            if context.mode == "SCULPT":
-                pie.operator("sculpt.sculptmode_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
-            elif context.mode == "PAINT_WEIGHT":
-                pie.operator("paint.weight_paint_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
-            elif context.mode == "PAINT_VERTEX":
-                pie.operator("paint.vertex_paint_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
-            elif context.mode == "PAINT_TEXTURE":
-                pie.operator("paint.texture_paint_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
-            elif context.mode == "PARTICLE":
-                pie.operator("particle.particle_edit_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
-            else:
+            if context.mode == 'EDIT_MESH' or context.mode == 'OBJECT':
                 pie.operator("object.editmode_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
+            else:
+                pie.operator("object.mode_set", text="Edit / Object", icon='OBJECT_DATAMODE').mode = "OBJECT"
             # 7 - TOP - LEFT
-            if not pies_plus_prefs.simpleContextMode_Pref:
+            if not piesPlus.simpleContextMode_Pref:
                 pie.operator("view3d.toggle_xray", text = 'X-Ray Toggle', icon = 'XRAY')
             else:
                 pie.separator()
             # 9 - TOP - RIGHT
-            if not pies_plus_prefs.simpleContextMode_Pref:
+            if not piesPlus.simpleContextMode_Pref:
                 pie.operator("pies_plus.overlay", icon='OVERLAY')
             else:
                 pie.separator()
@@ -92,13 +80,11 @@ class PIESPLUS_MT_modes(Menu):
             box = col.box().column()
             box.scale_y = 1.25
 
-            box.operator("sculpt.sculptmode_toggle", text="Sculpt Mode", icon='SCULPTMODE_HLT')
-            box.operator("pies_plus.weight_paint", text="Weight Paint", icon='WPAINT_HLT')
-            box.operator("pies_plus.texture_paint", text="Texture Paint", icon='TPAINT_HLT')
-            box.operator("pies_plus.vertex_paint", text="Vertex Paint", icon='VPAINT_HLT')
-            box.operator("particle.particle_edit_toggle", text="Particle Edit", icon='PARTICLEMODE')
-            # 3 - BOTTOM - RIGHT
-            pie.prop(ts, "use_mesh_automerge", text="Auto Merge")
+            box.operator("object.mode_set", text="Sculpt Mode", icon='SCULPTMODE_HLT').mode = "SCULPT"
+            box.operator("object.mode_set", text="Weight Paint", icon='WPAINT_HLT').mode = "WEIGHT_PAINT"
+            box.operator("object.mode_set", text="Texture Paint", icon='WPAINT_HLT').mode = "TEXTURE_PAINT"
+            box.operator("object.mode_set", text="Vertex Paint", icon='VPAINT_HLT').mode = "VERTEX_PAINT"
+            box.operator("pies_plus.particle_edit", text="Particle Edit", icon='PARTICLEMODE')
 
         elif obType == 'CAMERA':
             # 4 - LEFT
@@ -110,15 +96,17 @@ class PIESPLUS_MT_modes(Menu):
             # 8 - TOP
             pie.operator("view3d.view_camera", icon='VIEW_CAMERA')
             # 7 - TOP - LEFT
-            if not pies_plus_prefs.simpleContextMode_Pref:
+            if not piesPlus.simpleContextMode_Pref:
                 pie.operator("view3d.toggle_xray", text = 'X-Ray Toggle', icon = 'XRAY')
             else:
                 pie.separator()
             # 9 - TOP - RIGHT
-            if not pies_plus_prefs.simpleContextMode_Pref:
+            if not piesPlus.simpleContextMode_Pref:
                 pie.operator("pies_plus.overlay", icon='OVERLAY')
             else:
                 pie.separator()
+            # 1 - BOTTOM - LEFT
+            pie.separator()
 
         else:
             # 4 - LEFT
@@ -148,12 +136,12 @@ class PIESPLUS_MT_modes(Menu):
             else:
                 pie.separator()
             # 7 - TOP - LEFT
-            if not pies_plus_prefs.simpleContextMode_Pref:
+            if not piesPlus.simpleContextMode_Pref:
                 pie.operator("view3d.toggle_xray", text = 'X-Ray Toggle', icon = 'XRAY')
             else:
                 pie.separator()
             # 9 - TOP - RIGHT
-            if not pies_plus_prefs.simpleContextMode_Pref:
+            if not piesPlus.simpleContextMode_Pref:
                 pie.operator("pies_plus.overlay", icon='OVERLAY')
             else:
                 pie.separator()
@@ -162,9 +150,9 @@ class PIESPLUS_MT_modes(Menu):
                 pie.operator("gpencil.weightmode_toggle", text="Weight Paint", icon='WPAINT_HLT')
             else:
                 pie.separator()
-            # 3 - BOTTOM - RIGHT
-            pie.prop(ts, "use_mesh_automerge", text="Auto Merge")
 
+        # 3 - BOTTOM - RIGHT
+        pie.prop(ts, "use_mesh_automerge", text="Auto Merge")
 
 class PIESPLUS_MT_UV_modes(Menu):
     bl_idname = "PIESPLUS_MT_UV_modes"
@@ -211,9 +199,9 @@ class PIESPLUS_MT_active_tools(Menu):
         layout = self.layout
         pie = layout.menu_pie()
 
-        pies_plus_prefs = context.preferences.addons[__package__].preferences
+        piesPlus = context.preferences.addons[__package__].preferences
 
-        if pies_plus_prefs.gizmoSwitch_Pref == 'tool':
+        if piesPlus.gizmoSwitch_Pref == 'tool':
             #4 - LEFT
             pie.operator("pies_plus.active_tools", text="Move", icon='ORIENTATION_GLOBAL').active_tools = 'tool_move'
             #6 - RIGHT
@@ -437,11 +425,6 @@ class PIESPLUS_MT_transforms(Menu):
             box.operator("object.convert", text="Convert to...", icon='FILE_REFRESH')
             box.operator("object.make_single_user", text="Make Single User...", icon='USER')
             box.operator("object.visual_transform_apply", text="Apply Visual Transforms", icon='FILE_TICK')
-        else:
-            if not context.active_object:
-                pie.label(text="          WARNING: No Active selected")
-            else:
-                pie.label(text="          WARNING: No objects selected")
 
 
 ########################################################################################################################
@@ -457,13 +440,7 @@ class PIESPLUS_MT_origin_pivot(Menu):
         layout = self.layout
         pie = layout.menu_pie()
 
-        if not context.active_object:
-            if context.selected_objects:
-                pie.label(text="          WARNING: No Active selected")
-            else:
-                pie.label(text="          WARNING: No objects selected")
-
-        if context.active_object:
+        if context.object:
             # 4 - LEFT
             pie.operator("object.origin_set", text="Origin to Cursor", icon='PIVOT_BOUNDBOX').type = 'ORIGIN_CURSOR'
             # 6 - RIGHT
@@ -476,21 +453,7 @@ class PIESPLUS_MT_origin_pivot(Menu):
             pie.operator("object.origin_set", text="Origin to Geo", icon='PIVOT_BOUNDBOX').type = 'ORIGIN_GEOMETRY'
             # 9 - TOP - RIGHT
             pie.operator("view3d.snap_cursor_to_active", text="Cursor to Active", icon='PIVOT_CURSOR')
-        else:
-            # 4 - LEFT
-            pie.separator()
-            # 6 - RIGHT
-            pie.separator()
-            # 2 - BOTTOM
-            pie.separator()
-            # 8 - TOP
-            pie.separator()
-            # 7 - TOP - LEFT
-            pie.separator()
-            # 9 - TOP - RIGHT
-            pie.separator()
-        # 1 - BOTTOM - LEFT
-        if context.active_object:
+            # 1 - BOTTOM - LEFT
             col = pie.column()
 
             gap = col.column()
@@ -516,10 +479,19 @@ class PIESPLUS_MT_origin_pivot(Menu):
             box.operator("pies_plus.origin_to_com", icon='PIVOT_BOUNDBOX')
             box.operator("pies_plus.origin_to_bottom", icon='PIVOT_BOUNDBOX')
         else:
-            if context.selected_objects:
-                pie.operator("pies_plus.auto_active")
-            else:
-                pie.separator()
+            # 4 - LEFT
+            pie.separator()
+            # 6 - RIGHT
+            pie.separator()
+            # 2 - BOTTOM
+            pie.separator()
+            # 8 - TOP
+            pie.separator()
+            # 7 - TOP - LEFT
+            pie.separator()
+            # 9 - TOP - RIGHT
+            pie.separator()
+
         # 3 - BOTTOM - RIGHT
         col = pie.column()
 
@@ -838,9 +810,8 @@ class PIESPLUS_MT_keyframing(Menu):
         pie = layout.menu_pie()
 
         if not context.selected_objects:
-            if context.active_object:
+            if context.object:
                 if context.mode == "POSE" and not context.selected_pose_bones:
-                    pie.label(text="          WARNING: No bones selected")
                     # 4 - LEFT
                     pie.separator()
                     # 6 - RIGHT
@@ -853,13 +824,8 @@ class PIESPLUS_MT_keyframing(Menu):
                     pie.operator("pies_plus.keyframing", text="Whole Character").key_choice = 'key_whole_char'
                     # 9 - TOP - RIGHT
                     pie.operator("pies_plus.keyframing", text="Whole Selected").key_choice = 'key_whole_char_sel'
-                else:
-                    pie.label(text="          WARNING: No objects selected")
-            else:
-                pie.label(text="          WARNING: No objects selected")
 
         elif context.mode not in {'POSE', 'OBJECT'}:
-            pie.label(text="          WARNING: You are not in the appropriate Context Mode")
             # 4 - LEFT
             pie.separator()
             # 6 - RIGHT
@@ -878,7 +844,6 @@ class PIESPLUS_MT_keyframing(Menu):
                 pie.operator("object.posemode_toggle", text="Pose Mode", icon='POSE_HLT')
 
         elif context.mode == "POSE" and not context.selected_pose_bones:
-            pie.label(text="          WARNING: No bones selected")
             # 4 - LEFT
             pie.separator()
             # 6 - RIGHT
