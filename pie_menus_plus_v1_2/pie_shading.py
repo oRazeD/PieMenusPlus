@@ -206,7 +206,7 @@ class PIESPLUS_OT_auto_fwn(Operator):
                     ob.modifiers.new('Weighted Normal', 'WEIGHTED_NORMAL')
                     ob.modifiers["Weighted Normal"].weight = piesPlus.weightValue_Pref
                     ob.modifiers["Weighted Normal"].keep_sharp = piesPlus.keepSharp_Pref
-                    if bpy.app.version > (2, 90, 1):
+                    if bpy.app.version >= (2, 91, 0):
                         ob.modifiers["Weighted Normal"].use_face_influence = piesPlus.faceInf_Pref
                     else:
                         ob.modifiers["Weighted Normal"].face_influence = piesPlus.faceInf_Pref

@@ -29,7 +29,6 @@ class PIESPLUS_OT_mesh_selection(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def invoke(self, context, event):
-
         if context.mode == 'EDIT_MESH':
             select = bpy.ops.mesh
         else:
@@ -44,36 +43,34 @@ class PIESPLUS_OT_mesh_selection(Operator):
         elif event.alt:
             select.select_all(action='INVERT')
 
-        else:
+        elif context.preferences.addons[__package__].preferences.invertSelection_Pref:
             if context.mode == 'EDIT_MESH':
-                if context.preferences.addons[__package__].preferences.invertSelection_Pref:
-                    verts_hidden = 0
+                verts_hidden = 0
 
-                    for ob in context.selected_objects:
-                        if ob.type == 'MESH':
-                            bm = bmesh.from_edit_mesh(ob.data)
+                for ob in context.selected_objects:
+                    if ob.type == 'MESH':
+                        bm = bmesh.from_edit_mesh(ob.data)
 
-                            for v in bm.verts:
-                                if v.hide:
-                                    verts_hidden += 1
+                        for v in bm.verts:
+                            if v.hide:
+                                verts_hidden += 1
 
-                    scene_verts = context.scene.statistics(context.view_layer).split(" | ")[1]
+                scene_verts = context.scene.statistics(context.view_layer).split(" | ")[1]
 
-                    if int(scene_verts.split('/')[1].replace(',','')) - verts_hidden == int(scene_verts.split('/')[0].split(':')[1].replace(',','')):
-                        bpy.ops.mesh.select_all(action='DESELECT')
-                    else:
-                        bpy.ops.mesh.select_all(action='SELECT')
-                    return {'FINISHED'}
-                bpy.ops.mesh.select_all(action='TOGGLE')
-                return {'FINISHED'}
-
-            if context.preferences.addons[__package__].preferences.invertSelection_Pref:
-                if len([ob for ob in context.view_layer.objects if ob.visible_get()]) == len(context.selected_objects):
-                    bpy.ops.object.select_all(action='DESELECT')
+                if int(scene_verts.split('/')[1].replace(',','')) - verts_hidden == int(scene_verts.split('/')[0].split(':')[1].replace(',','')):
+                    select.select_all(action='DESELECT')
                 else:
-                    bpy.ops.object.select_all(action='SELECT')
-                return {'FINISHED'}
-            bpy.ops.object.select_all(action='TOGGLE')
+                    select.select_all(action='SELECT')
+            else: # Object
+                if len([ob for ob in context.view_layer.objects if ob.visible_get()]) == len(context.selected_objects):
+                    select.select_all(action='DESELECT')
+                else:
+                    select.select_all(action='SELECT')
+
+            select.select_all(action='TOGGLE')
+            
+        else:
+            select.select_all(action='TOGGLE')
         return {'FINISHED'}
 
 
