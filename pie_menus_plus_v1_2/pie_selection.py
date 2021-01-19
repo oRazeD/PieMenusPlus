@@ -67,8 +67,6 @@ class PIESPLUS_OT_mesh_selection(Operator):
                 else:
                     select.select_all(action='SELECT')
 
-            select.select_all(action='TOGGLE')
-            
         else:
             select.select_all(action='TOGGLE')
         return {'FINISHED'}
