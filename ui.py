@@ -263,32 +263,44 @@ class PIESPLUS_MT_snapping(Menu):
         gap.separator()
 
         if bpy.app.version >= (2, 81, 0):
-            gap.scale_y = 13
+            gap.scale_y = 3.5
 
             box = col.box().column()
             box.scale_y = 1.25
 
             box.operator("pies_plus.snap", text="Edge Center", icon='SNAP_MIDPOINT').snap_elements = 'edge_center'
             box.operator("pies_plus.snap", text="Edge Perpendicular", icon='SNAP_PERPENDICULAR').snap_elements = 'edge_perp'
-        else:
-            gap.scale_y = 6.5
+        # 3 - BOTTOM - RIGHT
+        col = pie.column()
 
-        box = col.box().column()
-        box.scale_y = 1.25
+        gap = col.column()
+        gap.separator()
+        gap.scale_y = 12.5
+        
+        box = col.box().column(align = True)
+        box.scale_y = 1.2
         box.scale_x = .9
 
         ts = context.tool_settings
 
-        box.label(text="Snap With:")
+        box.label(text="Snap With", icon='SNAP_FACE_CENTER')
+
+        split = box.split(align = True)
+        split.prop_enum(ts, "snap_target", 'CLOSEST')
+        split.prop_enum(ts, "snap_target", 'CENTER')
+        split = box.split(align = True)
+        split.prop_enum(ts, "snap_target", 'MEDIAN')
+        split.prop_enum(ts, "snap_target", 'ACTIVE')
+
+        box = col.box().column()
+        box.scale_y = 1.2
+
+        box.label(text="Affect", icon='MOD_TIME')
 
         row = box.row(align = True)
-        row.prop_enum(ts, "snap_target", 'CLOSEST')
-        row.prop_enum(ts, "snap_target", 'CENTER')
-        row = box.row(align = True)
-        row.prop_enum(ts, "snap_target", 'MEDIAN')
-        row.prop_enum(ts, "snap_target", 'ACTIVE')
-        # 3 - BOTTOM - RIGHT
-        pie.popover(panel="VIEW3D_PT_snapping", text="Snap Panel...")
+        row.prop(ts, "use_snap_translate", text='Move')
+        row.prop(ts, "use_snap_rotate", text='Rot')
+        row.prop(ts, "use_snap_scale", text='Scale')
 
 
 class PIESPLUS_MT_UV_snapping(Menu):
@@ -490,6 +502,8 @@ class PIESPLUS_MT_origin_pivot(Menu):
             # 7 - TOP - LEFT
             pie.separator()
             # 9 - TOP - RIGHT
+            pie.separator()
+            # 1 - BOTTOM - LEFT
             pie.separator()
 
         # 3 - BOTTOM - RIGHT
@@ -704,17 +718,6 @@ class PIESPLUS_MT_shading(Menu):
             pie.separator()   
         # 8 - TOP
         pie.prop_enum(space.shading, "type", 'RENDERED')
-
-        # Future Shading Pie idea
-
-        #box = pie.box()
-
-        #row = box.row(align = True)
-        #row.scale_x = .9
-        #row.prop(space.shading, "light", expand=True)
-        #if space.shading.light in ["STUDIO", "MATCAP"]:
-        #    box.template_icon_view(space.shading, "studio_light", scale=4, scale_popup=2.5)
-
         # 7 - TOP - LEFT
         pie.operator("view3d.toggle_xray", text = 'X-Ray Toggle', icon = 'XRAY')
         # 9 - TOP - RIGHT
@@ -1152,21 +1155,21 @@ class PIESPLUS_MT_save(Menu):
 
         box = col.box().column()
         box.scale_y = 1.25
-        row = box.row(align = True)
-        row.operator("wm.call_menu", text="Open Recent...").name = "TOPBAR_MT_file_open_recent"
-        row.operator("pies_plus.open_last", text="Open Last", icon='LOOP_BACK')
+        split = box.split(factor = .56, align = True)
+        split.operator("wm.call_menu", text="Open Recent...").name = "TOPBAR_MT_file_open_recent"
+        split.operator("pies_plus.open_last", text="Open Last", icon='LOOP_BACK')
 
         box = col.box().column()
         box.scale_y = 1.25
-        row = box.row(align = True)
-        row.operator("wm.recover_auto_save", text="Auto Save... ")
-        row.operator("wm.recover_last_session", text='Rec Last', icon='RECOVER_LAST')
+        split = box.split(factor = .56, align = True)
+        split.operator("wm.recover_auto_save", text="Auto Save... ")
+        split.operator("wm.recover_last_session", text='Rec Last', icon='RECOVER_LAST')
 
         box = col.box().column()
-        row = box.row(align = True)
         box.scale_y = 1.25
-        row.operator("wm.link", text="Link...", icon='LINK_BLEND')
-        row.operator("wm.append", text="Append...", icon='APPEND_BLEND')
+        split = box.split(align = True)
+        split.operator("wm.link", text="Link...", icon='LINK_BLEND')
+        split.operator("wm.append", text="Append...", icon='APPEND_BLEND')
         # 3 - BOTTOM - RIGHT
         col = pie.column()
 
@@ -1177,12 +1180,12 @@ class PIESPLUS_MT_save(Menu):
         box = col.box().column()
         box2 = box.box()
         box2.scale_y = 1.25
-        box2.menu("TOPBAR_MT_file_export", icon='EXPORT', text="Export                      -->")
+        box2.menu("TOPBAR_MT_file_export", icon='EXPORT', text="Export                     -->")
 
         box = col.box().column()
         box2 = box.box()
         box2.scale_y = 1.25
-        box2.menu("TOPBAR_MT_file_import", icon='IMPORT', text="Import                      -->")
+        box2.menu("TOPBAR_MT_file_import", icon='IMPORT', text="Import                     -->")
 
         row = box.row(align = True)
         box.scale_y = 1.25
