@@ -362,27 +362,66 @@ class PIESPLUS_MT_looptools(Menu):
         layout = self.layout
         pie = layout.menu_pie()
 
-        for modID in context.preferences.addons.keys():
-            if modID == 'mesh_looptools':
-                # 4 - LEFT
-                pie.operator("mesh.looptools_relax")
-                # 6 - RIGHT
-                pie.operator("mesh.looptools_space")
-                # # 2 - BOTTOM
-                pie.operator("mesh.looptools_flatten")
-                # # 8 - TOP
-                pie.operator("mesh.looptools_circle")
-                # # 7 - TOP - LEFT
-                pie.operator("mesh.looptools_bridge", text="Loft").loft = True
-                # # 9 - TOP - RIGHT
-                pie.operator("mesh.looptools_gstretch")
-                # 1 - BOTTOM - LEFT
-                pie.operator("mesh.looptools_curve")
-                # 3 - BOTTOM - RIGHT
-                pie.operator("mesh.looptools_bridge", text="Bridge")
-                break
+        if 'mesh_looptools' in context.preferences.addons.keys():
+            # 4 - LEFT
+            pie.operator("mesh.looptools_relax")
+            # 6 - RIGHT
+            pie.operator("mesh.looptools_space")
+            # # 2 - BOTTOM
+            pie.operator("mesh.looptools_flatten")
+            # # 8 - TOP
+            pie.operator("mesh.looptools_circle")
+            # # 7 - TOP - LEFT
+            pie.operator("mesh.looptools_bridge", text="Loft").loft = True
+            # # 9 - TOP - RIGHT
+            pie.operator("mesh.looptools_gstretch")
+            # 1 - BOTTOM - LEFT
+            pie.operator("mesh.looptools_curve")
+            # 3 - BOTTOM - RIGHT
+            pie.operator("mesh.looptools_bridge", text="Bridge")
         else:
             pie.label(text="          WARNING: You do not have LoopTools enabled")
+
+
+########################################################################################################################
+# BOOLTOOL - ALT + C
+########################################################################################################################
+
+
+class PIESPLUS_MT_booltool(Menu):
+    bl_idname = "PIESPLUS_MT_booltool"
+    bl_label = "Bool Tool"
+
+    def draw(self, context):
+        layout = self.layout
+        pie = layout.menu_pie()
+
+        if len(context.selected_objects) < 2:
+            pie.label(text="          WARNING: You must have at least 2 objects selected")
+
+        elif not context.active_object:
+            pie.label(text="          WARNING: You must have an Active Object selected")
+
+        elif 'object_boolean_tools' in context.preferences.addons.keys():
+            # 4 - LEFT
+            pie.operator("object.booltool_auto_slice", text='Auto Slice', icon='SELECT_DIFFERENCE')
+            # 6 - RIGHT
+            pie.operator("btool.boolean_slice", text='Mod Slice', icon='SELECT_DIFFERENCE')
+            # # 2 - BOTTOM
+            pie.operator("object.booltool_auto_difference", text='Auto Difference', icon='SELECT_SUBTRACT')
+            # # 8 - TOP
+            pie.operator("btool.boolean_diff", text='Mod Difference', icon='SELECT_SUBTRACT')
+            # # 7 - TOP - LEFT
+            pie.operator("btool.boolean_inters", text='Mod Intersect', icon='SELECT_INTERSECT')
+            # # 9 - TOP - RIGHT
+            pie.operator("btool.boolean_union", text='Mod Union', icon='SELECT_EXTEND')
+            # 1 - BOTTOM - LEFT
+            pie.operator("object.booltool_auto_union", text='Auto Union', icon='SELECT_EXTEND')
+            # 3 - BOTTOM - RIGHT
+            pie.operator("object.booltool_auto_intersect", text='Auto Intersect', icon='SELECT_INTERSECT')
+
+        else:
+            pie.label(text="          WARNING: You do not have Booltool enabled")
 
 
 ########################################################################################################################
@@ -1293,6 +1332,7 @@ classes = (PIESPLUS_MT_modes,
            PIESPLUS_MT_UV_snapping,
            PIESPLUS_MT_active_tools,
            PIESPLUS_MT_looptools,
+           PIESPLUS_MT_booltool,
            PIESPLUS_MT_origin_pivot,
            PIESPLUS_MT_transforms,
            PIESPLUS_MT_delete,
