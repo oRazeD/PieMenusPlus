@@ -657,7 +657,7 @@ class PIESPLUS_MT_selection_object_mode(Menu):
         #4 - LEFT
         pie.separator()
         #6 - RIGHT
-        pie.separator()
+        pie.operator("view3d.view_camera", icon='VIEW_CAMERA')
         #2 - BOTTOM
         pie.operator("object.select_all", text="Invert Selection", icon='SELECT_DIFFERENCE').action = 'INVERT'
         #8 - TOP
