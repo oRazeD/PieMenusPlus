@@ -562,11 +562,11 @@ class PIESPLUS_MT_origin_pivot(Menu):
         gap.scale_y = 12.7
 
         box = col.box().column(align=True)
-        row = box.row()
-        row.scale_y = 1.25
+        row = box.row(align=True)
+        row.scale_y = 1.2
         row.operator("pies_plus.reset_cursor", text='Cursor to 0,0,0', icon='PIVOT_CURSOR').cursor_reset_axis = 'cursor_all'
         row = box.row(align=True)
-        row.scale_y = 1.05
+        row.scale_y = 1
         row.operator("pies_plus.reset_cursor", text='X').cursor_reset_axis = 'cursor_x'
         row.operator("pies_plus.reset_cursor", text='Y').cursor_reset_axis = 'cursor_y'
         row.operator("pies_plus.reset_cursor", text='Z').cursor_reset_axis = 'cursor_z'
