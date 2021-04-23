@@ -78,11 +78,15 @@ class PIESPLUS_OT_UV_sel_change(Operator):
     bl_description = "Changes the UV selection mode to whatever option is selected"
     bl_options = {'REGISTER'}
 
-    sel_choice: bpy.props.EnumProperty(items=(('vertex', "Vertex", ""),
-                                              ('edge', "Edge", ""),
-                                              ('face', "Face", ""),
-                                              ('island', "Island", "")),
-                                              default='vertex', name = 'Selection Choice')
+    sel_choice: bpy.props.EnumProperty(
+        items=(
+            ('vertex', "Vertex", ""),
+            ('edge', "Edge", ""),
+            ('face', "Face", ""),
+            ('island', "Island", "")
+            ),
+        default='vertex',
+        name='Selection Choice')
 
     def execute(self, context):
         context.scene.tool_settings.uv_select_mode = self.sel_choice.upper()
@@ -101,7 +105,7 @@ class PIESPLUS_OT_overlays(Operator):
 
 
 ##############################
-#   REGISTRATION    
+#   REGISTRATION
 ##############################
 
 
@@ -113,9 +117,11 @@ classes = (PIESPLUS_OT_edit_mode,
            PIESPLUS_OT_UV_sel_change,
            PIESPLUS_OT_overlays)
 
+
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
+
 
 def unregister():
     for cls in classes:

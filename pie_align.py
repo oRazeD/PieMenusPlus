@@ -1,9 +1,7 @@
+import bpy, mathutils, bmesh
 from bpy.types import Operator
 from bpy.props import EnumProperty
 from bpy_extras import view3d_utils
-import mathutils
-import bpy
-import bmesh
 
 
 class PIESPLUS_OT_quick_world_align(Operator):

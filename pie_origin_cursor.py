@@ -1,8 +1,8 @@
-import bpy
+import bpy, bmesh
 from bpy.types import Operator
 from bpy.props import EnumProperty
 from bpy_extras import view3d_utils
-import bmesh
+
 
 class PIESPLUS_OT_reset_3d_cursor(Operator):
     bl_idname = "pies_plus.reset_3d_cursor"

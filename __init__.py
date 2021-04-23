@@ -2,13 +2,12 @@ bl_info = {"name": "Pie Menus Plus",
            "description": "Additional / Improved Pie Menus for Blender 2.8+",
            "author": "Ethan Simon-Law",
            "version": (1, 3),
-           "blender": (2, 92, 0),
+           "blender": (2, 93, 0),
            "tracker_url": "https://discord.com/invite/wHAyVZG",
            "category": "3D View"}
 
 
-import importlib
-import bpy
+import bpy, importlib
 
 
 module_names = ("ui",
@@ -25,6 +24,7 @@ module_names = ("ui",
                 "pie_save",
                 "pie_align")
 
+
 modules = []
 
 for mod in module_names:
@@ -38,6 +38,7 @@ for mod in module_names:
 def register():
     for mod in modules:
         mod.register()
+
 
 def unregister():
     for mod in modules:

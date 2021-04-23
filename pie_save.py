@@ -1,5 +1,4 @@
-import bpy
-import os
+import bpy, os
 
 
 class PIESPLUS_OT_batch_import(bpy.types.Operator):
