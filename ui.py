@@ -1,5 +1,4 @@
-import bpy
-import os
+import bpy, os
 from bpy.types import Menu
 
 
@@ -78,7 +77,7 @@ class PIESPLUS_MT_modes(Menu):
             gap.scale_y = 12.5
 
             box = col.box().column()
-            box.scale_y = 1.25
+            box.scale_y = 1.2
 
             box.operator("object.mode_set", text="Sculpt Mode", icon='SCULPTMODE_HLT').mode = "SCULPT"
             box.operator("object.mode_set", text="Weight Paint", icon='WPAINT_HLT').mode = "WEIGHT_PAINT"
@@ -266,7 +265,7 @@ class PIESPLUS_MT_snapping(Menu):
             gap.scale_y = 3.5
 
             box = col.box().column()
-            box.scale_y = 1.25
+            box.scale_y = 1.2
 
             box.operator("pies_plus.snap", text="Edge Center", icon='SNAP_MIDPOINT').snap_elements = 'edge_center'
             box.operator("pies_plus.snap", text="Edge Perpendicular", icon='SNAP_PERPENDICULAR').snap_elements = 'edge_perp'
@@ -332,7 +331,7 @@ class PIESPLUS_MT_UV_snapping(Menu):
         gap.scale_y = 6.5
 
         box = col.box().column()
-        box.scale_y = 1.25
+        box.scale_y = 1.2
         box.scale_x = .9
 
         ts = context.tool_settings
@@ -421,7 +420,7 @@ class PIESPLUS_MT_booltool(Menu):
             pie.operator("object.booltool_auto_intersect", text='Auto Intersect', icon='SELECT_INTERSECT')
 
         else:
-            pie.label(text="          WARNING: You do not have Booltool enabled")
+            pie.label(text="          WARNING: You do not have Bool Tool enabled")
 
 
 ########################################################################################################################
@@ -431,7 +430,7 @@ class PIESPLUS_MT_booltool(Menu):
 
 class PIESPLUS_MT_transforms(Menu):
     bl_idname = "PIESPLUS_MT_transforms"
-    bl_label = "Transforms"
+    bl_label = "Transforms & Relations"
 
     def draw(self, context):
         layout = self.layout
@@ -458,7 +457,7 @@ class PIESPLUS_MT_transforms(Menu):
             gap.scale_y = 6
 
             box = col.box().column()
-            box.scale_y = 1.25
+            box.scale_y = 1.2
 
             box.operator("object.location_clear", icon='EMPTY_AXIS')
             box.operator("object.rotation_clear", icon='EMPTY_AXIS')
@@ -468,13 +467,23 @@ class PIESPLUS_MT_transforms(Menu):
 
             gap = col.column()
             gap.separator()
-            gap.scale_y = 6
+            gap.scale_y = 10
 
             box = col.box().column()
-            box.scale_y = 1.25
-            
+            box.scale_y = 1.2
+
             box.operator("object.convert", text="Convert to...", icon='FILE_REFRESH')
-            box.operator("object.make_single_user", text="Make Single User...", icon='USER')
+
+            make_single_mesh = box.operator("object.make_single_user", text="Make Single User...", icon='USER')
+            make_single_mesh.object = True
+            make_single_mesh.obdata = True
+            make_single_mesh.material = False
+            make_single_mesh.animation = False
+
+            box.operator("object.make_override_library", text="Make Library Override...", icon='LIBRARY_DATA_OVERRIDE')
+
+            box = col.box().column()
+            box.scale_y = 1.2
             box.operator("object.visual_transform_apply", text="Apply Visual Transforms", icon='FILE_TICK')
 
 
@@ -512,21 +521,21 @@ class PIESPLUS_MT_origin_pivot(Menu):
             gap.scale_y = 15.7
 
             box = col.box().column(align=True)
-
-            row = box.row()
-            row.scale_y = 1.25
+            
+            row = box.row(align=True) # Row to affect scaling
+            row.scale_y = 1.2
             row.operator("pies_plus.reset_origin", text='Origin to 0,0,0', icon='PIVOT_BOUNDBOX').origin_reset_axis = 'origin_all'
             row = box.row(align=True)
-            row.scale_y = 1.05
+            row.scale_y = 1
             row.operator("pies_plus.reset_origin", text='X').origin_reset_axis = 'origin_x'
             row.operator("pies_plus.reset_origin", text='Y').origin_reset_axis = 'origin_y'
             row.operator("pies_plus.reset_origin", text='Z').origin_reset_axis = 'origin_z'
 
             box = col.box().column()
-            box.scale_y = 1.25
+            box.scale_y = 1.2
 
             box.operator("pies_plus.edit_origin", icon='OBJECT_ORIGIN').edit_type = 'origin'
-            box.operator("object.origin_set", text="Geometry to Origin", icon='PIVOT_BOUNDBOX').type = 'GEOMETRY_ORIGIN'
+            box.operator("object.origin_set", text="Geo to Origin", icon='PIVOT_BOUNDBOX').type = 'GEOMETRY_ORIGIN'
             box.operator("pies_plus.origin_to_com", icon='PIVOT_BOUNDBOX')
             box.operator("pies_plus.origin_to_bottom", icon='PIVOT_BOUNDBOX')
         else:
@@ -563,7 +572,7 @@ class PIESPLUS_MT_origin_pivot(Menu):
         row.operator("pies_plus.reset_cursor", text='Z').cursor_reset_axis = 'cursor_z'
 
         box = col.box().column()
-        box.scale_y = 1.25
+        box.scale_y = 1.2
         box.operator("pies_plus.edit_origin", text = 'Edit Cursor', icon='OBJECT_ORIGIN').edit_type = 'cursor'
         box.operator("pies_plus.reset_3d_cursor", icon='PIVOT_CURSOR')
         box.operator("view3d.snap_selected_to_cursor", text="Sel to Cursor", icon='RESTRICT_SELECT_OFF').use_offset = False
@@ -606,7 +615,7 @@ class PIESPLUS_MT_delete(Menu):
         gap.scale_y = 14
 
         box = col.box().column()
-        box.scale_y = 1.25
+        box.scale_y = 1.2
 
         box.operator("mesh.remove_doubles", text="Merge by Distance", icon='AUTOMERGE_ON')
 
@@ -648,7 +657,7 @@ class PIESPLUS_MT_delete_curve(Menu):
 
 class PIESPLUS_MT_selection_object_mode(Menu):
     bl_idname = "PIESPLUS_MT_selection_object_mode"
-    bl_label = "Selection (Object Mode)"
+    bl_label = "Object Selection & Views"
 
     def draw(self, context):
         layout = self.layout
@@ -674,7 +683,7 @@ class PIESPLUS_MT_selection_object_mode(Menu):
         gap.scale_y = 9.5
 
         box = col.box().column()
-        box.scale_y = 1.25
+        box.scale_y = 1.2
         box.operator("object.select_random", text="Select Random", icon='GROUP_VERTEX')
         box.operator("object.select_by_type", text="Select By Type...", icon='SNAP_VOLUME')
         box.operator("object.select_grouped", text="Select Grouped...", icon='GROUP_VERTEX')
@@ -687,7 +696,7 @@ class PIESPLUS_MT_selection_object_mode(Menu):
 
 class PIESPLUS_MT_selection_edit_mode(Menu):
     bl_idname = "PIESPLUS_MT_selection_edit_mode"
-    bl_label = "Selection (Edit Mode)"
+    bl_label = "Mesh Selection"
 
     def draw(self, context):
         layout = self.layout
@@ -716,7 +725,7 @@ class PIESPLUS_MT_selection_edit_mode(Menu):
         gap.scale_y = 15.5
 
         box = col.box().column()
-        box.scale_y = 1.25
+        box.scale_y = 1.2
         box.operator("mesh.select_random", text="Select Random", icon='GROUP_VERTEX')
         box.operator("mesh.region_to_loop", text="Select Boundary Loop", icon='MESH_PLANE')
         box.operator("pies_plus.select_loop_inner_region", icon='SNAP_FACE_CENTER')
@@ -738,7 +747,7 @@ class PIESPLUS_MT_selection_edit_mode(Menu):
 
 class PIESPLUS_MT_shading(Menu):
     bl_idname = "PIESPLUS_MT_shading"
-    bl_label = "Shading"
+    bl_label = "Shading & Overlays"
 
     def draw(self, context):
         layout = self.layout
@@ -769,7 +778,7 @@ class PIESPLUS_MT_shading(Menu):
         gap.scale_y = 19.5
 
         box = col.box().column()
-        box.scale_y = 1.2
+        box.scale_y = 1.1
 
         split = box.split(factor=.55)
 
@@ -922,7 +931,7 @@ class PIESPLUS_MT_keyframing(Menu):
                 gap.scale_y = 15.5
 
             box = col.box().column()
-            box.scale_y = 1.25
+            box.scale_y = 1.2
             box.operator("pies_plus.keyframing", text="Visual Location").key_choice = 'key_vis_loc'
             box.operator("pies_plus.keyframing", text="Visual Rotation").key_choice = 'key_vis_rot'
             box.operator("pies_plus.keyframing", text="Visual Scaling").key_choice = 'key_vis_scale'
@@ -934,7 +943,7 @@ class PIESPLUS_MT_keyframing(Menu):
                 gap = col.column()
 
                 box = col.box().column()
-                box.scale_y = 1.25
+                box.scale_y = 1.2
                 box.operator("pies_plus.keyframing", text="BBone Shape").key_choice = 'key_bendy_bones'
                 box.operator("pies_plus.keyframing", text="Whole Character").key_choice = 'key_whole_char'
                 box.operator("pies_plus.keyframing", text="Whole Selected").key_choice = 'key_whole_char_sel'
@@ -946,13 +955,13 @@ class PIESPLUS_MT_keyframing(Menu):
             gap.scale_y = 20.5
 
             box = col.box().column()
-            box.scale_y = 1.25
+            box.scale_y = 1.2
             box.operator("pies_plus.keyframing", text="Available").key_choice = 'key_available'
 
             gap = col.column()
 
             box = col.box().column()
-            box.scale_y = 1.25
+            box.scale_y = 1.2
             box.operator("pies_plus.keyframing", text="LocRotScale").key_choice = 'key_locrotscale'
             box.operator("pies_plus.keyframing", text="LocScale").key_choice = 'key_locscale'
             box.operator("pies_plus.keyframing", text="RotScale").key_choice = 'key_rotscale'
@@ -960,7 +969,7 @@ class PIESPLUS_MT_keyframing(Menu):
             gap = col.column()
 
             box = col.box().column()
-            box.scale_y = 1.25
+            box.scale_y = 1.2
             box.operator("pies_plus.keyframing", text="Delta Location").key_choice = 'key_del_loc'
             box.operator("pies_plus.keyframing", text="Delta Rotation").key_choice = 'key_del_rot'
             box.operator("pies_plus.keyframing", text="Delta Scale").key_choice = 'key_del_scale'
@@ -1001,7 +1010,7 @@ class PIESPLUS_MT_proportional_edit_mode(Menu):
         gap.scale_y = 9.5
 
         box = col.box().column()
-        box.scale_y = 1.25
+        box.scale_y = 1.2
         box.operator("pies_plus.prop_constant", icon='NOCURVE')
         box.operator("pies_plus.prop_random", icon='RNDCURVE')
         box.operator("pies_plus.prop_sharp", icon='SHARPCURVE')
@@ -1040,7 +1049,7 @@ class PIESPLUS_MT_proportional_object_mode(Menu):
         gap.scale_y = 6
 
         box = col.box().column()
-        box.scale_y = 1.25
+        box.scale_y = 1.2
         box.operator("pies_plus.prop_constant", icon='NOCURVE')
         box.operator("pies_plus.prop_random", icon='RNDCURVE')
         # 3 - BOTTOM - RIGHT
@@ -1188,29 +1197,31 @@ class PIESPLUS_MT_save(Menu):
         # 1 - BOTTOM - LEFT
         col = pie.column()
 
+        col.scale_x = .925 # Override for X axis scaling
+
         gap = col.column()
         gap.separator()
         gap.scale_y = 8.1
 
         box = col.box().column()
-        box.scale_y = 1.25
-        split = box.split(factor = .56, align = True)
+        box.scale_y = 1.2
+        split = box.split(align = True)
         split.operator("wm.call_menu", text="Open Recent...").name = "TOPBAR_MT_file_open_recent"
         split.operator("pies_plus.open_last", text="Open Last", icon='LOOP_BACK')
 
-        box = col.box().column()
-        box.scale_y = 1.25
-        split = box.split(factor = .56, align = True)
+        split = box.split(align = True)
         split.operator("wm.recover_auto_save", text="Auto Save... ")
         split.operator("wm.recover_last_session", text='Rec Last', icon='RECOVER_LAST')
 
         box = col.box().column()
-        box.scale_y = 1.25
-        split = box.split(align = True)
+        box.scale_y = 1.2
+        split = box.split(factor = .475, align = True)
         split.operator("wm.link", text="Link...", icon='LINK_BLEND')
         split.operator("wm.append", text="Append...", icon='APPEND_BLEND')
         # 3 - BOTTOM - RIGHT
         col = pie.column()
+
+        col.scale_x = .95 # Override for X axis scaling
 
         gap = col.column()
         gap.separator()
@@ -1218,21 +1229,20 @@ class PIESPLUS_MT_save(Menu):
 
         box = col.box().column()
         box2 = box.box()
-        box2.scale_y = 1.25
-        box2.menu("TOPBAR_MT_file_export", icon='EXPORT', text="Export                     -->")
+        box2.scale_y = 1.3
+        box2.menu("TOPBAR_MT_file_export", icon='EXPORT', text="Export                   -->")
 
         box = col.box().column()
         box2 = box.box()
-        box2.scale_y = 1.25
-        box2.menu("TOPBAR_MT_file_import", icon='IMPORT', text="Import                     -->")
+        box2.scale_y = 1.3
+        box2.menu("TOPBAR_MT_file_import", icon='IMPORT', text="Import                   -->")
 
-        row = box.row(align = True)
-        box.scale_y = 1.25
+        split = box.split(align = True)
+        split.scale_y = 1.1
+        split.label(text = 'Batch:')
 
-        row.label(text = 'Batch:')
-
-        row.operator("pies_plus.batch_import", text='FBX').import_type = 'fbx'
-        row.operator("pies_plus.batch_import", text='OBJ').import_type = 'obj'
+        split.operator("pies_plus.batch_import", text='FBX').import_type = 'fbx'
+        split.operator("pies_plus.batch_import", text='OBJ').import_type = 'obj'
 
 
 ########################################################################################################################
@@ -1262,6 +1272,8 @@ class PIESPLUS_MT_align(Menu):
         pie.operator("pies_plus.normal_z_align", icon = 'ORIENTATION_NORMAL')
         # 1 - BOTTOM - LEFT
         col = pie.column()
+
+        col.scale_x = .975 # Override for X axis scaling
 
         gap = col.column()
         gap.separator()
