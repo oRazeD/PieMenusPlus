@@ -1,6 +1,7 @@
-import bpy
-import rna_keymap_ui
+import bpy, rna_keymap_ui
 from bpy.props import StringProperty, EnumProperty, BoolProperty, IntProperty, PointerProperty
+from .addon_updater import Updater as updater
+from .__init__ import bl_info
 
 
 ##################################
@@ -401,6 +402,16 @@ class PIESPLUS_OT_add_hotkey(bpy.types.Operator):
 ##################################
 
 
+class PIESPLUS_OT_check_for_update(bpy.types.Operator):
+    bl_idname = "updater_pies_plus.check_for_update"
+    bl_label = ""
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        updater.check_for_update_now()
+        return{'FINISHED'}
+
+
 class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
     bl_idname = __package__
 
@@ -424,6 +435,23 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
 
     def draw(self, context):
         layout = self.layout
+        row = layout.row()
+        
+        if updater.update_ready == None:
+            row.label(text = "Checking for an update...")
+
+            updater.check_for_update_now()
+
+        elif updater.update_ready:
+            row.alert = True
+            row.label(text = "There is a Pie Menus Plus update available! Go grab it on Gumroad/Github :D")
+
+        elif not updater.update_ready:
+            row.label(text = "You have the latest version of Pie Menus Plus! There are no new versions available.")
+
+            row.operator("updater_pies_plus.check_for_update", text = "", icon = "FILE_REFRESH")
+
+        row.operator("wm.url_open", text="", icon = 'URL').url = "https://gumroad.com/l/piesplus"
 
         row = layout.row()
         row.prop(self, "Tabs", expand=True)
@@ -506,6 +534,18 @@ def register():
     bpy.utils.register_class(PIESPLUS_MT_addon_prefs)
     bpy.utils.register_class(PIESPLUS_OT_add_hotkey)
     bpy.utils.register_class(PIESPLUS_property_group)
+    bpy.utils.register_class(PIESPLUS_OT_check_for_update)
+
+    # Set the updaters repo
+    updater.user = "oRazeD"
+    updater.repo = "piemenusplus"
+    updater.current_version = bl_info["version"]
+
+    # Initial check for repo updates
+    updater.check_for_update_now()
+
+    if updater.update_ready:
+        print("There is a Pie Menus Plus update available! Go grab it on Gumroad/Github :D")
 
     bpy.types.Scene.pies_plus = PointerProperty(type = PIESPLUS_property_group)
 
@@ -600,6 +640,7 @@ def unregister():
     bpy.utils.unregister_class(PIESPLUS_MT_addon_prefs)
     bpy.utils.unregister_class(PIESPLUS_OT_add_hotkey)
     bpy.utils.unregister_class(PIESPLUS_property_group)
+    bpy.utils.unregister_class(PIESPLUS_OT_check_for_update)
 
     del bpy.types.Scene.pies_plus
 
