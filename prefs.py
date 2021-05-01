@@ -410,13 +410,6 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
         )
     )
 
-    gizmoSwitch_Pref: EnumProperty(
-        items=(
-            ('tool', "Tool", "Changes the tool"),
-            ('gizmo', "Gizmo", "Changes the gizmo instead of the tool (preferred workflow)")
-        )
-    )
-
     keepSharp_Pref: BoolProperty(
         description="Toggles whether the FWN Modifier accounts for Sharps on each mesh",
         default=True
@@ -498,13 +491,6 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
 
         # Information
         if self.Tabs == 'general':
-            col = layout.column(align = True)
-            col.label(text="        Active Tool Pie Settings:")
-            box = col.box()
-            row = box.row()
-            row.label(text="Tool Change Method:")
-            row.prop(self, "gizmoSwitch_Pref", expand=True)
-
             col = layout.column(align = True)
             col.label(text="        Origin / Cursor Pie Settings:")
             box = col.box()
