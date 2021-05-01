@@ -5,6 +5,21 @@ from .__init__ import bl_info
 
 
 ##################################
+# Operators
+##################################
+
+
+class PIESPLUS_OT_check_for_update(bpy.types.Operator):
+    bl_idname = "updater_pies_plus.check_for_update"
+    bl_label = ""
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        updater.check_for_update_now()
+        return{'FINISHED'}
+
+
+##################################
 # Property Group
 ##################################
 
@@ -27,9 +42,18 @@ class PIESPLUS_property_group(bpy.types.PropertyGroup):
 
                 context.area.type = old_area_type
 
-    smoothAngle: IntProperty(name = "Smooth Angle", default = 60, min = 0, max = 180, update = update_smoothAngle)
-
-    uvSyncSelection: BoolProperty(name = "UV Sync Selection", default = False, update = update_uvSyncSelection)
+    smoothAngle: IntProperty(
+        name="Smooth Angle",
+        default=60,
+        min=0,
+        max=180,
+        update=update_smoothAngle
+    )
+        
+    uvSyncSelection: BoolProperty(
+        name="UV Sync Selection",
+        update=update_uvSyncSelection
+    )
 
     dropdownDelete: BoolProperty()
     dropdownSelection: BoolProperty()
@@ -102,280 +126,254 @@ class PIESPLUS_addon_keymaps:
     @classmethod
     def unregister_keymaps(cls):
         kmi_values = [item[1] for item in cls._keymaps.values() if item]
-        kmi_names = [item[0] for item in cls._keymaps.values() if
-                     item not in ['wm.call_menu', 'wm.call_menu_pie']]
 
         for km, kmi in cls._addon_keymaps:
-            # remove addon keymap for menu and pie menu
             if hasattr(kmi.properties, 'name'):
                 if kmi_values:
                     if kmi.properties.name in kmi_values:
-                        km.keymap_items.remove(kmi)
-
-            # remove addon_keymap for operators
-            else:
-                if kmi_names:
-                    if kmi.idname in kmi_names:
                         km.keymap_items.remove(kmi)
 
         cls._addon_keymaps.clear()
 
     @staticmethod
     def get_hotkey_entry_item(name, kc, km, kmi_name, kmi_value, col):
-
-        # for menus and pie_menu
-        if kmi_value:
-            for km_item in km.keymap_items:
-                if km_item.idname == kmi_name and km_item.properties.name == kmi_value:
-                    col.context_pointer_set('keymap', km)
-                    rna_keymap_ui.draw_kmi([], kc, km, km_item, col, 0)
-                    return
-
-            col.label(text=f"No hotkey entry found for {name}")
-            col.operator(PIESPLUS_OT_add_hotkey.bl_idname,
-                         text="Restore keymap",
-                         icon='ADD').km_name = km.name
-
-        # for operators
-        else:
-            if km.keymap_items.get(kmi_name):
+        for km_item in km.keymap_items:
+            if km_item.idname == kmi_name and km_item.properties.name == kmi_value:
                 col.context_pointer_set('keymap', km)
-                rna_keymap_ui.draw_kmi([], kc, km, km.keymap_items[kmi_name],
-                                       col, 0)
+                rna_keymap_ui.draw_kmi([], kc, km, km_item, col, 0)
+                return
 
-            else:
-                col.label(text=f"No hotkey entry found for {name}")
-                col.operator(PIESPLUS_OT_add_hotkey.bl_idname,
-                             text="Restore keymap",
-                             icon='ADD').km_name = km.name
+        col.label(text=f"No hotkey entry found for {name}")
+        col.operator(PIESPLUS_OT_add_hotkey.bl_idname, text="Restore keymap", icon='ADD').km_name = km.name
 
     @staticmethod
     def draw_keymap_items(wm, layout):
-        kc = wm.keyconfigs.user
         pies_plus = bpy.context.scene.pies_plus
 
-        deleteUsed = 0
-        selectionUsed = 0
-        proportionalUsed = 0
-        snappingUsed = 0
-        selectModeUsed = 0
-        animationUsed = 0
-        toolsUsed = 0
-        shadingUsed = 0
-        transformUsed = 0
-        originUsed = 0
-        ltUsed = 0
-        btUsed = 0
-        saveUsed = 0
-        alignUsed = 0
+        deleteUsed = False
+        selectionUsed = False
+        proportionalUsed = False
+        snappingUsed = False
+        selectModeUsed = False
+        animationUsed = False
+        toolsUsed = False
+        shadingUsed = False
+        transformUsed = False
+        originUsed = False
+        ltUsed = False
+        btUsed = False
+        saveUsed = False
+        alignUsed = False
 
         for name, items in PIESPLUS_addon_keymaps._keymaps.items():
-            drawKeymap = 0
+            drawKeymap = False
 
             # Tools
             if name.endswith('Tools'):
                 if not toolsUsed:
-                    toolsUsed = 1
-                    boxProp = layout.box()
-                    row = boxProp.row()
+                    toolsUsed = True
+
+                    box = layout.box()
+                    row = box.row()
                     row.prop(pies_plus, 'dropdownTools', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownTools else "RIGHTARROW")
                     row.label(text="Active Tool Pies")
                     row.label(text="Context: [3D View, Sculpt]")
-                    if pies_plus.dropdownTools:
-                        row = boxProp.row()
+
                 if pies_plus.dropdownTools:
-                    drawKeymap = 1
+                    drawKeymap = True
 
             # Align
             elif name.startswith('Align'):
                 if not alignUsed:
-                    alignUsed = 1
-                    boxProp = layout.box()
-                    row = boxProp.row()
+                    alignUsed = True
+
+                    box = layout.box()
+                    row = box.row()
                     row.prop(pies_plus, 'dropdownAlign', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownAlign else "RIGHTARROW")
                     row.label(text="Align Pies")
                     row.label(text="Context: [Mesh]")
-                    if pies_plus.dropdownAlign:
-                        row = boxProp.row()
+
                 if pies_plus.dropdownAlign:
-                    drawKeymap = 1
+                    drawKeymap = True
 
             # Animation
             elif name.startswith('Animation'):
                 if not animationUsed:
-                    animationUsed = 1
-                    boxProp = layout.box()
-                    row = boxProp.row()
+                    animationUsed = True
+
+                    box = layout.box()
+                    row = box.row()
                     row.prop(pies_plus, 'dropdownAnimation', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownAnimation else "RIGHTARROW")
                     row.label(text="Anim Playback & Keyframing Pies")
                     row.label(text="Context: [3D View]")
-                    if pies_plus.dropdownAnimation:
-                        row = boxProp.row()
+
                 if pies_plus.dropdownAnimation:
-                    drawKeymap = 1
+                    drawKeymap = True
             
             # Bool Tool
             elif name.startswith('Bool Tool'):
                 if not btUsed:
-                    btUsed = 1
-                    boxProp = layout.box()
-                    row = boxProp.row()
+                    btUsed = True
+
+                    box = layout.box()
+                    row = box.row()
                     row.prop(pies_plus, 'dropdownBT', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownBT else "RIGHTARROW")
                     row.label(text="Bool Tool Pies")
                     row.label(text="Context: [Object]")
-                    if pies_plus.dropdownBT:
-                        row = boxProp.row()
+
                 if pies_plus.dropdownBT:
-                    drawKeymap = 1
+                    drawKeymap = True
 
             # Delete
             elif name.startswith('Delete'):
                 if not deleteUsed:
-                    deleteUsed = 1
-                    boxProp = layout.box()
-                    row = boxProp.row()
+                    deleteUsed = True
+
+                    box = layout.box()
+                    row = box.row()
                     row.prop(pies_plus, 'dropdownDelete', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownDelete else "RIGHTARROW")
                     row.label(text="Delete Pies")
                     row.label(text="Context: [Mesh, Curve]")
-                    if pies_plus.dropdownDelete:
-                        row = boxProp.row()
+
                 if pies_plus.dropdownDelete:
-                    drawKeymap = 1
+                    drawKeymap = True
+
 
             # LoopTools
             elif name.startswith('LoopTools'):
                 if not ltUsed:
-                    ltUsed = 1
-                    boxProp = layout.box()
-                    row = boxProp.row()
+                    ltUsed = True
+
+                    box = layout.box()
+                    row = box.row()
                     row.prop(pies_plus, 'dropdownLT', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownLT else "RIGHTARROW")
                     row.label(text="LoopTools Pies")
                     row.label(text="Context: [Mesh]")
-                    if pies_plus.dropdownLT:
-                        row = boxProp.row()
+
                 if pies_plus.dropdownLT:
-                    drawKeymap = 1
+                    drawKeymap = True
 
             # Origin / Cursor
             elif name.startswith('Origin'):
                 if not originUsed:
-                    originUsed = 1
-                    boxProp = layout.box()
-                    row = boxProp.row()
+                    originUsed = True
+
+                    box = layout.box()
+                    row = box.row()
                     row.prop(pies_plus, 'dropdownOrigin', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownOrigin else "RIGHTARROW")
                     row.label(text="Origin / Cursor Pies")
                     row.label(text="Context: [3D View]")
-                    if pies_plus.dropdownOrigin:
-                        row = boxProp.row()
+
                 if pies_plus.dropdownOrigin:
-                    drawKeymap = 1
+                    drawKeymap = True
 
             # Proportional
             elif name.startswith('Proportional'):
                 if not proportionalUsed:
-                    proportionalUsed = 1
-                    boxProp = layout.box()
-                    row = boxProp.row()
+                    proportionalUsed = True
+
+                    box = layout.box()
+                    row = box.row()
                     row.prop(pies_plus, 'dropdownProportional', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownProportional else "RIGHTARROW")
                     row.label(text="Proportional Pies")
                     row.label(text="Context: [Object, Mesh]")
-                    if pies_plus.dropdownProportional:
-                        row = boxProp.row()
+
                 if pies_plus.dropdownProportional:
-                    drawKeymap = 1
+                    drawKeymap = True
 
             # Save
             elif name.startswith('Save'):
                 if not saveUsed:
-                    saveUsed = 1
-                    boxProp = layout.box()
-                    row = boxProp.row()
+                    saveUsed = True
+
+                    box = layout.box()
+                    row = box.row()
                     row.prop(pies_plus, 'dropdownSave', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownSave else "RIGHTARROW")
                     row.label(text="Save Pies")
                     row.label(text="Context: [3D View]")
-                    if pies_plus.dropdownSave:
-                        row = boxProp.row()
+
                 if pies_plus.dropdownSave:
-                    drawKeymap = 1
+                    drawKeymap = True
 
             # Select Mode
             elif name.startswith('Select Mode'):
                 if not selectModeUsed:
-                    selectModeUsed = 1
-                    boxProp = layout.box()
-                    row = boxProp.row()
+                    selectModeUsed = True
+
+                    box = layout.box()
+                    row = box.row()
                     row.prop(pies_plus, 'dropdownSelectMode', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownSelectMode else "RIGHTARROW")
                     row.label(text="Select Mode Pies")
                     row.label(text="Context: [3D View, UV Editor]")
-                    if pies_plus.dropdownSelectMode:
-                        row = boxProp.row()
+
                 if pies_plus.dropdownSelectMode:
-                    drawKeymap = 1
+                    drawKeymap = True
 
             # Selection
             elif name.startswith('Selection'):
                 if not selectionUsed:
-                    selectionUsed = 1
-                    boxProp = layout.box()
-                    row = boxProp.row()
+                    selectionUsed = True
+
+                    box = layout.box()
+                    row = box.row()
                     row.prop(pies_plus, 'dropdownSelection', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownSelection else "RIGHTARROW")
                     row.label(text="Selection Pies")
                     row.label(text="Context: [Object, Mesh]")
-                    if pies_plus.dropdownSelection:
-                        row = boxProp.row()
+
                 if pies_plus.dropdownSelection:
-                    drawKeymap = 1
+                    drawKeymap = True
 
             # Shading
             elif name.startswith('Shading'):
                 if not shadingUsed:
-                    shadingUsed = 1
-                    boxProp = layout.box()
-                    row = boxProp.row()
+                    shadingUsed = True
+
+                    box = layout.box()
+                    row = box.row()
                     row.prop(pies_plus, 'dropdownShading', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownShading else "RIGHTARROW")
                     row.label(text="Shading Pies")
                     row.label(text="Context: [3D View]")
-                    if pies_plus.dropdownShading:
-                        row = boxProp.row()
+
                 if pies_plus.dropdownShading:
-                    drawKeymap = 1
+                    drawKeymap = True
 
             # Snapping
             elif name.startswith('Snapping'):
                 if not snappingUsed:
-                    snappingUsed = 1
-                    boxProp = layout.box()
-                    row = boxProp.row()
+                    snappingUsed = True
+
+                    box = layout.box()
+                    row = box.row()
                     row.prop(pies_plus, 'dropdownSnapping', icon_only=True, emboss=False,
                              icon="DOWNARROW_HLT" if pies_plus.dropdownSnapping else "RIGHTARROW")
                     row.label(text="Snapping Pies")
                     row.label(text="Context: [3D View, UV Editor]")
-                    if pies_plus.dropdownSnapping:
-                        row = boxProp.row()
+
                 if pies_plus.dropdownSnapping:
-                    drawKeymap = 1
+                    drawKeymap = True
 
             # Transforms
             elif name.startswith('Transforms'):
                 if not transformUsed:
-                    transformUsed = 1
-                    boxProp = layout.box()
-                    row = boxProp.row()
+                    transformUsed = True
+
+                    box = layout.box()
+                    row = box.row()
                     row.prop(pies_plus, 'dropdownTransform', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownTransform else "RIGHTARROW")
                     row.label(text="Transform Pies")
                     row.label(text="Context: [Object]")
-                    if pies_plus.dropdownTransform:
-                        row = boxProp.row()
+
                 if pies_plus.dropdownTransform:
-                    drawKeymap = 1
+                    drawKeymap = True
 
             if drawKeymap:
+                kc = wm.keyconfigs.user
+
                 kmi_name, kmi_value, km_name = items[:3]
-                split = boxProp.split()
+                split = box.split()
                 col = split.column()
                 km = kc.keymaps[km_name]
-                PIESPLUS_addon_keymaps.get_hotkey_entry_item(
-                    name, kc, km, kmi_name, kmi_value, col)
+                PIESPLUS_addon_keymaps.get_hotkey_entry_item(name, kc, km, kmi_name, kmi_value, col)
 
 
 class PIESPLUS_OT_add_hotkey(bpy.types.Operator):
@@ -402,36 +400,79 @@ class PIESPLUS_OT_add_hotkey(bpy.types.Operator):
 ##################################
 
 
-class PIESPLUS_OT_check_for_update(bpy.types.Operator):
-    bl_idname = "updater_pies_plus.check_for_update"
-    bl_label = ""
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        updater.check_for_update_now()
-        return{'FINISHED'}
-
-
 class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
     bl_idname = __package__
 
-    Tabs: EnumProperty(items=(('general', "General", "Information & Settings"),
-                              ('keymaps', "Keymaps", "Keymapping")))
+    Tabs: EnumProperty(
+        items=(
+            ('general', "General", "Information & Settings"),
+            ('keymaps', "Keymaps", "Keymapping")
+        )
+    )
 
-    gizmoSwitch_Pref: EnumProperty(items=(('tool', "Tool", "Changes the tool"),
-                                          ('gizmo', "Gizmo", "Changes the gizmo instead of the tool (preferred workflow)")))
-    keepSharp_Pref: BoolProperty(description = "Toggles whether the FWN Modifier accounts for Sharps on each mesh", default = True)
-    weightValue_Pref: IntProperty(name="Weight", default = 100, min = 1, max = 100)
-    faceInf_Pref: BoolProperty(description = "Use influence of face for weighting", default = False)
-    smoothAngle_Pref: IntProperty(name = "Smooth Angle", default = 60, min = 0, max = 180)
-    autoSnap_Pref: BoolProperty(description = "Automatically enables snapping when you change any settings within the pie", default = True)
-    autoAbsoluteGridSnap_Pref: BoolProperty(description = "Automatically enables Absolute Grid Snap when you switch to incremental snapping within the pie", default = False)
-    resetRot_Pref: BoolProperty(description = "Decide whether the 3D Cursors rotation resets when you reset per axis", default = True)
-    faceCenterSnap_Pref: BoolProperty(description = "Allows snapping directly to the center of any face on the object being edited (WARNING: This operation can be very slow in bigger scenes)")
-    invertSelection_Pref: BoolProperty(description = "Only deselect all objects if all object are selected (versus deselecting if any selection is made)")
-    preserveUVSelection_Pref: BoolProperty(description = "Selects all faces when you leave UV Sync so you don't need to select the mesh again as you would normally", default = False)
-    simpleContextMode_Pref: BoolProperty(description = "A simple version of the context mode pie, which removes xray and overlay toggle (in case you keep using it on accident)", default = False)
-    autoSmoothShadeFlat_Pref: BoolProperty(description = "Automatically set objects that have Auto Smooth+ remove to Shade Flat. Having this off will keep the objects Shade Smooth state after removing Auto Smooth Normals", default = False)
+    gizmoSwitch_Pref: EnumProperty(
+        items=(
+            ('tool', "Tool", "Changes the tool"),
+            ('gizmo', "Gizmo", "Changes the gizmo instead of the tool (preferred workflow)")
+        )
+    )
+
+    keepSharp_Pref: BoolProperty(
+        description="Toggles whether the FWN Modifier accounts for Sharps on each mesh",
+        default=True
+    )
+    
+    weightValue_Pref: IntProperty(
+        name="Weight",
+        default=100,
+        min=1,
+        max=100
+    )
+    
+    faceInf_Pref: BoolProperty(
+        description="Use influence of face for weighting"
+    )
+    
+    smoothAngle_Pref: IntProperty(
+        name="Smooth Angle",
+        default=60,
+        min=0,
+        max=180
+    )
+    
+    autoSnap_Pref: BoolProperty(
+        description="Automatically enables snapping when you change any settings within the pie",
+        default=True
+    )
+    
+    autoAbsoluteGridSnap_Pref: BoolProperty(
+        description="Automatically enables Absolute Grid Snap when you switch to incremental snapping within the pie"
+    )
+    
+    resetRot_Pref: BoolProperty(
+        description="Decide whether the 3D Cursors rotation resets when you reset per axis", 
+        default=True
+    )
+    
+    faceCenterSnap_Pref: BoolProperty(
+        description="Allows snapping directly to the center of any face on the object being edited (WARNING: This operation can be very slow in bigger scenes)"
+    )
+    
+    invertSelection_Pref: BoolProperty(
+        description="Only deselect all objects if all object are selected (versus deselecting if any selection is made)"
+    )
+    
+    preserveUVSelection_Pref: BoolProperty(
+        description="Selects all faces when you leave UV Sync so you don't need to select the mesh again as you would normally"
+    )
+    
+    simpleContextMode_Pref: BoolProperty(
+        description="A simple version of the context mode pie, which removes xray and overlay toggle (in case you keep using it on accident)"
+    )
+    
+    autoSmoothShadeFlat_Pref: BoolProperty(
+        description="Automatically set objects that have Auto Smooth+ removed to Shade Flat"
+    )
 
     def draw(self, context):
         layout = self.layout
@@ -448,7 +489,6 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
 
         elif not updater.update_ready:
             row.label(text = "You have the latest version of Pie Menus Plus! There are no new versions available.")
-
             row.operator("updater_pies_plus.check_for_update", text = "", icon = "FILE_REFRESH")
 
         row.operator("wm.url_open", text="", icon = 'URL').url = "https://gumroad.com/l/piesplus"
@@ -530,11 +570,17 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
 ##################################
 
 
+classes = (
+    PIESPLUS_MT_addon_prefs,
+    PIESPLUS_OT_add_hotkey,
+    PIESPLUS_property_group,
+    PIESPLUS_OT_check_for_update
+)
+
+
 def register():
-    bpy.utils.register_class(PIESPLUS_MT_addon_prefs)
-    bpy.utils.register_class(PIESPLUS_OT_add_hotkey)
-    bpy.utils.register_class(PIESPLUS_property_group)
-    bpy.utils.register_class(PIESPLUS_OT_check_for_update)
+    for cls in classes:
+        bpy.utils.register_class(cls)
 
     # Set the updaters repo
     updater.user = "oRazeD"
@@ -592,11 +638,11 @@ def register():
 
     PIESPLUS_addon_keymaps.new_keymap('Proportional Editing Pie (Object Mode)', 'wm.call_menu_pie', 'PIESPLUS_MT_proportional_object_mode',
                                       'Object Mode', 'EMPTY', 'WINDOW',
-                                      'O', 'PRESS', False, False, True)
+                                      'O', 'PRESS', False, True, False)
 
     PIESPLUS_addon_keymaps.new_keymap('Proportional Editing Pie (Edit Mode)', 'wm.call_menu_pie', 'PIESPLUS_MT_proportional_edit_mode',
                                       'Mesh', 'EMPTY', 'WINDOW',
-                                      'O', 'PRESS', False, False, True)
+                                      'O', 'PRESS', False, True, False)
 
     PIESPLUS_addon_keymaps.new_keymap('Save Pie', 'wm.call_menu_pie', 'PIESPLUS_MT_save',
                                       '3D View', 'VIEW_3D', 'WINDOW',
@@ -636,11 +682,10 @@ def register():
 
     PIESPLUS_addon_keymaps.register_keymaps()  # Keymap Setup
 
+
 def unregister():
-    bpy.utils.unregister_class(PIESPLUS_MT_addon_prefs)
-    bpy.utils.unregister_class(PIESPLUS_OT_add_hotkey)
-    bpy.utils.unregister_class(PIESPLUS_property_group)
-    bpy.utils.unregister_class(PIESPLUS_OT_check_for_update)
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
 
     del bpy.types.Scene.pies_plus
 

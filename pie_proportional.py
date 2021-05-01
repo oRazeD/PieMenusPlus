@@ -1,29 +1,25 @@
 import bpy
-from bpy.types import Operator
+from .generic_utils import OpInfo
 
 
-class PIESPLUS_OT_proportional_smooth(Operator):
-    bl_idname = "pies_plus.prop_smooth"
-    bl_label = "Smooth"
-    bl_description = "Changes the proportional editing method to Smooth"
-    bl_options = {'REGISTER', 'UNDO'}
+class PIESPLUS_OT_change_proportional_falloff(OpInfo, bpy.types.Operator):
+    bl_idname = "pies_plus.change_proportional_falloff"
+    bl_label = "Change Proportional Falloff"
+    bl_description = "Changes the proportional editing falloff to the selected type"
 
-    def execute(self, context):
-        ts = context.tool_settings
-
-        if context.mode == 'OBJECT':
-            ts.use_proportional_edit_objects = True
-        else:
-            ts.use_proportional_edit = True
-        ts.proportional_edit_falloff = 'SMOOTH'
-        return {'FINISHED'}
-
-
-class PIESPLUS_OT_proportional_sphere(Operator):
-    bl_idname = "pies_plus.prop_sphere"
-    bl_label = "Sphere"
-    bl_description = "Changes the proportional editing method to Sphere"
-    bl_options = {'REGISTER', 'UNDO'}
+    falloff_type: bpy.props.EnumProperty(
+        items=(
+            ('SMOOTH', "Smooth", ""),
+            ('SPHERE', "Sphere", ""),
+            ('ROOT', "Root", ""),
+            ('INVERSE_SQUARE', "Inverse Square", ""),
+            ('SHARP', "Sharp", ""),
+            ('LINEAR', "Linear", ""),
+            ('CONSTANT', "Constant", ""),
+            ('RANDOM', "Random", "")
+        ),
+        name='Falloff Type'
+    )
 
     def execute(self, context):
         ts = context.tool_settings
@@ -32,109 +28,8 @@ class PIESPLUS_OT_proportional_sphere(Operator):
             ts.use_proportional_edit_objects = True
         else:
             ts.use_proportional_edit = True
-        ts.proportional_edit_falloff = 'SPHERE'
-        return {'FINISHED'}
 
-
-class PIESPLUS_OT_proportional_root(Operator):
-    bl_idname = "pies_plus.prop_root"
-    bl_label = "Root"
-    bl_description = "Changes the proportional editing method to Root"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        ts = context.tool_settings
-
-        if context.mode == 'OBJECT':
-            ts.use_proportional_edit_objects = True
-        else:
-            ts.use_proportional_edit = True
-        ts.proportional_edit_falloff = 'ROOT'
-        return {'FINISHED'}
-
-
-class PIESPLUS_OT_proportional_sharp(Operator):
-    bl_idname = "pies_plus.prop_sharp"
-    bl_label = "Sharp"
-    bl_description = "Changes the proportional editing method to Sharp"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        ts = context.tool_settings
-
-        if context.mode == 'OBJECT':
-            ts.use_proportional_edit_objects = True
-        else:
-            ts.use_proportional_edit = True
-        ts.proportional_edit_falloff = 'SHARP'
-        return {'FINISHED'}
-
-
-class PIESPLUS_OT_proportional_linear(Operator):
-    bl_idname = "pies_plus.prop_linear"
-    bl_label = "Linear"
-    bl_description = "Changes the proportional editing method to Linear"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        ts = context.tool_settings
-
-        if context.mode == 'OBJECT':
-            ts.use_proportional_edit_objects = True
-        else:
-            ts.use_proportional_edit = True
-        ts.proportional_edit_falloff = 'LINEAR'
-        return {'FINISHED'}
-
-
-class PIESPLUS_OT_proportional_constant(Operator):
-    bl_idname = "pies_plus.prop_constant"
-    bl_label = "Constant"
-    bl_description = "Changes the proportional editing method to Constant"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        ts = context.tool_settings
-
-        if context.mode == 'OBJECT':
-            ts.use_proportional_edit_objects = True
-        else:
-            ts.use_proportional_edit = True
-        ts.proportional_edit_falloff = 'CONSTANT'
-        return {'FINISHED'}
-
-
-class PIESPLUS_OT_proportional_random(Operator):
-    bl_idname = "pies_plus.prop_random"
-    bl_label = "Random"
-    bl_description = "Changes the proportional editing method to Random"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        ts = context.tool_settings
-
-        if context.mode == 'OBJECT':
-            ts.use_proportional_edit_objects = True
-        else:
-            ts.use_proportional_edit = True
-        ts.proportional_edit_falloff = 'RANDOM'
-        return {'FINISHED'}
-
-
-class PIESPLUS_OT_proportional_inverse_square(Operator):
-    bl_idname = "pies_plus.prop_inverse_square"
-    bl_label = "Inverse Square"
-    bl_description = "Changes the proportional editing method to Inverse Square"
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        ts = context.tool_settings
-
-        if context.mode == 'OBJECT':
-            ts.use_proportional_edit_objects = True
-        else:
-            ts.use_proportional_edit = True
-        ts.proportional_edit_falloff = 'INVERSE_SQUARE'
+        ts.proportional_edit_falloff = self.falloff_type
         return {'FINISHED'}
 
 
@@ -143,22 +38,12 @@ class PIESPLUS_OT_proportional_inverse_square(Operator):
 ##############################
 
 
-classes = (PIESPLUS_OT_proportional_smooth,
-           PIESPLUS_OT_proportional_sphere,
-           PIESPLUS_OT_proportional_root,
-           PIESPLUS_OT_proportional_sharp,
-           PIESPLUS_OT_proportional_linear,
-           PIESPLUS_OT_proportional_constant,
-           PIESPLUS_OT_proportional_random,
-           PIESPLUS_OT_proportional_inverse_square)
-
 def register():
-    for cls in classes:
-        bpy.utils.register_class(cls)
+    bpy.utils.register_class(PIESPLUS_OT_change_proportional_falloff)
+
 
 def unregister():
-    for cls in classes:
-        bpy.utils.unregister_class(cls)
+    bpy.utils.unregister_class(PIESPLUS_OT_change_proportional_falloff)
 
 
 # ##### BEGIN GPL LICENSE BLOCK #####

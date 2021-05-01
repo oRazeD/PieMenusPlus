@@ -1,4 +1,5 @@
 import bpy, os
+from bpy.props import BoolProperty
 
 
 class PIESPLUS_OT_batch_import(bpy.types.Operator):
@@ -7,16 +8,36 @@ class PIESPLUS_OT_batch_import(bpy.types.Operator):
     bl_description = "Batch import files based on a selected directory"
     bl_options = {'REGISTER'}
 
-    import_type: bpy.props.EnumProperty(items=(('fbx', "FBX", ""),
-                                               ('obj', "OBJ", ""),
-                                               ('both',"Both","")), name = 'File Type')
+    import_type: bpy.props.EnumProperty(
+        items=(
+            ('fbx', "FBX", ""),
+            ('obj', "OBJ", ""),
+            ('both',"Both","")
+        ),
+        name='File Type'
+    )
 
-    include_subdirs: bpy.props.BoolProperty(default = False, name = 'Include Subdirectories', description = 'Include subdirectories of the selected directory')
-    group_into_colls: bpy.props.BoolProperty(default = False, name = 'Collection per Import', description = 'Create a new collection for every file imported and link them')
-    remove_uv_maps: bpy.props.BoolProperty(default = False, name = 'Clear UV Maps', description = 'Remove all UV Maps from all imported models')
+    include_subdirs: BoolProperty(
+        name='Include Subdirectories',
+        description='Include subdirectories of the selected directory'
+    )
 
-    # To-do for v1.3
-    #clear_normals: bpy.props.BoolProperty(default = False, name = 'Clear Normals', description = 'Clear custom normals from all imported models')
+    group_into_colls: BoolProperty(
+        name='Collection per Import',
+        description='Create a new collection for every file imported and link them'
+    )
+
+    remove_uv_maps: BoolProperty(
+        name='Clear UV Maps',
+        description='Remove all UV Maps from all imported models'
+    )
+
+    # TODO for v1.4
+    #
+    #clear_normals: bpy.props.BoolProperty(
+    #    name='Clear Normals',
+    #    description='Clear custom normals from all imported models'
+    #)
 
     directory: bpy.props.StringProperty()
 
@@ -125,6 +146,7 @@ class PIESPLUS_OT_open_last(bpy.types.Operator):
 def register():
     bpy.utils.register_class(PIESPLUS_OT_batch_import)
     bpy.utils.register_class(PIESPLUS_OT_open_last)
+
 
 def unregister():
     bpy.utils.unregister_class(PIESPLUS_OT_batch_import)

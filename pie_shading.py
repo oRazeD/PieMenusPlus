@@ -1,11 +1,12 @@
 import bpy
 from bpy.types import Operator
+from .generic_utils import OpInfo
 
 
 class PIESPLUS_OT_auto_smooth(Operator):
     bl_idname = "pies_plus.auto_smooth"
     bl_label = " Auto Smooth+"
-    bl_description = "[BATCH] Automation for setting up meshes with Auto Smooth Normals. Also turns on Shade Smooth as it is a prerequisite for ASN"
+    bl_description = "[BATCH] Automation for setting up meshes with Auto Smooth Normals. Also turns on Shade Smooth"
     bl_options = {'UNDO'}
 
     def execute(self, context):
@@ -31,11 +32,10 @@ class PIESPLUS_OT_auto_smooth(Operator):
         return {'FINISHED'}
 
 
-class PIESPLUS_OT_remove_auto_smooth(Operator):
+class PIESPLUS_OT_remove_auto_smooth(OpInfo, Operator):
     bl_idname = "pies_plus.remove_auto_smooth"
     bl_label = ""
     bl_description = "[Batch] An 'undo' for Quick Smooth, sets to Shade Flat as well"
-    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         if not context.selected_objects and not context.active_object:
@@ -59,11 +59,10 @@ class PIESPLUS_OT_remove_auto_smooth(Operator):
         return {'FINISHED'}
 
 
-class PIESPLUS_OT_wire_per_obj(Operator):
+class PIESPLUS_OT_wire_per_obj(OpInfo, Operator):
     bl_idname = "pies_plus.wire_per_obj"
-    bl_label = "Wireframe (per obj)"
+    bl_label = "Wire Overlay Per Object"
     bl_description = "Toggle per-object wireframes for all selected objects"
-    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         for ob in context.selected_objects:
@@ -83,14 +82,13 @@ class PIESPLUS_OT_remove_wire_per_obj(Operator):
         return {'FINISHED'}
 
 
-class PIESPLUS_OT_recalc_normals(Operator):
+class PIESPLUS_OT_recalc_normals(OpInfo, Operator):
     """    [BATCH] Recalculates the Active(s) Normals (individual faces in Edit Mode if selected)
 
         Specials:
     ALT  -  Invert"""
     bl_idname = 'pies_plus.recalc_normals'
     bl_label = "Recalculate Normals"
-    bl_options = {'REGISTER', 'UNDO'}
 
     def invoke(self, context, event):
         if not context.selected_objects and not context.active_object:
@@ -171,11 +169,10 @@ class PIESPLUS_OT_shade_flat(Operator):
         return{'FINISHED'}
 
 
-class PIESPLUS_OT_auto_fwn(Operator):
+class PIESPLUS_OT_auto_fwn(OpInfo, Operator):
     bl_idname = "pies_plus.auto_fwn"
     bl_label = "Quick Weighted Normals"
     bl_description = "[BATCH] Automates assigning the Weighted Normals modifier to all selected meshes"
-    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         if not context.selected_objects and not context.active_object:
@@ -220,11 +217,10 @@ class PIESPLUS_OT_auto_fwn(Operator):
         return{'FINISHED'}
 
 
-class PIESPLUS_OT_remove_custom_normals(Operator):
+class PIESPLUS_OT_remove_custom_normals(OpInfo, Operator):
     bl_idname = "pies_plus.remove_custom_normals"
     bl_label = "Clear Custom Normals"
     bl_description = "Removes custom normals on all selected objects (useful for meshes imported with smoothing groups)"
-    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         if not context.selected_objects and not context.active_object:
@@ -249,19 +245,23 @@ class PIESPLUS_OT_remove_custom_normals(Operator):
 ##############################
 
 
-classes = (PIESPLUS_OT_auto_smooth,
-           PIESPLUS_OT_remove_auto_smooth,
-           PIESPLUS_OT_wire_per_obj,
-           PIESPLUS_OT_remove_wire_per_obj,
-           PIESPLUS_OT_recalc_normals,
-           PIESPLUS_OT_shade_smooth,
-           PIESPLUS_OT_shade_flat,
-           PIESPLUS_OT_auto_fwn,
-           PIESPLUS_OT_remove_custom_normals)
+classes = (
+    PIESPLUS_OT_auto_smooth,
+    PIESPLUS_OT_remove_auto_smooth,
+    PIESPLUS_OT_wire_per_obj,
+    PIESPLUS_OT_remove_wire_per_obj,
+    PIESPLUS_OT_recalc_normals,
+    PIESPLUS_OT_shade_smooth,
+    PIESPLUS_OT_shade_flat,
+    PIESPLUS_OT_auto_fwn,
+    PIESPLUS_OT_remove_custom_normals
+)
+
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
+
 
 def unregister():
     for cls in classes:

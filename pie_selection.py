@@ -1,12 +1,12 @@
 import bpy, bmesh
 from bpy.types import Operator
+from .generic_utils import OpInfo
 
 
-class PIESPLUS_OT_view_selection(Operator):
+class PIESPLUS_OT_view_selection(OpInfo, Operator):
     bl_idname = 'pies_plus.frame_selected_all'
     bl_label = "Frame Selected / All"
     bl_description = "Frames the selection if one exists, otherwise frames the entire scene"
-    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         if context.selected_objects:
@@ -16,7 +16,7 @@ class PIESPLUS_OT_view_selection(Operator):
         return {'FINISHED'}
 
 
-class PIESPLUS_OT_mesh_selection(Operator):
+class PIESPLUS_OT_mesh_selection(OpInfo, Operator):
     """Selects or Deselects all visible objects in the scene.
 
         Specials:
@@ -25,7 +25,6 @@ class PIESPLUS_OT_mesh_selection(Operator):
     ALT    - Invert"""
     bl_idname = 'pies_plus.mesh_selection'
     bl_label = "Select / Deselect All"
-    bl_options = {'REGISTER', 'UNDO'}
 
     def invoke(self, context, event):
         if context.mode == 'EDIT_MESH':
@@ -71,14 +70,13 @@ class PIESPLUS_OT_mesh_selection(Operator):
         return {'FINISHED'}
 
 
-class PIESPLUS_OT_select_loop_inner_region(Operator):
+class PIESPLUS_OT_select_loop_inner_region(OpInfo, Operator):
     """Converts a loop selection to a filled face selection.
 
         Specials:
     ALT - Invert"""
     bl_idname = 'pies_plus.select_loop_inner_region'
     bl_label = "Select Boundary Fill"
-    bl_options = {'REGISTER', 'UNDO'}
 
     def invoke(self, context, event):
         bpy.ops.mesh.loop_to_region(select_bigger=event.alt)
@@ -86,10 +84,9 @@ class PIESPLUS_OT_select_loop_inner_region(Operator):
         return {'FINISHED'}
 
 
-class PIESPLUS_OT_select_seamed(Operator):
+class PIESPLUS_OT_select_seamed(OpInfo, Operator):
     bl_idname = 'pies_plus.select_seamed'
     bl_label = "Select all edges with seams"
-    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         bpy.ops.object.mode_set(mode='EDIT')
@@ -106,10 +103,9 @@ class PIESPLUS_OT_select_seamed(Operator):
         return {'FINISHED'}
 
 
-class PIESPLUS_OT_select_sharped(Operator):
+class PIESPLUS_OT_select_sharped(OpInfo, Operator):
     bl_idname = 'pies_plus.select_sharped'
     bl_label = "Select all edges with sharps"
-    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         bpy.ops.object.mode_set(mode='EDIT')
@@ -126,25 +122,23 @@ class PIESPLUS_OT_select_sharped(Operator):
         return {'FINISHED'}
 
 
-class PIESPLUS_OT_make_links(Operator):
+class PIESPLUS_OT_make_links(OpInfo, Operator):
     bl_idname = 'pies_plus.make_links'
     bl_label = ""
     bl_description = 'Make a new link from the Active Object'
-    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         bpy.ops.wm.call_menu(name="VIEW3D_MT_make_links")
         return {'FINISHED'}
 
 
-class PIESPLUS_OT_ring_sel(Operator):
+class PIESPLUS_OT_ring_sel(OpInfo, Operator):
     """Make a ringed selection.
 
         Specials:
     SHIFT - & Loop"""
     bl_idname = 'pies_plus.ring_sel'
     bl_label = ""
-    bl_options = {'REGISTER', 'UNDO'}
 
     def invoke(self, context, event):
         bpy.ops.mesh.loop_multi_select(ring = True)
@@ -154,14 +148,13 @@ class PIESPLUS_OT_ring_sel(Operator):
         return {'FINISHED'}
 
 
-class PIESPLUS_OT_loop_sel(Operator):
+class PIESPLUS_OT_loop_sel(OpInfo, Operator):
     """Make a looped selection.
 
         Specials:
     SHIFT - & Ring"""
     bl_idname = 'pies_plus.loop_sel'
     bl_label = ""
-    bl_options = {'REGISTER', 'UNDO'}
 
     def invoke(self, context, event):
         bpy.ops.mesh.loop_multi_select(ring = False)
@@ -176,14 +169,16 @@ class PIESPLUS_OT_loop_sel(Operator):
 ##############################
 
 
-classes = (PIESPLUS_OT_view_selection,
-           PIESPLUS_OT_mesh_selection,
-           PIESPLUS_OT_select_loop_inner_region,
-           PIESPLUS_OT_select_seamed,
-           PIESPLUS_OT_select_sharped,
-           PIESPLUS_OT_make_links,
-           PIESPLUS_OT_loop_sel,
-           PIESPLUS_OT_ring_sel)
+classes = (
+    PIESPLUS_OT_view_selection,
+    PIESPLUS_OT_mesh_selection,
+    PIESPLUS_OT_select_loop_inner_region,
+    PIESPLUS_OT_select_seamed,
+    PIESPLUS_OT_select_sharped,
+    PIESPLUS_OT_make_links,
+    PIESPLUS_OT_loop_sel,
+    PIESPLUS_OT_ring_sel
+)
 
 
 def register():

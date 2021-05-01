@@ -81,7 +81,7 @@ class PIESPLUS_MT_modes(Menu):
 
             box.operator("object.mode_set", text="Sculpt Mode", icon='SCULPTMODE_HLT').mode = "SCULPT"
             box.operator("object.mode_set", text="Weight Paint", icon='WPAINT_HLT').mode = "WEIGHT_PAINT"
-            box.operator("object.mode_set", text="Texture Paint", icon='WPAINT_HLT').mode = "TEXTURE_PAINT"
+            box.operator("object.mode_set", text="Texture Paint", icon='TPAINT_HLT').mode = "TEXTURE_PAINT"
             box.operator("object.mode_set", text="Vertex Paint", icon='VPAINT_HLT').mode = "VERTEX_PAINT"
             box.operator("pies_plus.particle_edit", text="Particle Edit", icon='PARTICLEMODE')
 
@@ -213,11 +213,11 @@ class PIESPLUS_MT_active_tools(Menu):
             pie.operator("pies_plus.active_tools", text="All", icon='GIZMO').active_tools = 'tool_transform'
         else: # Gizmo
             #4 - LEFT
-            pie.operator("pies_plus.active_tools", text="Move", icon='ORIENTATION_GLOBAL').active_tools = 'gizmo_move'
+            pie.operator("pies_plus.active_tools", text="Move Toggle", icon='ORIENTATION_GLOBAL').active_tools = 'gizmo_move'
             #6 - RIGHT
-            pie.operator("pies_plus.active_tools", text="Rotate", icon='DRIVER_ROTATIONAL_DIFFERENCE').active_tools = 'gizmo_rotate'
+            pie.operator("pies_plus.active_tools", text="Rotate Toggle", icon='DRIVER_ROTATIONAL_DIFFERENCE').active_tools = 'gizmo_rotate'
             #2 - BOTTOM
-            pie.operator("pies_plus.active_tools", text="Scale", icon='SNAP_FACE').active_tools = 'gizmo_scale'
+            pie.operator("pies_plus.active_tools", text="Scale Toggle", icon='SNAP_FACE').active_tools = 'gizmo_scale'
             #8 - TOP
             pie.operator("pies_plus.active_tools", text="Tweak", icon='RESTRICT_SELECT_OFF').active_tools = 'select_tweak'
             #7 - TOP - LEFT
@@ -379,7 +379,7 @@ class PIESPLUS_MT_looptools(Menu):
             # 3 - BOTTOM - RIGHT
             pie.operator("mesh.looptools_bridge", text="Bridge")
         else:
-            pie.label(text="          WARNING: You do not have LoopTools enabled")
+            pie.label(text="          WARNING: You must have LoopTools enabled")
 
 
 ########################################################################################################################
@@ -420,7 +420,7 @@ class PIESPLUS_MT_booltool(Menu):
             pie.operator("object.booltool_auto_intersect", text='Auto Intersect', icon='SELECT_INTERSECT')
 
         else:
-            pie.label(text="          WARNING: You do not have Bool Tool enabled")
+            pie.label(text="          WARNING: You must have Bool Tool enabled")
 
 
 ########################################################################################################################
@@ -485,6 +485,8 @@ class PIESPLUS_MT_transforms(Menu):
             box = col.box().column()
             box.scale_y = 1.2
             box.operator("object.visual_transform_apply", text="Apply Visual Transforms", icon='FILE_TICK')
+        else:
+            pie.label(text="          WARNING: You must have an object selected")
 
 
 ########################################################################################################################
@@ -773,25 +775,27 @@ class PIESPLUS_MT_shading(Menu):
         #1 - BOTTOM - LEFT
         col = pie.column()
 
+        col.scale_x = .96 # Override for X axis scaling
+
         gap = col.column()
         gap.separator()
         gap.scale_y = 19.5
 
         box = col.box().column()
-        box.scale_y = 1.1
+        box.scale_y = 1.2
 
-        split = box.split(factor=.55)
+        split = box.split(factor=.55, align = True)
 
-        col_left = split.column()
-        col_left.scale_x = .01
-        col_left.operator("pies_plus.auto_smooth")
+        split_left = split.row(align = True)
+        split_left.scale_x = .1
+        split_left.operator("pies_plus.auto_smooth")
 
-        col_right = split.column()
-        col_right_row = col_right.row()
-        col_right_row.prop(context.scene.pies_plus, "smoothAngle", text = "")
-        col_right_row.operator("pies_plus.remove_auto_smooth", text = "", icon = 'REMOVE')
+        split_right = split.row(align= True)
+        split_right.prop(context.scene.pies_plus, "smoothAngle", text = "")
+        split_right.operator("pies_plus.remove_auto_smooth", icon = 'REMOVE')
 
         row = box.row(align = True)
+        row.scale_y = .95
         row.label(text = "Shade:")
         row.operator("pies_plus.shade_smooth", text = "Smooth")
         row.operator("pies_plus.shade_flat", text = "Flat")
@@ -806,8 +810,8 @@ class PIESPLUS_MT_shading(Menu):
         box.scale_y = 1.2
         row = box.row()
         row.prop(space.overlay, "show_face_orientation", text = 'Face Orientation Overlay')
-        row = box.row()
-        row.operator("pies_plus.wire_per_obj", text = 'Wire Overlay Per Object', icon='MOD_WIREFRAME')
+        row = box.row(align = True)
+        row.operator("pies_plus.wire_per_obj", icon='MOD_WIREFRAME')
         row.operator("pies_plus.remove_wire_per_obj", icon='REMOVE')
         # 3 - BOTTOM - RIGHT
         pie.prop(space.overlay, "show_wireframes", text = 'Wire Overlay', icon = 'MOD_WIREFRAME')
@@ -991,11 +995,11 @@ class PIESPLUS_MT_proportional_edit_mode(Menu):
         ts = context.tool_settings
 
         # 4 - LEFT
-        pie.operator("pies_plus.prop_smooth", icon='SMOOTHCURVE')
+        pie.operator("pies_plus.change_proportional_falloff", text='Smooth', icon='SMOOTHCURVE').falloff_type = 'SMOOTH'
         # 6 - RIGHT
-        pie.operator("pies_plus.prop_sphere", icon='SPHERECURVE')
+        pie.operator("pies_plus.change_proportional_falloff", text='Sphere', icon='SPHERECURVE').falloff_type = 'SPHERE'
         # 2 - BOTTOM
-        pie.operator("pies_plus.prop_inverse_square", icon='INVERSESQUARECURVE')
+        pie.operator("pies_plus.change_proportional_falloff", text='Inverse Square', icon='INVERSESQUARECURVE').falloff_type = 'INVERSE_SQUARE'
         # 8 - TOP
         pie.prop(ts, "use_proportional_edit", text="Proportional Toggle", icon='PROP_ON')
         # 7 - TOP - LEFT
@@ -1011,12 +1015,12 @@ class PIESPLUS_MT_proportional_edit_mode(Menu):
 
         box = col.box().column()
         box.scale_y = 1.2
-        box.operator("pies_plus.prop_constant", icon='NOCURVE')
-        box.operator("pies_plus.prop_random", icon='RNDCURVE')
-        box.operator("pies_plus.prop_sharp", icon='SHARPCURVE')
-        box.operator("pies_plus.prop_linear", icon='LINCURVE')
+        box.operator("pies_plus.change_proportional_falloff", text='Constant', icon='NOCURVE').falloff_type = 'CONSTANT'
+        box.operator("pies_plus.change_proportional_falloff", text='Random', icon='RNDCURVE').falloff_type = 'RANDOM'
+        box.operator("pies_plus.change_proportional_falloff", text='Sharp', icon='SHARPCURVE').falloff_type = 'SHARP'
+        box.operator("pies_plus.change_proportional_falloff", text='Linear', icon='LINCURVE').falloff_type = 'LINEAR'
         # 3 - BOTTOM - RIGHT
-        pie.operator("pies_plus.prop_root", icon='ROOTCURVE')
+        pie.operator("pies_plus.change_proportional_falloff", text='Root', icon='ROOTCURVE').falloff_type = 'ROOT'
 
 
 class PIESPLUS_MT_proportional_object_mode(Menu):
@@ -1027,20 +1031,18 @@ class PIESPLUS_MT_proportional_object_mode(Menu):
         layout = self.layout
         pie = layout.menu_pie()
 
-        ts = context.tool_settings
-
         # 4 - LEFT
-        pie.operator("pies_plus.prop_smooth", icon='SMOOTHCURVE')
+        pie.operator("pies_plus.change_proportional_falloff", text='Smooth', icon='SMOOTHCURVE').falloff_type = 'SMOOTH'
         # 6 - RIGHT
-        pie.operator("pies_plus.prop_sphere", icon='SPHERECURVE')
+        pie.operator("pies_plus.change_proportional_falloff", text='Sphere', icon='SPHERECURVE').falloff_type = 'SPHERE'
         # 2 - BOTTOM
-        pie.operator("pies_plus.prop_inverse_square", icon='INVERSESQUARECURVE')
+        pie.operator("pies_plus.change_proportional_falloff", text='Inverse Square', icon='INVERSESQUARECURVE').falloff_type = 'INVERSE_SQUARE'
         # 8 - TOP
-        pie.prop(ts, "use_proportional_edit_objects", text="Proportional Toggle")
+        pie.prop(context.tool_settings, "use_proportional_edit_objects", text="Proportional Toggle")
         # 7 - TOP - LEFT
-        pie.operator("pies_plus.prop_sharp", icon='SHARPCURVE')
+        pie.operator("pies_plus.change_proportional_falloff", text='Sharp', icon='SHARPCURVE').falloff_type = 'SHARP'
         # 9 - TOP - RIGHT
-        pie.operator("pies_plus.prop_linear", icon='LINCURVE')
+        pie.operator("pies_plus.change_proportional_falloff", text='Linear', icon='LINCURVE').falloff_type = 'LINEAR'
         # 1 - BOTTOM - LEFT
         col = pie.column()
 
@@ -1050,10 +1052,10 @@ class PIESPLUS_MT_proportional_object_mode(Menu):
 
         box = col.box().column()
         box.scale_y = 1.2
-        box.operator("pies_plus.prop_constant", icon='NOCURVE')
-        box.operator("pies_plus.prop_random", icon='RNDCURVE')
+        box.operator("pies_plus.change_proportional_falloff", text='Constant', icon='NOCURVE').falloff_type = 'CONSTANT'
+        box.operator("pies_plus.change_proportional_falloff", text='Random', icon='RNDCURVE').falloff_type = 'RANDOM'
         # 3 - BOTTOM - RIGHT
-        pie.operator("pies_plus.prop_root", icon='ROOTCURVE')
+        pie.operator("pies_plus.change_proportional_falloff", text='Root', icon='ROOTCURVE').falloff_type = 'ROOT'
 
 
 ########################################################################################################################
@@ -1264,7 +1266,7 @@ class PIESPLUS_MT_align(Menu):
         pie.operator("pies_plus.world_align", text = "Align Global Y", icon = 'AXIS_SIDE').align_axis = 'align_y'
         # 2 - BOTTOM
         pie.operator("pies_plus.world_align", text = "Align Global Z", icon = 'AXIS_TOP').align_axis = 'align_z'
-        # 8 - TOP\
+        # 8 - TOP
         pie.operator("pies_plus.quick_world_align", icon = 'EMPTY_DATA')
         # 7 - TOP - LEFT
         pie.operator("pies_plus.active_face_align", icon = 'PIVOT_ACTIVE')
@@ -1309,7 +1311,6 @@ class PIESPLUS_MT_align(Menu):
 ##############################
 
 
-    # Icons
 brush_icons = {}
 
 def create_icons():
@@ -1337,30 +1338,31 @@ def release_icons():
             bpy.app.icons.release(value)
 
 
-    # Classes
-classes = (PIESPLUS_MT_modes,
-           PIESPLUS_MT_UV_modes,
-           PIESPLUS_MT_snapping,
-           PIESPLUS_MT_UV_snapping,
-           PIESPLUS_MT_active_tools,
-           PIESPLUS_MT_looptools,
-           PIESPLUS_MT_booltool,
-           PIESPLUS_MT_origin_pivot,
-           PIESPLUS_MT_transforms,
-           PIESPLUS_MT_delete,
-           PIESPLUS_MT_delete_curve,
-           PIESPLUS_MT_selection_object_mode,
-           PIESPLUS_MT_selection_edit_mode,
-           PIESPLUS_MT_shading,
-           PIESPLUS_MT_animation,
-           PIESPLUS_MT_keyframing,
-           PIESPLUS_MT_proportional_edit_mode,
-           PIESPLUS_MT_proportional_object_mode,
-           PIESPLUS_MT_sculpt,
-           PIESPLUS_MT_sculpt_grab,
-           PIESPLUS_MT_sculpt_more,
-           PIESPLUS_MT_save,
-           PIESPLUS_MT_align)
+classes = (
+    PIESPLUS_MT_modes,
+    PIESPLUS_MT_UV_modes,
+    PIESPLUS_MT_snapping,
+    PIESPLUS_MT_UV_snapping,
+    PIESPLUS_MT_active_tools,
+    PIESPLUS_MT_looptools,
+    PIESPLUS_MT_booltool,
+    PIESPLUS_MT_origin_pivot,
+    PIESPLUS_MT_transforms,
+    PIESPLUS_MT_delete,
+    PIESPLUS_MT_delete_curve,
+    PIESPLUS_MT_selection_object_mode,
+    PIESPLUS_MT_selection_edit_mode,
+    PIESPLUS_MT_shading,
+    PIESPLUS_MT_animation,
+    PIESPLUS_MT_keyframing,
+    PIESPLUS_MT_proportional_edit_mode,
+    PIESPLUS_MT_proportional_object_mode,
+    PIESPLUS_MT_sculpt,
+    PIESPLUS_MT_sculpt_grab,
+    PIESPLUS_MT_sculpt_more,
+    PIESPLUS_MT_save,
+    PIESPLUS_MT_align
+)
 
 
 def register():

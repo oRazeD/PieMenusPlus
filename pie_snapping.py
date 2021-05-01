@@ -1,5 +1,4 @@
 import bpy
-from bpy.props import EnumProperty
 
 
 class PIESPLUS_OT_snapping(bpy.types.Operator):
@@ -8,17 +7,21 @@ class PIESPLUS_OT_snapping(bpy.types.Operator):
     bl_description = "Changes the snapping setting to the corresponding selected option"
     bl_options = {'REGISTER', 'UNDO'}
 
-    snap_elements : EnumProperty(
-        items=(('vertex', "Vertex", ""),
-               ('edge', "Edge", ""),
-               ('face', "Face", ""),
-               ('increment', "Increment", ""),
-               ('volume', "Volume", ""),
-               ('edge_center', "Edge Center", ""),
-               ('edge_perp', "Edge Perpendicular", ""),
-               ('uv_increment', "UV Increment", ""),
-               ('uv_vertex', "UV Vertex", "")),
-               default='vertex', name = 'Snap Element')
+    snap_elements : bpy.props.EnumProperty(
+        items=(
+            ('vertex', "Vertex", ""),
+            ('edge', "Edge", ""),
+            ('face', "Face", ""),
+            ('increment', "Increment", ""),
+            ('volume', "Volume", ""),
+            ('edge_center', "Edge Center", ""),
+            ('edge_perp', "Edge Perpendicular", ""),
+            ('uv_increment', "UV Increment", ""),
+            ('uv_vertex', "UV Vertex", "")
+        ),
+        default='vertex',
+        name='Snap Element'
+    )
 
     def execute(self, context):
         ts = context.scene.tool_settings
@@ -62,9 +65,10 @@ class PIESPLUS_OT_snapping(bpy.types.Operator):
 def register():
     bpy.utils.register_class(PIESPLUS_OT_snapping)
 
+
 def unregister():
     bpy.utils.unregister_class(PIESPLUS_OT_snapping)
-    
+
 
 # ##### BEGIN GPL LICENSE BLOCK #####
 #

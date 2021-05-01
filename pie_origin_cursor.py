@@ -1,14 +1,13 @@
 import bpy, bmesh
 from bpy.types import Operator
 from bpy.props import EnumProperty
-from bpy_extras import view3d_utils
+from .generic_utils import OpInfo
 
 
-class PIESPLUS_OT_origin_to_selection(Operator):
+class PIESPLUS_OT_origin_to_selection(OpInfo, Operator):
     bl_idname = "pies_plus.origin_to_selection"
     bl_label = "Origin to Selection"
     bl_description = "[BATCH] Sets the Active Objects Origin to the current selection"
-    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         modeCallback = context.object.mode
@@ -23,11 +22,10 @@ class PIESPLUS_OT_origin_to_selection(Operator):
         return {'FINISHED'}
 
 
-class PIESPLUS_OT_origin_to_bottom(Operator):
+class PIESPLUS_OT_origin_to_bottom(OpInfo, Operator):
     bl_idname = "pies_plus.origin_to_bottom"
     bl_label = "Origin to Bottom"
     bl_description = "[BATCH] Sets the Active Objects Origin to the bottom of the mesh"
-    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -45,16 +43,20 @@ class PIESPLUS_OT_origin_to_bottom(Operator):
         return {'FINISHED'}
 
 
-class PIESPLUS_OT_reset_origin(Operator):
+class PIESPLUS_OT_reset_origin(OpInfo, Operator):
     bl_idname = "pies_plus.reset_origin"
     bl_label = "Origin Reset"
     bl_description = "[BATCH] Resets the Origin to the respective selected axis"
-    bl_options = {'REGISTER', 'UNDO'}
 
-    origin_reset_axis: EnumProperty(items=(('origin_all', "All", ""),
-                                           ('origin_x', "X", ""),
-                                           ('origin_y', "Y", ""),
-                                           ('origin_z', "Z", "")), name = 'Reset Axis')
+    origin_reset_axis: EnumProperty(
+        items=(
+            ('origin_all', "All", ""),
+            ('origin_x', "X", ""),
+            ('origin_y', "Y", ""),
+            ('origin_z', "Z", "")
+        ),
+        name='Reset Axis'
+    )
 
     def create_pivot(self, context, ob):
         if self.origin_reset_axis == 'origin_all':
@@ -99,11 +101,10 @@ class PIESPLUS_OT_reset_origin(Operator):
         return{'FINISHED'}
 
 
-class PIESPLUS_OT_origin_to_com(Operator):
+class PIESPLUS_OT_origin_to_com(OpInfo, Operator):
     bl_idname = "pies_plus.origin_to_com"
     bl_label = "Origin to Mass"
     bl_description = "[BATCH] Sends the 3D Cursor to the center of mass"
-    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -111,11 +112,10 @@ class PIESPLUS_OT_origin_to_com(Operator):
         return{'FINISHED'}
 
 
-class PIESPLUS_OT_reset_cursor(Operator):
+class PIESPLUS_OT_reset_cursor(OpInfo, Operator):
     bl_idname = "pies_plus.reset_cursor"
     bl_label = "Cursor Reset"
     bl_description = "Resets the 3D Cursor to the respective selected axis"
-    bl_options = {'REGISTER', 'UNDO'}
 
     cursor_reset_axis: EnumProperty(items=(('cursor_all', "All", ""),
                                            ('cursor_x', "X", ""),
@@ -139,11 +139,10 @@ class PIESPLUS_OT_reset_cursor(Operator):
         return{'FINISHED'}
 
 
-class PIESPLUS_OT_reset_cursor_rot(Operator):
+class PIESPLUS_OT_reset_cursor_rot(OpInfo, Operator):
     bl_idname = "pies_plus.reset_cursor_rot"
     bl_label = "Reset Cursor Rot"
     bl_description = "Reset the 3D Cursor's Rotation"
-    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         cursor = context.scene.cursor
@@ -171,8 +170,13 @@ class PIESPLUS_OT_edit_origin(Operator):
     bl_description = "Manually edit the origin or cursor with a translate modal"
     bl_options = {'REGISTER'}
 
-    edit_type: EnumProperty(items=(('origin', "Origin", ""),
-                                   ('cursor', "Cursor", "")), name = 'Edit Type')
+    edit_type: EnumProperty(
+        items=(
+            ('origin', "Origin", ""),
+            ('cursor', "Cursor", "")
+        ),
+        name='Edit Type'
+    )
 
     def modal(self, context, event):
         if self.finished:
@@ -376,11 +380,13 @@ classes = (
     PIESPLUS_OT_reset_cursor,
     PIESPLUS_OT_reset_cursor_rot,
     PIESPLUS_OT_edit_origin
-    )
+)
+
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
+
 
 def unregister():
     for cls in classes:

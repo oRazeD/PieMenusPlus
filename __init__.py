@@ -10,19 +10,21 @@ bl_info = {"name": "Pie Menus Plus",
 import bpy, importlib
 
 
-module_names = ("ui",
-                "prefs",
-                "pie_modes",
-                "pie_snapping",
-                "pie_active_tools",
-                "pie_origin_cursor",
-                "pie_transforms",
-                "pie_selection",
-                "pie_shading",
-                "pie_proportional",
-                "pie_keyframing",
-                "pie_save",
-                "pie_align")
+module_names = (
+    "ui",
+    "prefs",
+    "pie_modes",
+    "pie_snapping",
+    "pie_active_tools",
+    "pie_origin_cursor",
+    "pie_transforms",
+    "pie_selection",
+    "pie_shading",
+    "pie_proportional",
+    "pie_keyframing",
+    "pie_save",
+    "pie_align"
+)
 
 
 modules = []
@@ -31,8 +33,7 @@ for mod in module_names:
     if mod in locals():
         modules.append(importlib.reload(locals()[mod]))
     else:
-        modules.append(importlib.import_module(
-            "." + mod, package=__package__))
+        modules.append(importlib.import_module(f".{mod}", package=__package__))
 
 
 def register():

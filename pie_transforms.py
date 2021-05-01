@@ -8,12 +8,17 @@ class PIESPLUS_OT_transforms(bpy.types.Operator):
     bl_description = "Applys / Clears transforms based on the selected method"
     bl_options = {'REGISTER', 'UNDO'}
 
-    tranforms_type: EnumProperty(items=(('apply_loc', "Apply Location", ""),
-                                          ('apply_rot', "Apply Rotation", ""),
-                                          ('apply_scale', "Apply Scale", ""),
-                                          ('apply_rot_scale', "Apply Rot & Scale", ""),
-                                          ('apply_all', "Apply All", ""),
-                                          ('clear_all', "Clear All", "")), name = 'Transform Type')
+    tranforms_type: bpy.props.EnumProperty(
+        items=(
+            ('apply_loc', "Apply Location", ""),
+            ('apply_rot', "Apply Rotation", ""),
+            ('apply_scale', "Apply Scale", ""),
+            ('apply_rot_scale', "Apply Rot & Scale", ""),
+            ('apply_all', "Apply All", ""),
+            ('clear_all', "Clear All", "")
+        ),
+        name='Transform Type'
+    )
 
     def execute(self, context):
         if self.tranforms_type == 'apply_loc':
@@ -31,7 +36,7 @@ class PIESPLUS_OT_transforms(bpy.types.Operator):
         elif self.tranforms_type == 'apply_all':
             bpy.ops.object.transform_apply()
 
-        else:
+        else: # Clear all
             for ob in context.selected_objects:
                 ob.rotation_euler, ob.location, ob.scale = (0,0,0), (0,0,0), (1,1,1)
         return {'FINISHED'}
@@ -44,6 +49,7 @@ class PIESPLUS_OT_transforms(bpy.types.Operator):
 
 def register():
     bpy.utils.register_class(PIESPLUS_OT_transforms)
+
 
 def unregister():
     bpy.utils.unregister_class(PIESPLUS_OT_transforms)

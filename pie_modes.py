@@ -1,12 +1,12 @@
 import bpy
 from bpy.types import Operator
+from .generic_utils import OpInfo
 
 
-class PIESPLUS_OT_edit_mode(Operator):
+class PIESPLUS_OT_edit_mode(OpInfo, Operator):
     bl_idname = "pies_plus.edit_mode"
     bl_label = "Object Mode"
     bl_description = "Changes the Context Mode to Object Mode"
-    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         context.view_layer.objects.active = context.selected_objects[0]
@@ -15,11 +15,10 @@ class PIESPLUS_OT_edit_mode(Operator):
         return {'FINISHED'}
 
 
-class PIESPLUS_OT_particle_edit(Operator):
+class PIESPLUS_OT_particle_edit(OpInfo, Operator):
     bl_idname = "pies_plus.particle_edit"
     bl_label = "Particle Edit"
     bl_description = "Changes the Context Mode to Particle Edit Mode"
-    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         bpy.ops.object.mode_set(mode="OBJECT")
@@ -27,14 +26,13 @@ class PIESPLUS_OT_particle_edit(Operator):
         return {'FINISHED'}
 
 
-class PIESPLUS_OT_vertex(Operator):
+class PIESPLUS_OT_vertex(OpInfo, Operator):
     """Changes the selection mode to Vertex Select.
 
         Specials:
     SHIFT - Extend"""
     bl_idname = "pies_plus.vertex"
     bl_label = "Vertex"
-    bl_options = {'REGISTER', 'UNDO'}
 
     def invoke(self, context, event):
         bpy.ops.object.mode_set(mode="EDIT")
@@ -42,14 +40,13 @@ class PIESPLUS_OT_vertex(Operator):
         return {'FINISHED'}
 
 
-class PIESPLUS_OT_edge(Operator):
+class PIESPLUS_OT_edge(OpInfo, Operator):
     """Changes the selection mode to Edge Select.
 
         Specials:
     SHIFT - Extend"""
     bl_idname = "pies_plus.edge"
     bl_label = "Edge"
-    bl_options = {'REGISTER', 'UNDO'}
 
     def invoke(self, context, event):
         bpy.ops.object.mode_set(mode="EDIT")
@@ -57,14 +54,13 @@ class PIESPLUS_OT_edge(Operator):
         return {'FINISHED'}
 
 
-class PIESPLUS_OT_face(Operator):
+class PIESPLUS_OT_face(OpInfo, Operator):
     """Changes the selection mode to Face Select.
 
         Specials:
     SHIFT - Extend"""
     bl_idname = "pies_plus.face"
     bl_label = "Face"
-    bl_options = {'REGISTER', 'UNDO'}
 
     def invoke(self, context, event):
         bpy.ops.object.mode_set(mode="EDIT")
@@ -84,20 +80,20 @@ class PIESPLUS_OT_UV_sel_change(Operator):
             ('edge', "Edge", ""),
             ('face', "Face", ""),
             ('island', "Island", "")
-            ),
+        ),
         default='vertex',
-        name='Selection Choice')
+        name='Selection Choice'
+    )
 
     def execute(self, context):
         context.scene.tool_settings.uv_select_mode = self.sel_choice.upper()
         return {'FINISHED'}
 
 
-class PIESPLUS_OT_overlays(Operator):
+class PIESPLUS_OT_overlays(OpInfo, Operator):
     bl_idname = "pies_plus.overlay"
     bl_label = "Overlay Toggle"
     bl_description = "Toggles the viewport Overlays"
-    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         context.space_data.overlay.show_overlays = not context.space_data.overlay.show_overlays
@@ -109,13 +105,15 @@ class PIESPLUS_OT_overlays(Operator):
 ##############################
 
 
-classes = (PIESPLUS_OT_edit_mode,
-           PIESPLUS_OT_particle_edit,
-           PIESPLUS_OT_vertex,
-           PIESPLUS_OT_edge,
-           PIESPLUS_OT_face,
-           PIESPLUS_OT_UV_sel_change,
-           PIESPLUS_OT_overlays)
+classes = (
+    PIESPLUS_OT_edit_mode,
+    PIESPLUS_OT_particle_edit,
+    PIESPLUS_OT_vertex,
+    PIESPLUS_OT_edge,
+    PIESPLUS_OT_face,
+    PIESPLUS_OT_UV_sel_change,
+    PIESPLUS_OT_overlays
+)
 
 
 def register():
