@@ -410,6 +410,15 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
         )
     )
 
+    defaultTool_Pref: EnumProperty(
+        items=(
+            ('builtin.select', "Tweak", "Tweak"),
+            ('builtin.select_box', "Box", "Box Select"),
+            ('builtin.select_circle', "Circle", "Circle Select"),
+            ('builtin.select_lasso', "Lasso", "Lasso Select")
+        )
+    )
+
     keepSharp_Pref: BoolProperty(
         description="Toggles whether the FWN Modifier accounts for Sharps on each mesh",
         default=True
@@ -491,6 +500,14 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
 
         # Information
         if self.Tabs == 'general':
+            col = layout.column(align = True)
+            col.label(text="        Active Tools Pie Settings:")
+            box = col.box()
+            row = box.row()
+            row.scale_x = 2
+            row.label(text="Default Selection Tool:")
+            row.prop(self, "defaultTool_Pref", expand=True)
+
             col = layout.column(align = True)
             col.label(text="        Origin / Cursor Pie Settings:")
             box = col.box()

@@ -197,6 +197,8 @@ class PIESPLUS_MT_active_tools(Menu):
     def draw(self, context):
         layout = self.layout
         pie = layout.menu_pie()
+
+        pies_plus_prefs = context.preferences.addons[__package__].preferences
         
         #4 - LEFT
         pie.operator("wm.tool_set_by_id", text="Move", icon='ORIENTATION_GLOBAL').name = 'builtin.move'
@@ -205,15 +207,31 @@ class PIESPLUS_MT_active_tools(Menu):
         #2 - BOTTOM
         pie.operator("wm.tool_set_by_id", text="Scale", icon='SNAP_FACE').name = 'builtin.scale'
         #8 - TOP
-        pie.operator("wm.tool_set_by_id", text="Tweak", icon='RESTRICT_SELECT_OFF').name = 'builtin.select'
+        if pies_plus_prefs.defaultTool_Pref == 'builtin.select':
+            pie.operator("wm.tool_set_by_id", text="Tweak", icon='RESTRICT_SELECT_OFF').name = 'builtin.select'
+        elif pies_plus_prefs.defaultTool_Pref == 'builtin.select_box':
+            pie.operator("wm.tool_set_by_id", text="Box", icon='SELECT_SET').name = 'builtin.select_box'
+        elif pies_plus_prefs.defaultTool_Pref == 'builtin.select_circle':
+            pie.operator("wm.tool_set_by_id", text="Circle", icon='MESH_CIRCLE').name = 'builtin.select_circle'
+        elif pies_plus_prefs.defaultTool_Pref == 'builtin.select_lasso':
+            pie.operator("wm.tool_set_by_id", text="Lasso", icon='GP_ONLY_SELECTED').name = 'builtin.select_lasso'
         #7 - TOP - LEFT
         pie.operator("wm.tool_set_by_id", text="All", icon='GIZMO').name = 'builtin.transform'
         #9 - TOP - RIGHT
-        pie.operator("wm.tool_set_by_id", text="Box", icon='SELECT_SET').name = 'builtin.select_box'
+        if pies_plus_prefs.defaultTool_Pref == 'builtin.select_box':
+            pie.operator("wm.tool_set_by_id", text="Tweak", icon='RESTRICT_SELECT_OFF').name = 'builtin.select'
+        else:
+            pie.operator("wm.tool_set_by_id", text="Box", icon='SELECT_SET').name = 'builtin.select_box'
         # 1 - BOTTOM - LEFT
-        pie.operator("wm.tool_set_by_id", text="Circle", icon='MESH_CIRCLE').name = 'builtin.select_circle'
+        if pies_plus_prefs.defaultTool_Pref == 'builtin.select_circle':
+            pie.operator("wm.tool_set_by_id", text="Tweak", icon='RESTRICT_SELECT_OFF').name = 'builtin.select'
+        else:
+            pie.operator("wm.tool_set_by_id", text="Circle", icon='MESH_CIRCLE').name = 'builtin.select_circle'
         # 3 - BOTTOM - RIGHT
-        pie.operator("wm.tool_set_by_id", text="Lasso", icon='GP_ONLY_SELECTED').name = 'builtin.select_lasso'
+        if pies_plus_prefs.defaultTool_Pref == 'builtin.select_lasso':
+            pie.operator("wm.tool_set_by_id", text="Tweak", icon='RESTRICT_SELECT_OFF').name = 'builtin.select'
+        else:
+            pie.operator("wm.tool_set_by_id", text="Lasso", icon='GP_ONLY_SELECTED').name = 'builtin.select_lasso'
 
 
 ########################################################################################################################
