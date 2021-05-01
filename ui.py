@@ -197,37 +197,23 @@ class PIESPLUS_MT_active_tools(Menu):
     def draw(self, context):
         layout = self.layout
         pie = layout.menu_pie()
-
-        piesPlus = context.preferences.addons[__package__].preferences
-
-        if piesPlus.gizmoSwitch_Pref == 'tool':
-            #4 - LEFT
-            pie.operator("pies_plus.active_tools", text="Move", icon='ORIENTATION_GLOBAL').active_tools = 'tool_move'
-            #6 - RIGHT
-            pie.operator("pies_plus.active_tools", text="Rotate", icon='DRIVER_ROTATIONAL_DIFFERENCE').active_tools = 'tool_rotate'
-            #2 - BOTTOM
-            pie.operator("pies_plus.active_tools", text="Scale", icon='SNAP_FACE').active_tools = 'tool_scale'
-            #8 - TOP
-            pie.operator("pies_plus.active_tools", text="Tweak", icon='RESTRICT_SELECT_OFF').active_tools = 'select_tweak'
-            #7 - TOP - LEFT
-            pie.operator("pies_plus.active_tools", text="All", icon='GIZMO').active_tools = 'tool_transform'
-        else: # Gizmo
-            #4 - LEFT
-            pie.operator("pies_plus.active_tools", text="Move Toggle", icon='ORIENTATION_GLOBAL').active_tools = 'gizmo_move'
-            #6 - RIGHT
-            pie.operator("pies_plus.active_tools", text="Rotate Toggle", icon='DRIVER_ROTATIONAL_DIFFERENCE').active_tools = 'gizmo_rotate'
-            #2 - BOTTOM
-            pie.operator("pies_plus.active_tools", text="Scale Toggle", icon='SNAP_FACE').active_tools = 'gizmo_scale'
-            #8 - TOP
-            pie.operator("pies_plus.active_tools", text="Tweak", icon='RESTRICT_SELECT_OFF').active_tools = 'select_tweak'
-            #7 - TOP - LEFT
-            pie.operator("pies_plus.active_tools", text="All", icon='GIZMO').active_tools = 'gizmo_transform'
+        
+        #4 - LEFT
+        pie.operator("wm.tool_set_by_id", text="Move", icon='ORIENTATION_GLOBAL').name = 'builtin.move'
+        #6 - RIGHT
+        pie.operator("wm.tool_set_by_id", text="Rotate", icon='DRIVER_ROTATIONAL_DIFFERENCE').name = 'builtin.rotate'
+        #2 - BOTTOM
+        pie.operator("wm.tool_set_by_id", text="Scale", icon='SNAP_FACE').name = 'builtin.scale'
+        #8 - TOP
+        pie.operator("wm.tool_set_by_id", text="Tweak", icon='RESTRICT_SELECT_OFF').name = 'builtin.select'
+        #7 - TOP - LEFT
+        pie.operator("wm.tool_set_by_id", text="All", icon='GIZMO').name = 'builtin.transform'
         #9 - TOP - RIGHT
-        pie.operator("pies_plus.active_tools", text="Box", icon='SELECT_SET').active_tools = 'select_box'
+        pie.operator("wm.tool_set_by_id", text="Box", icon='SELECT_SET').name = 'builtin.select_box'
         # 1 - BOTTOM - LEFT
-        pie.operator("pies_plus.active_tools", text="Circle", icon='MESH_CIRCLE').active_tools = 'select_circle'
+        pie.operator("wm.tool_set_by_id", text="Circle", icon='MESH_CIRCLE').name = 'builtin.select_circle'
         # 3 - BOTTOM - RIGHT
-        pie.operator("pies_plus.active_tools", text="Lasso", icon='GP_ONLY_SELECTED').active_tools = 'select_lasso'
+        pie.operator("wm.tool_set_by_id", text="Lasso", icon='GP_ONLY_SELECTED').name = 'builtin.select_lasso'
 
 
 ########################################################################################################################

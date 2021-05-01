@@ -15,7 +15,6 @@ module_names = (
     "prefs",
     "pie_modes",
     "pie_snapping",
-    "pie_active_tools",
     "pie_origin_cursor",
     "pie_transforms",
     "pie_selection",
