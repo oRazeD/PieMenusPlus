@@ -766,7 +766,7 @@ class PIESPLUS_MT_shading(Menu):
         # 6 - RIGHT
         pie.prop_enum(space.shading, "type", 'SOLID')
         # 2 - BOTTOM
-        if context.scene.render.engine in ('CYCLES', 'EEVEE'):
+        if context.scene.render.engine in ('CYCLES', 'BLENDER_EEVEE'):
             pie.prop_enum(space.shading, "type", 'MATERIAL')
         else:
             pie.separator()   
