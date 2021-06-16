@@ -265,7 +265,7 @@ class PIESPLUS_MT_snapping(Menu):
         gap = col.column()
         gap.separator()
 
-        if bpy.app.version >= (2, 81, 0):
+        if bpy.app.version >= (2, 81, 0) and bpy.app.version < (3, 0, 0):
             gap.scale_y = 3.5
 
             box = col.box().column()
@@ -1072,14 +1072,14 @@ class PIESPLUS_MT_sculpt(Menu):
     bl_label = "Sculpt Tools"
 
     def draw(self, context):
-        if bpy.app.version >= (2, 81, 0):
+        if bpy.app.version >= (2, 81, 0) and bpy.app.version < (3, 0, 0):
             global brush_icons
 
         layout = self.layout
         pie = layout.menu_pie()
         layout.scale_y = 1.2
 
-        if bpy.app.version >= (2, 81, 0):
+        if bpy.app.version >= (2, 81, 0) and bpy.app.version < (3, 0, 0):
             # 4 - LEFT
             pie.operator("paint.brush_select", text="    Crease", icon_value=brush_icons["crease"]).sculpt_tool = 'CREASE'
             # 6 - RIGHT
@@ -1120,13 +1120,13 @@ class PIESPLUS_MT_sculpt_more(Menu):
     bl_label = ""
 
     def draw(self, context):
-        if bpy.app.version >= (2, 81, 0):
+        if bpy.app.version >= (2, 81, 0) and bpy.app.version < (3, 0, 0):
             global brush_icons
 
         layout = self.layout
         layout.scale_y = 1.2
 
-        if bpy.app.version >= (2, 81, 0):
+        if bpy.app.version >= (2, 81, 0) and bpy.app.version < (3, 0, 0):
             layout.operator("paint.brush_select", text='    Smooth', icon_value=brush_icons["smooth"]).sculpt_tool = 'SMOOTH'
             layout.operator("paint.brush_select", text='    Flatten', icon_value=brush_icons["flatten"]).sculpt_tool = 'FLATTEN'
             layout.operator("paint.brush_select", text='    Scrape / Peaks', icon_value=brush_icons["scrape"]).sculpt_tool = 'SCRAPE'
@@ -1151,13 +1151,13 @@ class PIESPLUS_MT_sculpt_grab(Menu):
     bl_label = ""
 
     def draw(self, context):
-        if bpy.app.version >= (2, 81, 0):
+        if bpy.app.version >= (2, 81, 0) and bpy.app.version < (3, 0, 0):
             global brush_icons
 
         layout = self.layout
         layout.scale_y = 1.2
 
-        if bpy.app.version >= (2, 81, 0):
+        if bpy.app.version >= (2, 81, 0) and bpy.app.version < (3, 0, 0):
             layout.operator("paint.brush_select", text='    Grab', icon_value=brush_icons["grab"]).sculpt_tool = 'GRAB'
             layout.operator("paint.brush_select", text='    Pinch / Magnify', icon_value=brush_icons["pinch"]).sculpt_tool = 'PINCH'
             layout.operator("paint.brush_select", text='    Elastic Deform', icon_value=brush_icons["elastic_deform"]).sculpt_tool = 'ELASTIC_DEFORM'
@@ -1318,28 +1318,28 @@ class PIESPLUS_MT_align(Menu):
 brush_icons = {}
 
 def create_icons():
-    if bpy.app.version >= (2, 81, 0):
-        global brush_icons
+    global brush_icons
 
-        icons_directory = bpy.utils.system_resource('DATAFILES', "icons")
+    icons_directory = bpy.utils.system_resource('DATAFILES', "icons")
 
-        brushes = ["crease", "blob", "smooth", "draw", "clay", "clay_strips", "inflate", "grab", "nudge", "thumb",
-                   "snake_hook", "rotate", "flatten", "scrape", "fill", "pinch", "layer", "mask", "pose", "elastic_deform"]
+    brushes = [
+        "crease", "blob", "smooth", "draw", "clay", "clay_strips", "inflate", "grab", "nudge", "thumb",
+        "snake_hook", "rotate", "flatten", "scrape", "fill", "pinch", "layer", "mask", "pose", "elastic_deform"
+    ]
 
-        if bpy.app.version >= (2, 83, 0):
-            brushes += ["cloth", "clay_thumb", "draw_face_sets"]
+    if bpy.app.version >= (2, 83, 0):
+        brushes += ["cloth", "clay_thumb", "draw_face_sets"]
 
-        for brush in brushes:
-            filename = os.path.join(icons_directory, f"brush.sculpt.{brush}.dat")
-            icon_value = bpy.app.icons.new_triangles_from_file(filename)
-            brush_icons[brush] = icon_value
+    for brush in brushes:
+        filename = os.path.join(icons_directory, f"brush.sculpt.{brush}.dat")
+        icon_value = bpy.app.icons.new_triangles_from_file(filename)
+        brush_icons[brush] = icon_value
 
 def release_icons():
-    if bpy.app.version >= (2, 81, 0):
-        global brush_icons
+    global brush_icons
 
-        for value in brush_icons.values():
-            bpy.app.icons.release(value)
+    for value in brush_icons.values():
+        bpy.app.icons.release(value)
 
 
 classes = (
@@ -1370,14 +1370,16 @@ classes = (
 
 
 def register():
-    create_icons()
+    if bpy.app.version >= (2, 81, 0) and bpy.app.version < (3, 0, 0):
+        create_icons()
 
     for cls in classes:
         bpy.utils.register_class(cls)
 
 
 def unregister():
-    release_icons()
+    if bpy.app.version >= (2, 81, 0) and bpy.app.version < (3, 0, 0):
+        release_icons()
 
     for cls in classes:
         bpy.utils.unregister_class(cls)
