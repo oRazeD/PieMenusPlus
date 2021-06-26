@@ -32,7 +32,7 @@ class PIESPLUS_property_group(bpy.types.PropertyGroup):
     def update_uvSyncSelection(self, context):
         context.scene.tool_settings.use_uv_select_sync = self.uvSyncSelection
 
-        if context.preferences.addons[__package__].preferences.preserveUVSelection_Pref:
+        if context.preferences.addons[__package__].preferences.preserve_uv_selection_pref:
             if not context.scene.tool_settings.use_uv_select_sync:
                 old_area_type = context.area.type
                     
@@ -403,14 +403,16 @@ class PIESPLUS_OT_add_hotkey(bpy.types.Operator):
 class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
     bl_idname = __package__
 
-    Tabs: EnumProperty(
+    tabs: EnumProperty(
         items=(
             ('general', "General", "Information & Settings"),
-            ('keymaps', "Keymaps", "Keymapping")
+            ('keymaps', "Keymaps", "Keymap Customizing")
         )
     )
 
-    defaultTool_Pref: EnumProperty(
+    # Select Tool Prefs
+
+    default_tool_pref: EnumProperty(
         items=(
             ('builtin.select', "Tweak", "Tweak"),
             ('builtin.select_box', "Box", "Box Select"),
@@ -419,61 +421,72 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
         )
     )
 
-    keepSharp_Pref: BoolProperty(
+    # Shading Prefs
+    
+    auto_smooth_flat_pref: BoolProperty(
+        description="Automatically set objects that have Auto Smooth+ removed to Shade Flat"
+    )
+
+    # Quick FWN Prefs
+
+    fwn_keep_sharps_pref: BoolProperty(
         description="Toggles whether the FWN Modifier accounts for Sharps on each mesh",
         default=True
     )
     
-    weightValue_Pref: IntProperty(
+    fwn_weight_value_pref: IntProperty(
         name="Weight",
         default=100,
         min=1,
         max=100
     )
     
-    faceInf_Pref: BoolProperty(
-        description="Use influence of face for weighting"
+    fwn_face_influence_pref: BoolProperty(
+        description="Use influence of face for FWN"
     )
+
+    # Snapping Prefs
     
-    smoothAngle_Pref: IntProperty(
-        name="Smooth Angle",
-        default=60,
-        min=0,
-        max=180
-    )
-    
-    autoSnap_Pref: BoolProperty(
+    auto_enable_snap_pref: BoolProperty(
         description="Automatically enables snapping when you change any settings within the pie",
         default=True
     )
+
+    # Origin / Cursor Prefs
     
-    autoAbsoluteGridSnap_Pref: BoolProperty(
+    auto_enable_abs_grid_snap_pref: BoolProperty(
         description="Automatically enables Absolute Grid Snap when you switch to incremental snapping within the pie"
     )
     
-    resetRot_Pref: BoolProperty(
-        description="Decide whether the 3D Cursors rotation resets when you reset per axis", 
+    reset_3d_cursor_rot_pref: BoolProperty(
+        description="Automatically reset 3D Cursor rotation when resetting the translation within the pie", 
         default=True
     )
+
+    # Edit Origin Prefs
     
-    faceCenterSnap_Pref: BoolProperty(
-        description="Allows snapping directly to the center of any face on the object being edited (WARNING: This operation can be very slow in bigger scenes)"
+    face_center_snap_pref: BoolProperty(
+        description="Allows for snapping directly to the center of any face on the object being edited (WARNING: This operation can be very slow in bigger scenes)"
     )
+
+    # Selection Prefs
     
-    invertSelection_Pref: BoolProperty(
+    invert_selection_pref: BoolProperty(
         description="Only deselect all objects if all object are selected (versus deselecting if any selection is made)"
     )
-    
-    preserveUVSelection_Pref: BoolProperty(
-        description="Selects all faces when you leave UV Sync so you don't need to select the mesh again as you would normally"
-    )
-    
-    simpleContextMode_Pref: BoolProperty(
+
+    # Context Mode Prefs
+       
+    simple_context_mode_pref: BoolProperty(
         description="A simple version of the context mode pie, which removes xray and overlay toggle (in case you keep using it on accident)"
     )
-    
-    autoSmoothShadeFlat_Pref: BoolProperty(
-        description="Automatically set objects that have Auto Smooth+ removed to Shade Flat"
+
+    preserve_uv_selection_pref: BoolProperty(
+        description="Selects all faces when you leave UV Sync so you don't need to select the mesh again as you would normally"
+    )
+
+    sculptors_haven_pref: BoolProperty(
+        description="Move the sculpt mode button to the main array of context mode operators, so that you can quickly switch between the modes"
     )
 
     def draw(self, context):
@@ -496,54 +509,55 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
         row.operator("wm.url_open", text="", icon = 'URL').url = "https://gumroad.com/l/piesplus"
 
         row = layout.row()
-        row.prop(self, "Tabs", expand=True)
+        row.prop(self, "tabs", expand=True)
 
         # Information
-        if self.Tabs == 'general':
+        if self.tabs == 'general':
             col = layout.column(align = True)
             col.label(text="        Active Tools Pie Settings:")
             box = col.box()
             row = box.row()
             row.scale_x = 2
             row.label(text="Default Selection Tool:")
-            row.prop(self, "defaultTool_Pref", expand=True)
+            row.prop(self, "default_tool_pref", expand=True)
 
             col = layout.column(align = True)
             col.label(text="        Origin / Cursor Pie Settings:")
             box = col.box()
-            box.prop(self, "faceCenterSnap_Pref", text="[EXPERIMENTAL] Edit Origin Tool Snapping to Center of Faces (Slow in Big Scenes)")
-            box.prop(self, "resetRot_Pref", text="Reset 3D Cursor Rotation when Resetting Location")
+            box.prop(self, "face_center_snap_pref", text="[EXPERIMENTAL] Edit Origin Tool Snapping to Center of Faces (Slow in Big Scenes)")
+            box.prop(self, "reset_3d_cursor_rot_pref", text="Reset 3D Cursor Rotation when Resetting Location")
 
             col = layout.column(align = True)
             col.label(text="        Select Mode Pie Settings:")
             box = col.box()
-            box.prop(self, "preserveUVSelection_Pref", text="Select Entire Mesh in 3D View when Exiting UV Sync Mode")
-            box.prop(self, "simpleContextMode_Pref", text="Use Simple Select Mode Pie")
+            box.prop(self, "preserve_uv_selection_pref", text="Select Entire Mesh in 3D View when Exiting UV Sync Mode")
+            box.prop(self, "simple_context_mode_pref", text="Use Simple Select Mode Pie")
+            box.prop(self, "sculptors_haven_pref", text="Add Sculpt Mode Button to Main Pie")
             
             col = layout.column(align = True)
             col.label(text="        Selection Pie Settings:")
             box = col.box()
-            box.prop(self, "invertSelection_Pref", text="Invert Selection Toggle")
+            box.prop(self, "invert_selection_pref", text="Invert Selection Toggle")
 
             col = layout.column(align = True)
             col.label(text="        Shading Pie Settings:")
             box = col.box()
-            box.prop(self, "autoSmoothShadeFlat_Pref", text="Shade Flat Objects when Auto Smooth+ is Removed")
+            box.prop(self, "auto_smooth_flat_pref", text="Shade Objects Flat when Auto Smooth+ is Removed")
             box = col.box()
             box.label(text = "Quick Weighted Normals:")
             row = box.row()
-            row.label(text="Weight:")
+            row.label(text="Face Weight")
             row.scale_x = 2
-            row.prop(self, "weightValue_Pref")
+            row.prop(self, "fwn_weight_value_pref")
             row = box.row()
-            row.prop(self, "keepSharp_Pref", text="Keep Sharps")
-            row.prop(self, "faceInf_Pref", text="Face Influence")
+            row.prop(self, "fwn_keep_sharps_pref", text="Keep Sharps")
+            row.prop(self, "fwn_face_influence_pref", text="Face Influence")
 
             col = layout.column(align = True)
             col.label(text="        Snapping Pie Settings:")
             box = col.box()
-            box.prop(self, "autoSnap_Pref", text="Automatically Enable Snap when Changing Snap Pie Settings")
-            box.prop(self, "autoAbsoluteGridSnap_Pref", text="Automatically Enable Absolute Grid Snap when Turning on Incremental Snapping")
+            box.prop(self, "auto_enable_snap_pref", text="Enable Snapping when Changing Snap Pie Settings")
+            box.prop(self, "auto_enable_abs_grid_snap_pref", text="Enable Absolute Grid Snap when Turning on Incremental Snapping")
 
             col = layout.column(align = True)
             col.label(text="    General Settings:")
@@ -563,7 +577,7 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             col.prop(view, "pie_menu_confirm")
 
         # Keymapping
-        if self.Tabs == 'keymaps':
+        if self.tabs == 'keymaps':
             wm = context.window_manager
             PIESPLUS_addon_keymaps.draw_keymap_items(wm, layout)
 

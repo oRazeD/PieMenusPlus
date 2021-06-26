@@ -17,10 +17,9 @@ class PIESPLUS_MT_modes(Menu):
 
         # Get Active type if one exists
         if context.object:
-            obType = context.object.type
+            ob_type = context.object.type
 
-        ts = context.tool_settings
-        piesPlus = context.preferences.addons[__package__].preferences
+        pies_plus_prefs = context.preferences.addons[__package__].preferences
 
         if not context.object:
             # 4 - LEFT
@@ -35,19 +34,19 @@ class PIESPLUS_MT_modes(Menu):
             else:
                 pie.separator()
             # 7 - TOP - LEFT
-            if not piesPlus.simpleContextMode_Pref:
+            if not pies_plus_prefs.simple_context_mode_pref:
                 pie.operator("view3d.toggle_xray", text = 'X-Ray Toggle', icon = 'XRAY')
             else:
                 pie.separator()
             # 9 - TOP - RIGHT
-            if not piesPlus.simpleContextMode_Pref:
+            if not pies_plus_prefs.simple_context_mode_pref:
                 pie.operator("pies_plus.overlay", icon='OVERLAY')
             else:
                 pie.separator()
             # 1 - BOTTOM - LEFT
             pie.separator()
 
-        elif obType == 'MESH':
+        elif ob_type == 'MESH':
             # 4 - LEFT
             pie.operator("pies_plus.vertex", icon='VERTEXSEL')
             # 6 - RIGHT
@@ -60,12 +59,14 @@ class PIESPLUS_MT_modes(Menu):
             else:
                 pie.operator("object.mode_set", text="Edit / Object", icon='OBJECT_DATAMODE').mode = "OBJECT"
             # 7 - TOP - LEFT
-            if not piesPlus.simpleContextMode_Pref:
+            if not pies_plus_prefs.simple_context_mode_pref:
                 pie.operator("view3d.toggle_xray", text = 'X-Ray Toggle', icon = 'XRAY')
             else:
                 pie.separator()
             # 9 - TOP - RIGHT
-            if not piesPlus.simpleContextMode_Pref:
+            if pies_plus_prefs.sculptors_haven_pref:
+                pie.operator("object.mode_set", text="Sculpt Mode", icon='SCULPTMODE_HLT').mode = "SCULPT"
+            elif not pies_plus_prefs.simple_context_mode_pref:
                 pie.operator("pies_plus.overlay", icon='OVERLAY')
             else:
                 pie.separator()
@@ -85,7 +86,7 @@ class PIESPLUS_MT_modes(Menu):
             box.operator("object.mode_set", text="Vertex Paint", icon='VPAINT_HLT').mode = "VERTEX_PAINT"
             box.operator("pies_plus.particle_edit", text="Particle Edit", icon='PARTICLEMODE')
 
-        elif obType == 'CAMERA':
+        elif ob_type == 'CAMERA':
             # 4 - LEFT
             pie.prop(context.space_data, "lock_cursor", text="Lock Camera to Cursor", icon='PIVOT_CURSOR')
             # 6 - RIGHT
@@ -95,12 +96,12 @@ class PIESPLUS_MT_modes(Menu):
             # 8 - TOP
             pie.operator("view3d.view_camera", icon='VIEW_CAMERA')
             # 7 - TOP - LEFT
-            if not piesPlus.simpleContextMode_Pref:
+            if not pies_plus_prefs.simple_context_mode_pref:
                 pie.operator("view3d.toggle_xray", text = 'X-Ray Toggle', icon = 'XRAY')
             else:
                 pie.separator()
             # 9 - TOP - RIGHT
-            if not piesPlus.simpleContextMode_Pref:
+            if not pies_plus_prefs.simple_context_mode_pref:
                 pie.operator("pies_plus.overlay", icon='OVERLAY')
             else:
                 pie.separator()
@@ -109,49 +110,51 @@ class PIESPLUS_MT_modes(Menu):
 
         else:
             # 4 - LEFT
-            if obType == 'GPENCIL':
+            if ob_type == 'GPENCIL':
                 pie.operator("gpencil.sculptmode_toggle", text="Sculpt Mode", icon='SCULPTMODE_HLT')
             else:
                 pie.separator()
             # 6 - RIGHT
-            if obType == 'ARMATURE':
+            if ob_type == 'ARMATURE':
                 pie.operator("object.posemode_toggle", text="Pose Mode", icon='POSE_HLT')
-            elif obType == 'GPENCIL':
+            elif ob_type == 'GPENCIL':
                 pie.operator("gpencil.paintmode_toggle", text="Draw Mode", icon='GREASEPENCIL')
             else:
                 pie.separator()
             # 2 - BOTTOM
             pie.separator()
             # 8 - TOP
-            if obType == 'ARMATURE':
+            if ob_type == 'ARMATURE':
                 if context.mode == 'POSE':
                     pie.operator("object.posemode_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
                 else:
                     pie.operator("object.editmode_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
-            elif obType in {'CURVE', 'FONT', 'SURFACE', 'META', 'LATTICE'}:
+            elif ob_type in {'CURVE', 'FONT', 'SURFACE', 'META', 'LATTICE'}:
                 pie.operator("object.editmode_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
-            elif obType == 'GPENCIL':
+            elif ob_type == 'GPENCIL':
                 pie.operator("gpencil.editmode_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
             else:
                 pie.separator()
             # 7 - TOP - LEFT
-            if not piesPlus.simpleContextMode_Pref:
+            if not pies_plus_prefs.simple_context_mode_pref:
                 pie.operator("view3d.toggle_xray", text = 'X-Ray Toggle', icon = 'XRAY')
             else:
                 pie.separator()
             # 9 - TOP - RIGHT
-            if not piesPlus.simpleContextMode_Pref:
+            if pies_plus_prefs.sculptors_haven_pref:
+                pie.operator("object.mode_set", text="Sculpt Mode", icon='SCULPTMODE_HLT').mode = "SCULPT"
+            elif not pies_plus_prefs.simple_context_mode_pref:
                 pie.operator("pies_plus.overlay", icon='OVERLAY')
             else:
                 pie.separator()
             # 1 - BOTTOM - LEFT
-            if obType == 'GPENCIL':
+            if ob_type == 'GPENCIL':
                 pie.operator("gpencil.weightmode_toggle", text="Weight Paint", icon='WPAINT_HLT')
             else:
                 pie.separator()
 
         # 3 - BOTTOM - RIGHT
-        pie.prop(ts, "use_mesh_automerge", text="Auto Merge")
+        pie.prop(context.tool_settings, "use_mesh_automerge", text="Auto Merge")
 
 class PIESPLUS_MT_UV_modes(Menu):
     bl_idname = "PIESPLUS_MT_UV_modes"
@@ -207,28 +210,28 @@ class PIESPLUS_MT_active_tools(Menu):
         #2 - BOTTOM
         pie.operator("wm.tool_set_by_id", text="Scale", icon='SNAP_FACE').name = 'builtin.scale'
         #8 - TOP
-        if pies_plus_prefs.defaultTool_Pref == 'builtin.select':
+        if pies_plus_prefs.default_tool_pref == 'builtin.select':
             pie.operator("wm.tool_set_by_id", text="Tweak", icon='RESTRICT_SELECT_OFF').name = 'builtin.select'
-        elif pies_plus_prefs.defaultTool_Pref == 'builtin.select_box':
+        elif pies_plus_prefs.default_tool_pref == 'builtin.select_box':
             pie.operator("wm.tool_set_by_id", text="Box", icon='SELECT_SET').name = 'builtin.select_box'
-        elif pies_plus_prefs.defaultTool_Pref == 'builtin.select_circle':
+        elif pies_plus_prefs.default_tool_pref == 'builtin.select_circle':
             pie.operator("wm.tool_set_by_id", text="Circle", icon='MESH_CIRCLE').name = 'builtin.select_circle'
-        elif pies_plus_prefs.defaultTool_Pref == 'builtin.select_lasso':
+        elif pies_plus_prefs.default_tool_pref == 'builtin.select_lasso':
             pie.operator("wm.tool_set_by_id", text="Lasso", icon='GP_ONLY_SELECTED').name = 'builtin.select_lasso'
         #7 - TOP - LEFT
         pie.operator("wm.tool_set_by_id", text="All", icon='GIZMO').name = 'builtin.transform'
         #9 - TOP - RIGHT
-        if pies_plus_prefs.defaultTool_Pref == 'builtin.select_box':
+        if pies_plus_prefs.default_tool_pref == 'builtin.select_box':
             pie.operator("wm.tool_set_by_id", text="Tweak", icon='RESTRICT_SELECT_OFF').name = 'builtin.select'
         else:
             pie.operator("wm.tool_set_by_id", text="Box", icon='SELECT_SET').name = 'builtin.select_box'
         # 1 - BOTTOM - LEFT
-        if pies_plus_prefs.defaultTool_Pref == 'builtin.select_circle':
+        if pies_plus_prefs.default_tool_pref == 'builtin.select_circle':
             pie.operator("wm.tool_set_by_id", text="Tweak", icon='RESTRICT_SELECT_OFF').name = 'builtin.select'
         else:
             pie.operator("wm.tool_set_by_id", text="Circle", icon='MESH_CIRCLE').name = 'builtin.select_circle'
         # 3 - BOTTOM - RIGHT
-        if pies_plus_prefs.defaultTool_Pref == 'builtin.select_lasso':
+        if pies_plus_prefs.default_tool_pref == 'builtin.select_lasso':
             pie.operator("wm.tool_set_by_id", text="Tweak", icon='RESTRICT_SELECT_OFF').name = 'builtin.select'
         else:
             pie.operator("wm.tool_set_by_id", text="Lasso", icon='GP_ONLY_SELECTED').name = 'builtin.select_lasso'
