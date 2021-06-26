@@ -1,4 +1,4 @@
-import bpy, os
+import bpy, os, re, math
 from bpy.types import Menu
 
 
@@ -1187,6 +1187,42 @@ class PIESPLUS_MT_save(Menu):
     bl_idname = "PIESPLUS_MT_save"
     bl_label = "Save"
 
+    def get_save_increment_number(self, context):
+        # Get file name and dir path
+        dir_path = os.path.dirname(bpy.data.filepath)
+        file_name = os.path.basename(bpy.data.filepath)[:-6]
+
+        # Look for other files in the same folder with the same base name & set the increment number
+        list_of_blends = []
+        
+        for file in os.listdir(dir_path):
+            if file.endswith(".blend") and '_' in file:
+                delimiters = ".blend", "_"
+                regex_pattern = '|'.join(map(re.escape, delimiters))
+
+                # Split the string & convert to a number
+                try:
+                    increment_number = int(re.split(regex_pattern, file)[-2])
+                    
+                    list_of_blends.append(increment_number)
+                except ValueError:
+                    pass
+
+        if list_of_blends:
+            list_of_blends_max = max(list_of_blends) + 1
+
+            digits = int(math.log10(list_of_blends_max)) + 1
+
+            fill_digit_gaps = "0" * (3 - digits)
+
+            increment_number = "_" + fill_digit_gaps + str(list_of_blends_max)
+        else:
+            increment_number = "_001"
+
+        # Return the final to-be output path
+        final_path = os.path.join(dir_path, file_name.split('_')[0] + increment_number + '.blend')
+        return final_path, increment_number
+
     def draw(self, context):
         layout = self.layout
         pie = layout.menu_pie()
@@ -1210,7 +1246,25 @@ class PIESPLUS_MT_save(Menu):
 
         gap = col.column()
         gap.separator()
-        gap.scale_y = 8.1
+        gap.scale_y = 11.8
+
+        box = col.box().column()
+        box.scale_y = 1.2
+
+        if bpy.data.is_saved:
+            default_operator_context = layout.operator_context
+            layout.operator_context = 'EXEC_DEFAULT'
+
+            final_path, increment_number = self.get_save_increment_number(context)
+
+            save_increment = box.operator("wm.save_as_mainfile", text=f"Save Increment  ({increment_number})", icon='FILE_TICK')
+            save_increment.filepath = final_path
+            save_increment.copy = True
+
+            layout.operator_context = default_operator_context
+        else:
+            box.enabled = False
+            box.operator("wm.save_as_mainfile", text="Save Increment  (not saved)", icon='FILE_TICK')
 
         box = col.box().column()
         box.scale_y = 1.2
@@ -1286,7 +1340,7 @@ class PIESPLUS_MT_align(Menu):
 
         gap = col.column()
         gap.separator()
-        gap.scale_y = 7
+        gap.scale_y = 9.8
 
         box = col.box().column(align=True)
 
