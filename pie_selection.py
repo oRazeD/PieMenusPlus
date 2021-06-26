@@ -41,7 +41,7 @@ class PIESPLUS_OT_mesh_selection(OpInfo, Operator):
         elif event.alt:
             select.select_all(action='INVERT')
 
-        elif context.preferences.addons[__package__].preferences.invertSelection_Pref:
+        elif context.preferences.addons[__package__].preferences.invert_selection_pref:
             if context.mode == 'EDIT_MESH':
                 verts_hidden = 0
 

@@ -37,7 +37,7 @@ class PIESPLUS_OT_snapping(bpy.types.Operator):
             ts.snap_elements = {'FACE'}
         elif self.snap_elements == 'increment':
             ts.snap_elements = {'INCREMENT'}
-            if pies_plus.autoAbsoluteGridSnap_Pref:
+            if pies_plus.auto_enable_abs_grid_snap_pref:
                 ts.use_snap_grid_absolute = True
         elif self.snap_elements == 'volume':
             ts.snap_elements = {'VOLUME'}
@@ -52,7 +52,7 @@ class PIESPLUS_OT_snapping(bpy.types.Operator):
         elif self.snap_elements == 'uv_vertex':
             ts.snap_uv_element = 'VERTEX'
 
-        if pies_plus.autoSnap_Pref:
+        if pies_plus.auto_enable_snap_pref:
             ts.use_snap = True
         return {'FINISHED'}
 

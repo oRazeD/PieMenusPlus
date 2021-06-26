@@ -51,7 +51,7 @@ class PIESPLUS_OT_remove_auto_smooth(OpInfo, Operator):
             if ob.type == 'MESH':
                 ob.data.use_auto_smooth = False
 
-        if context.preferences.addons[__package__].preferences.autoSmoothShadeFlat_Pref:
+        if context.preferences.addons[__package__].preferences.auto_smooth_flat_pref:
             bpy.ops.object.shade_flat()
 
         if 'modeCallback' in locals():
@@ -179,7 +179,7 @@ class PIESPLUS_OT_auto_fwn(OpInfo, Operator):
             self.report({'ERROR'}, "Nothing is selected & there is no Active Object")
             return{'FINISHED'}
 
-        piesPlus = context.preferences.addons[__package__].preferences
+        pies_plus_prefs = context.preferences.addons[__package__].preferences
 
         if context.active_object:
             activeCallback = context.view_layer.objects.active
@@ -194,19 +194,18 @@ class PIESPLUS_OT_auto_fwn(OpInfo, Operator):
 
                 bpy.ops.object.shade_smooth()
                 ob.data.use_auto_smooth = True
-                ob.data.auto_smooth_angle = piesPlus.smoothAngle_Pref
                 
                 for mod in ob.modifiers:
                     if mod.type == 'WEIGHTED_NORMAL':
                         break
                 else:
                     ob.modifiers.new('Weighted Normal', 'WEIGHTED_NORMAL')
-                    ob.modifiers["Weighted Normal"].weight = piesPlus.weightValue_Pref
-                    ob.modifiers["Weighted Normal"].keep_sharp = piesPlus.keepSharp_Pref
+                    ob.modifiers["Weighted Normal"].weight = pies_plus_prefs.fwn_weight_value_pref
+                    ob.modifiers["Weighted Normal"].keep_sharp = pies_plus_prefs.fwn_keep_sharps_pref
                     if bpy.app.version >= (2, 91, 0):
-                        ob.modifiers["Weighted Normal"].use_face_influence = piesPlus.faceInf_Pref
+                        ob.modifiers["Weighted Normal"].use_face_influence = pies_plus_prefs.fwn_face_influence_pref
                     else:
-                        ob.modifiers["Weighted Normal"].face_influence = piesPlus.faceInf_Pref
+                        ob.modifiers["Weighted Normal"].face_influence = pies_plus_prefs.fwn_face_influence_pref
 
         if 'activeCallback' in locals():
             context.view_layer.objects.active = activeCallback

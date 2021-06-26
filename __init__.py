@@ -1,13 +1,15 @@
-bl_info = {"name": "Pie Menus Plus",
-           "description": "Additional / Improved Pie Menus for Blender 2.8+",
-           "author": "Ethan Simon-Law",
-           "version": (1, 4),
-           "blender": (2, 93, 0),
-           "tracker_url": "https://discord.com/invite/wHAyVZG",
-           "category": "3D View"}
+bl_info = {
+    "name": "Pie Menus Plus",
+    "description": "Additional / Improved Pie Menus for Blender 2.8+",
+    "author": "Ethan Simon-Law",
+    "version": (1, 4),
+    "blender": (2, 93, 0),
+    "tracker_url": "https://discord.com/invite/wHAyVZG",
+    "category": "3D View"
+}
 
 
-import bpy, importlib
+import importlib
 
 
 module_names = (

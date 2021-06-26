@@ -134,7 +134,7 @@ class PIESPLUS_OT_reset_cursor(OpInfo, Operator):
         else:
             cursor.location[2] = 0
 
-        if context.preferences.addons[__package__].preferences.resetRot_Pref:
+        if context.preferences.addons[__package__].preferences.reset_3d_cursor_rot_pref:
             bpy.ops.pies_plus.reset_cursor_rot()
         return{'FINISHED'}
 
@@ -230,7 +230,7 @@ class PIESPLUS_OT_edit_origin(Operator):
 
             if self.edit_type == 'origin':
                 # If the experimental mode is on, remove the loose vertices on the mesh
-                if context.preferences.addons[__package__].preferences.faceCenterSnap_Pref:
+                if context.preferences.addons[__package__].preferences.face_center_snap_pref:
                     bpy.ops.object.mode_set(mode='EDIT')
                     bpy.ops.mesh.select_all(action='SELECT')
                     bpy.ops.mesh.delete_loose()
@@ -300,7 +300,7 @@ class PIESPLUS_OT_edit_origin(Operator):
 
         if self.edit_type == 'origin':
             # BMesh (Add vertices to face centers)
-            if context.preferences.addons[__package__].preferences.faceCenterSnap_Pref:
+            if context.preferences.addons[__package__].preferences.face_center_snap_pref:
                 mesh = context.object.data
                 verts = []
 
