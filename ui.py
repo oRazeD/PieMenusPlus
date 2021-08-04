@@ -461,14 +461,32 @@ class PIESPLUS_MT_transforms(Menu):
 
             gap = col.column()
             gap.separator()
-            gap.scale_y = 6
+            gap.scale_y = 13
 
             box = col.box().column()
             box.scale_y = 1.2
+            box.scale_x = .875
 
-            box.operator("object.location_clear", icon='EMPTY_AXIS')
-            box.operator("object.rotation_clear", icon='EMPTY_AXIS')
-            box.operator("object.scale_clear", icon='EMPTY_AXIS')
+            box.label(text="Clear Transform", icon='EMPTY_AXIS')
+
+            row = box.row(align = True)
+            row.operator("object.location_clear", text='Loc')
+            row.operator("object.rotation_clear", text='Rot')
+            row.operator("object.scale_clear", text='Scale')
+
+            box = col.box().column()
+            box.scale_y = 1.2
+            box.scale_x = .875
+            
+            box.label(text="Delta Transforms", icon='TRANSFORM_ORIGINS')
+
+            box.operator("object.transforms_to_deltas", text="All Tforms to Deltas")
+
+            row = box.row(align = True)
+            row.operator("object.transforms_to_deltas", text="Loc").mode = 'LOC'
+            row.operator("object.transforms_to_deltas", text="Rot").mode = 'ROT'
+            row.operator("object.transforms_to_deltas", text="Scale").mode = 'SCALE'
+            
             # 3 - BOTTOM - RIGHT
             col = pie.column()
 
@@ -1346,7 +1364,7 @@ class PIESPLUS_MT_align(Menu):
 
         row = box.row()
         row.scale_y = 1.25
-        row.label(text = "Align to Local Axis:", icon = 'ORIENTATION_LOCAL')
+        row.label(text = "Align to Local Axis", icon = 'ORIENTATION_LOCAL')
         row = box.row(align=True)
         row.scale_y = 1.2
         row.operator("pies_plus.local_align", text = "X").align_axis = 'align_x'
@@ -1357,7 +1375,7 @@ class PIESPLUS_MT_align(Menu):
 
         row = box.row()
         row.scale_y = 1.25
-        row.label(text = "Align to Active Vert:", icon = 'PIVOT_ACTIVE')
+        row.label(text = "Align to Active Vert", icon = 'PIVOT_ACTIVE')
         row = box.row(align=True)
         row.scale_y = 1.2
         row.operator("pies_plus.active_vert_align", text='X').align_axis = 'align_x'
