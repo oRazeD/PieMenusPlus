@@ -467,7 +467,7 @@ class PIESPLUS_MT_transforms(Menu):
             box.scale_y = 1.2
             box.scale_x = .875
 
-            box.label(text="Clear Transform", icon='EMPTY_AXIS')
+            box.label(text="Clear Transforms", icon='EMPTY_AXIS')
 
             row = box.row(align = True)
             row.operator("object.location_clear", text='Loc')
@@ -478,7 +478,7 @@ class PIESPLUS_MT_transforms(Menu):
             box.scale_y = 1.2
             box.scale_x = .875
             
-            box.label(text="Delta Transforms", icon='TRANSFORM_ORIGINS')
+            box.label(text="Apply to Deltas", icon='TRANSFORM_ORIGINS')
 
             box.operator("object.transforms_to_deltas", text="All Tforms to Deltas")
 
