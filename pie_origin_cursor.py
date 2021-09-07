@@ -217,11 +217,17 @@ class PIESPLUS_OT_edit_origin(Operator):
             # Refresh modifier visibility
             for ob in self.subsurf_check_list:
                 context.view_layer.objects.active = bpy.data.objects[ob]
-                context.object.modifiers["Subdivision"].show_viewport = True
+
+                for mod in bpy.data.objects[ob].modifiers:
+                    if mod.type == "SUBSURF":
+                        mod.show_viewport = True
 
             for ob in self.mirror_check_list:
                 context.view_layer.objects.active = bpy.data.objects[ob]
-                context.object.modifiers["Mirror"].show_viewport = True
+
+                for mod in bpy.data.objects[ob].modifiers:
+                    if mod.type == "MIRROR":
+                        mod.show_viewport = True
 
             # Refresh original selection & Active Object
             for o in self.savedSelection:
@@ -278,13 +284,13 @@ class PIESPLUS_OT_edit_origin(Operator):
         # Deselect objects that aren't the Active, Toggle modifiers if turned on & save to list
         for ob in context.view_layer.objects:
             for mod in ob.modifiers:
-                if(mod.type == "SUBSURF"):
-                    if ob.modifiers["Subdivision"].show_viewport:
-                        ob.modifiers["Subdivision"].show_viewport = False
+                if mod.type == "SUBSURF":
+                    if mod.show_viewport:
+                        mod.show_viewport = False
                         self.subsurf_check_list.append(ob.name)
-                if(mod.type == "MIRROR"):
-                    if ob.modifiers["Mirror"].show_viewport:
-                        ob.modifiers["Mirror"].show_viewport = False
+                if mod.type == "MIRROR":
+                    if mod.show_viewport:
+                        mod.show_viewport = False
                         self.mirror_check_list.append(ob.name)
 
             if ob != context.active_object:
