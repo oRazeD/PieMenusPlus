@@ -640,7 +640,7 @@ class PIESPLUS_MT_delete(Menu):
 
         gap = col.column()
         gap.separator()
-        gap.scale_y = 14
+        gap.scale_y = 17
 
         box = col.box().column()
         box.scale_y = 1.2
