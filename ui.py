@@ -156,6 +156,7 @@ class PIESPLUS_MT_modes(Menu):
         # 3 - BOTTOM - RIGHT
         pie.prop(context.tool_settings, "use_mesh_automerge", text="Auto Merge")
 
+
 class PIESPLUS_MT_UV_modes(Menu):
     bl_idname = "PIESPLUS_MT_UV_modes"
     bl_label = "Select Mode (UV)"
@@ -657,6 +658,7 @@ class PIESPLUS_MT_delete(Menu):
         box2.operator("mesh.dissolve_faces", text="Dissolve Faces", icon='SNAP_FACE')
         box2.operator("mesh.delete", text="Only Edge & Faces", icon='SNAP_FACE').type = 'EDGE_FACE'
         box2.operator("mesh.delete", text="Only Faces", icon='FACESEL').type = 'ONLY_FACE'
+        box2.operator("mesh.dissolve_edges", text="Dissolve Edges (No V)", icon='SNAP_EDGE').use_verts = False
         #3 - BOTTOM - RIGHT
         pie.operator("mesh.edge_collapse", text="Edge Collapse", icon='UV_EDGESEL')
 
