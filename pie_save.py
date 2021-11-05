@@ -123,7 +123,9 @@ class PIESPLUS_OT_open_last(bpy.types.Operator):
     bl_options = {'REGISTER'}
 
     def execute(self, context):
-        recent_file_paths = bpy.utils.user_resource('CONFIG', "recent-files.txt")
+        config_path = bpy.utils.user_resource('CONFIG')
+
+        recent_file_paths = os.path.join(config_path, 'recent-files.txt')
 
         try:
             with open(recent_file_paths) as file:
