@@ -532,7 +532,7 @@ class PIESPLUS_MT_origin_pivot(Menu):
             # 4 - LEFT
             pie.operator("object.origin_set", text="Origin to Cursor", icon='PIVOT_BOUNDBOX').type = 'ORIGIN_CURSOR'
             # 6 - RIGHT
-            pie.operator("view3d.snap_cursor_to_selected", text="Cursor to Selection", icon='PIVOT_CURSOR')
+            pie.operator("pies_plus.cursor_to_selection", text="Cursor to Selection", icon='PIVOT_CURSOR')
             # 2 - BOTTOM
             pie.operator("pies_plus.origin_to_selection", icon='PIVOT_BOUNDBOX')
             # 8 - TOP
@@ -540,7 +540,7 @@ class PIESPLUS_MT_origin_pivot(Menu):
             # 7 - TOP - LEFT
             pie.operator("object.origin_set", text="Origin to Geo", icon='PIVOT_BOUNDBOX').type = 'ORIGIN_GEOMETRY'
             # 9 - TOP - RIGHT
-            pie.operator("view3d.snap_cursor_to_active", text="Cursor to Active", icon='PIVOT_CURSOR')
+            pie.operator("pies_plus.cursor_to_active", text="Cursor to Active", icon='PIVOT_CURSOR') 
             # 1 - BOTTOM - LEFT
             col = pie.column()
 

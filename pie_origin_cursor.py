@@ -112,6 +112,72 @@ class PIESPLUS_OT_origin_to_com(OpInfo, Operator):
         return{'FINISHED'}
 
 
+class PIESPLUS_OT_cursor_to_selected(OpInfo, Operator):
+    bl_idname = "pies_plus.cursor_to_selection"
+    bl_label = "Cursor to Selection"
+    bl_description = "Snap 3D Cursor to the middle of the selected items"
+
+    copy_object_rot_to_cursor_pref: bpy.props.BoolProperty(
+        description="Copy the active objects' rotation when using 'Cursor to []' operators",
+        name="Copy Actives' Rotation"
+    )
+
+    def execute(self, context):
+        bpy.ops.view3d.snap_cursor_to_selected()
+
+        if self.copy_object_rot_to_cursor_pref:
+            cursor = context.scene.cursor
+            ob = context.object
+            ob_rotation_mode = ob.rotation_mode
+
+            if ob_rotation_mode == 'QUATERNION':
+                cursor.rotation_quaternion[0] = ob.rotation_quaternion[0]
+                cursor.rotation_quaternion[1] = ob.rotation_quaternion[1]
+                cursor.rotation_quaternion[2] = ob.rotation_quaternion[2]
+                cursor.rotation_quaternion[3] = ob.rotation_quaternion[3]
+            elif ob_rotation_mode == 'AXIS_ANGLE':
+                cursor.rotation_axis_angle[0] = ob.rotation_axis_angle[0]
+                cursor.rotation_axis_angle[1] = ob.rotation_axis_angle[1]
+                cursor.rotation_axis_angle[2] = ob.rotation_axis_angle[2]
+                cursor.rotation_axis_angle[3] = ob.rotation_axis_angle[3]
+            else:
+                cursor.rotation_euler = ob.rotation_euler
+        return{'FINISHED'}
+
+
+class PIESPLUS_OT_cursor_to_active(OpInfo, Operator):
+    bl_idname = "pies_plus.cursor_to_active"
+    bl_label = "Cursor to Active"
+    bl_description = "Snap 3D Cursor to active item"
+
+    copy_object_rot_to_cursor_pref: bpy.props.BoolProperty(
+        description="Copy the active objects' rotation when using 'Cursor to []' operators",
+        name="Copy Actives' Rotation"
+    )
+
+    def execute(self, context):
+        bpy.ops.view3d.snap_cursor_to_active()
+
+        if self.copy_object_rot_to_cursor_pref:
+            cursor = context.scene.cursor
+            ob = context.object
+            ob_rotation_mode = ob.rotation_mode
+
+            if ob_rotation_mode == 'QUATERNION':
+                cursor.rotation_quaternion[0] = ob.rotation_quaternion[0]
+                cursor.rotation_quaternion[1] = ob.rotation_quaternion[1]
+                cursor.rotation_quaternion[2] = ob.rotation_quaternion[2]
+                cursor.rotation_quaternion[3] = ob.rotation_quaternion[3]
+            elif ob_rotation_mode == 'AXIS_ANGLE':
+                cursor.rotation_axis_angle[0] = ob.rotation_axis_angle[0]
+                cursor.rotation_axis_angle[1] = ob.rotation_axis_angle[1]
+                cursor.rotation_axis_angle[2] = ob.rotation_axis_angle[2]
+                cursor.rotation_axis_angle[3] = ob.rotation_axis_angle[3]
+            else:
+                cursor.rotation_euler = ob.rotation_euler
+        return{'FINISHED'}
+
+
 class PIESPLUS_OT_reset_cursor(OpInfo, Operator):
     bl_idname = "pies_plus.reset_cursor"
     bl_label = "Cursor Reset"
@@ -382,6 +448,8 @@ classes = (
     PIESPLUS_OT_origin_to_selection,
     PIESPLUS_OT_origin_to_bottom,
     PIESPLUS_OT_origin_to_com,
+    PIESPLUS_OT_cursor_to_selected,
+    PIESPLUS_OT_cursor_to_active,
     PIESPLUS_OT_reset_origin,
     PIESPLUS_OT_reset_cursor,
     PIESPLUS_OT_reset_cursor_rot,
