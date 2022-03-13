@@ -84,8 +84,7 @@ class PIESPLUS_OT_keyframing(OpInfo, bpy.types.Operator):
             try:
                 bpy.ops.anim.keyframe_insert_menu(type='Available')
             except:
-                self.report(
-                    {'ERROR'}, "No suitable context info for active keying set")
+                self.report({'ERROR'}, "No suitable context info for active keying set")
         elif self.key_choice == 'key_bendy_bones':
             bpy.ops.anim.keyframe_insert_menu(type='BUILTIN_KSI_BendyBones')
         elif self.key_choice == 'key_whole_char':

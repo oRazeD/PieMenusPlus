@@ -1,5 +1,4 @@
 import bpy
-from bpy.props import EnumProperty
 
 
 class PIESPLUS_OT_transforms(bpy.types.Operator):
@@ -20,21 +19,39 @@ class PIESPLUS_OT_transforms(bpy.types.Operator):
         name='Transform Type'
     )
 
+    use_properties: bpy.props.BoolProperty(
+        default=True,
+        name='Apply Properties',
+        description='Modfy properties such as curve vertex radius, font size and bone evelope.'
+    )
+
+    def apply_transform(self, location, rotation, scale, properties):
+        bpy.ops.object.transform_apply(location=location, rotation=rotation, scale=scale, properties=properties)
+
     def execute(self, context):
-        if self.tranforms_type == 'apply_loc':
-            bpy.ops.object.transform_apply(rotation=False, scale=False)
+        if self.tranforms_type in {'apply_loc', 'apply_rot', 'apply_scale', 'apply_rot_scale', 'apply_all'}:
+            cancel = False
+            for ob in context.selected_objects:
+                if ob.data.users > 1:
+                    if not cancel:
+                        self.report({'ERROR'}, "Cannot apply to linked datablocks, aborting transform application of all objects. Linked objects listed below.")
 
-        elif self.tranforms_type == 'apply_rot':
-            bpy.ops.object.transform_apply(location=False, scale=False)
+                    self.report({'ERROR'}, f"Object '{ob.name}'; Mesh '{ob.data.name}'")
+                    cancel = True
 
-        elif self.tranforms_type == 'apply_scale':
-            bpy.ops.object.transform_apply(location=False, rotation=False)
+            if cancel:
+                return {'CANCELLED'}
 
-        elif self.tranforms_type == 'apply_rot_scale':
-            bpy.ops.object.transform_apply(location=False)
-
-        elif self.tranforms_type == 'apply_all':
-            bpy.ops.object.transform_apply()
+            if self.tranforms_type == 'apply_loc':
+                self.apply_transform(True, False, False, self.use_properties)
+            elif self.tranforms_type == 'apply_rot':
+                self.apply_transform(False, True, False, self.use_properties)
+            elif self.tranforms_type == 'apply_scale':
+                self.apply_transform(False, False, True, self.use_properties)
+            elif self.tranforms_type == 'apply_rot_scale':
+                self.apply_transform(False, True, True, self.use_properties)
+            elif self.tranforms_type == 'apply_all':
+                self.apply_transform(True, True, True, self.use_properties)
 
         else: # Clear all
             for ob in context.selected_objects:
