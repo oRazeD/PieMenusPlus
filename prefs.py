@@ -422,69 +422,61 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
     )
 
     # Shading Prefs
-    
     auto_smooth_flat_pref: BoolProperty(
         description="Automatically set objects that have Auto Smooth+ removed to Shade Flat"
     )
 
     # Quick FWN Prefs
-
     fwn_keep_sharps_pref: BoolProperty(
         description="Toggles whether the FWN Modifier accounts for Sharps on each mesh",
         default=True
     )
-    
     fwn_weight_value_pref: IntProperty(
         name="Weight",
         default=100,
         min=1,
         max=100
     )
-    
     fwn_face_influence_pref: BoolProperty(
         description="Use influence of face for FWN"
     )
 
     # Snapping Prefs
-    
     auto_enable_snap_pref: BoolProperty(
         description="Automatically enables snapping when you change any settings within the pie",
         default=True
     )
 
     # Origin / Cursor Prefs
-    
     auto_enable_abs_grid_snap_pref: BoolProperty(
         description="Automatically enables Absolute Grid Snap when you switch to incremental snapping within the pie"
     )
-    
     reset_3d_cursor_rot_pref: BoolProperty(
         description="Automatically reset 3D Cursor rotation when resetting the translation within the pie", 
         default=True
     )
 
     # Edit Origin Prefs
-    
     face_center_snap_pref: BoolProperty(
         description="Allows for snapping directly to the center of any face on the object being edited (WARNING: This operation can be very slow in bigger scenes)"
     )
 
     # Selection Prefs
-    
     invert_selection_pref: BoolProperty(
         description="Only deselect all objects if all object are selected (versus deselecting if any selection is made)"
     )
+    frame_selected_pref: BoolProperty(
+        default=True,
+        description="Also frame the selected object when isolating"
+    )
 
     # Context Mode Prefs
-       
     simple_context_mode_pref: BoolProperty(
         description="A simple version of the context mode pie, which removes xray and overlay toggle (in case you keep using it on accident)"
     )
-
     preserve_uv_selection_pref: BoolProperty(
         description="Selects all faces when you leave UV Sync so you don't need to select the mesh again as you would normally"
     )
-
     sculptors_haven_pref: BoolProperty(
         description="Move the sculpt mode button to the main array of context mode operators, so that you can quickly switch between the modes"
     )
@@ -514,61 +506,68 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
         # Information
         if self.tabs == 'general':
             col = layout.column(align = True)
-            col.label(text="        Active Tools Pie Settings:")
             box = col.box()
-            row = box.row()
-            row.scale_x = 2
-            row.label(text="Default Selection Tool:")
+            box.scale_y = .9
+            box.label(text="    ACTIVE TOOLS")
+            row = col.row()
+            row.scale_x = 1.25
+            row.label(text="Default Selection Tool")
             row.prop(self, "default_tool_pref", expand=True)
 
             col = layout.column(align = True)
-            col.label(text="        Origin / Cursor Pie Settings:")
             box = col.box()
-            box.prop(self, "face_center_snap_pref", text="[EXPERIMENTAL] Edit Origin Tool Snapping to Center of Faces (Slow in Big Scenes)")
-            box.prop(self, "reset_3d_cursor_rot_pref", text="Reset 3D Cursor Rotation when Resetting Location")
+            box.scale_y = .9
+            box.label(text="    ORIGIN / CURSOR")
+            col.prop(self, "face_center_snap_pref", text="[EXPERIMENTAL] Edit Origin Tool Snapping to Center of Faces")
+            col.prop(self, "reset_3d_cursor_rot_pref", text="Reset 3D Cursor Rotation when Resetting Location")
 
             col = layout.column(align = True)
-            col.label(text="        Select Mode Pie Settings:")
             box = col.box()
-            box.prop(self, "preserve_uv_selection_pref", text="Select Entire Mesh in 3D View when Exiting UV Sync Mode")
-            box.prop(self, "simple_context_mode_pref", text="Use Simple Select Mode Pie")
-            box.prop(self, "sculptors_haven_pref", text="Add Sculpt Mode Button to Main Pie")
+            box.scale_y = .9
+            box.label(text="    SELECT MODE")
+            col.prop(self, "preserve_uv_selection_pref", text="Select Entire Mesh in 3D View when Exiting UV Sync Mode")
+            col.prop(self, "simple_context_mode_pref", text="Use Simple Select Mode Pie")
+            col.prop(self, "sculptors_haven_pref", text="Add Sculpt Mode Button to Main Selection")
             
             col = layout.column(align = True)
-            col.label(text="        Selection Pie Settings:")
             box = col.box()
-            box.prop(self, "invert_selection_pref", text="Invert Selection Toggle")
+            box.scale_y = .9
+            box.label(text="    SELECTION")
+            col.prop(self, "invert_selection_pref", text="Invert Selection Toggle")
+            col.prop(self, "frame_selected_pref", text="Isolate & Frame Selected")
 
             col = layout.column(align = True)
-            col.label(text="        Shading Pie Settings:")
             box = col.box()
-            box.prop(self, "auto_smooth_flat_pref", text="Shade Objects Flat when Auto Smooth+ is Removed")
-            box = col.box()
-            box.label(text = "Quick Weighted Normals:")
-            row = box.row()
-            row.label(text="Face Weight")
-            row.scale_x = 2
+            box.scale_y = .9
+            box.label(text="    SHADING")
+            col.prop(self, "auto_smooth_flat_pref", text="Shade Objects Flat when Auto Smooth+ is Removed")
+            col.separator()
+            row = col.row()
+            row.label(text="Quick FWN Weight")
+            row.scale_x = 4
             row.prop(self, "fwn_weight_value_pref")
-            row = box.row()
-            row.prop(self, "fwn_keep_sharps_pref", text="Keep Sharps")
-            row.prop(self, "fwn_face_influence_pref", text="Face Influence")
+            row = col.row()
+            row.prop(self, "fwn_keep_sharps_pref", text="FWN Keep Sharps")
+            row.prop(self, "fwn_face_influence_pref", text="FWN Face Influence")
 
             col = layout.column(align = True)
-            col.label(text="        Snapping Pie Settings:")
             box = col.box()
-            box.prop(self, "auto_enable_snap_pref", text="Enable Snapping when Changing Snap Pie Settings")
-            box.prop(self, "auto_enable_abs_grid_snap_pref", text="Enable Absolute Grid Snap when Turning on Incremental Snapping")
+            box.scale_y = .9
+            box.label(text="    SNAPPING")
+            col.prop(self, "auto_enable_snap_pref", text="Enable Snapping when Changing Snap Pie Settings")
+            col.prop(self, "auto_enable_abs_grid_snap_pref", text="Enable Absolute Grid Snap when Turning on Incremental Snapping")
 
             col = layout.column(align = True)
-            col.label(text="    General Settings:")
             box = col.box()
+            box.scale_y = .9
+            box.label(text="    UI")
 
             view = context.preferences.view
 
-            col = box.column()
-            col.label(text = "Animation Timeout Recommended: 0  -  Removes Animations")
+            col = col.column()
+            col.label(text = "Animation Timeout Recommended = 0        (Removes Animations)")
             col.prop(view, "pie_animation_timeout")
-            col.label(text = "Radius Recommended: 125  -  Fixes UI Clipping")
+            col.label(text = "Radius Recommended = 125        (Fixes UI Clipping)")
             col.prop(view, "pie_menu_radius")
             col.separator(factor = 1.5)
             col.prop(view, "pie_tap_timeout")

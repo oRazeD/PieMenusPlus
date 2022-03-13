@@ -692,6 +692,8 @@ class PIESPLUS_MT_selection_object_mode(Menu):
         layout = self.layout
         pie = layout.menu_pie()
 
+        pies_plus_prefs = context.preferences.addons[__package__].preferences
+
         #4 - LEFT
         pie.separator()
         #6 - RIGHT
@@ -703,7 +705,7 @@ class PIESPLUS_MT_selection_object_mode(Menu):
         #7 - TOP - LEFT
         pie.operator("pies_plus.frame_selected_all", icon='VIS_SEL_10')
         #9 - TOP - RIGHT
-        pie.operator("view3d.localview", text="Isolate Toggle", icon='CAMERA_DATA')
+        pie.operator("view3d.localview", text="Isolate Toggle", icon='CAMERA_DATA').frame_selected = pies_plus_prefs.frame_selected_pref
         #1 - BOTTOM - LEFT
         col = pie.column()
 
