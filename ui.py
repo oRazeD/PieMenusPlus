@@ -536,7 +536,7 @@ class PIESPLUS_MT_origin_pivot(Menu):
             # 2 - BOTTOM
             pie.operator("pies_plus.origin_to_selection", icon='PIVOT_BOUNDBOX')
             # 8 - TOP
-            pie.operator("view3d.snap_selected_to_cursor", text="Sel to Cursor (O)", icon='RESTRICT_SELECT_OFF').use_offset = True
+            pie.operator("view3d.snap_selected_to_cursor", text="Selection to Cursor", icon='RESTRICT_SELECT_OFF').use_offset = True
             # 7 - TOP - LEFT
             pie.operator("object.origin_set", text="Origin to Geo", icon='PIVOT_BOUNDBOX').type = 'ORIGIN_GEOMETRY'
             # 9 - TOP - RIGHT
@@ -563,7 +563,7 @@ class PIESPLUS_MT_origin_pivot(Menu):
             box.scale_y = 1.2
 
             box.operator("pies_plus.edit_origin", icon='OBJECT_ORIGIN').edit_type = 'origin'
-            box.operator("object.origin_set", text="Geo to Origin", icon='PIVOT_BOUNDBOX').type = 'GEOMETRY_ORIGIN'
+            box.operator("object.origin_set", text="Geo to Origin", icon='MOD_MESHDEFORM').type = 'GEOMETRY_ORIGIN'
             box.operator("pies_plus.origin_to_com", icon='PIVOT_BOUNDBOX')
             box.operator("pies_plus.origin_to_bottom", icon='PIVOT_BOUNDBOX')
         else:
@@ -603,7 +603,7 @@ class PIESPLUS_MT_origin_pivot(Menu):
         box.scale_y = 1.2
         box.operator("pies_plus.edit_origin", text = 'Edit Cursor', icon='OBJECT_ORIGIN').edit_type = 'cursor'
         box.operator("pies_plus.reset_cursor_rot", icon='PIVOT_CURSOR')
-        box.operator("view3d.snap_selected_to_cursor", text="Sel to Cursor", icon='RESTRICT_SELECT_OFF').use_offset = False
+        box.operator("pies_plus.cursor_to_active_orient", icon='PIVOT_CURSOR')
 
 
 ########################################################################################################################
@@ -1315,12 +1315,12 @@ class PIESPLUS_MT_save(Menu):
         box = col.box().column()
         box2 = box.box()
         box2.scale_y = 1.3
-        box2.menu("TOPBAR_MT_file_export", icon='EXPORT', text="Export                   -->")
+        box2.menu("TOPBAR_MT_file_export", icon='EXPORT', text="Export                -->")
 
         box = col.box().column()
         box2 = box.box()
         box2.scale_y = 1.3
-        box2.menu("TOPBAR_MT_file_import", icon='IMPORT', text="Import                   -->")
+        box2.menu("TOPBAR_MT_file_import", icon='IMPORT', text="Import                -->")
 
         split = box.split(align = True)
         split.scale_y = 1.1

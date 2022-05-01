@@ -151,7 +151,7 @@ def get_active_geo_rotation(rotation_type='edge_angle') -> str:
                 return_msg = "There is no second face to sample from, using edge angle as fallback"
         elif rotation_type == 'average_face_angle':
             if len(active_geo.link_faces) > 1:
-                direction_vec = active_geo.link_faces[0].normal + active_geo.link_faces[1].normal / 2
+                direction_vec = rot_matrix @ ((active_geo.link_faces[0].normal + active_geo.link_faces[1].normal) / 2)
             else:
                 return_msg = "There isn't 2 faces to average from, using edge angle as fallback"
 
@@ -194,13 +194,13 @@ class PIESPLUS_OT_cursor_to_selected(OpInfo, Operator):
             ('face_1_angle', "Face 1", ""),
             ('face_2_angle', "Face 2", "")
         ),
-        default='average_face_angle',
         description='Different methods of getting the rotation angle to copy from',
         name='Copy Type'
     )
 
     def draw(self, context):
         layout = self.layout
+        layout.separator()
         layout.enabled = context.mode == 'EDIT_MESH'
         layout.prop(self, "copy_active_selections_rot")
 
@@ -237,13 +237,13 @@ class PIESPLUS_OT_cursor_to_active(OpInfo, Operator):
             ('face_1_angle', "Face 1", ""),
             ('face_2_angle', "Face 2", "")
         ),
-        default='average_face_angle',
         description='Different methods of getting the rotation angle to copy from',
         name='Copy Type'
     )
 
     def draw(self, context):
         layout = self.layout
+        layout.separator()
         layout.enabled = context.mode == 'EDIT_MESH'
         layout.prop(self, "copy_active_selections_rot")
 
@@ -263,6 +263,42 @@ class PIESPLUS_OT_cursor_to_active(OpInfo, Operator):
         return{'FINISHED'}
 
 
+class PIESPLUS_OT_cursor_to_active_orient(OpInfo, Operator):
+    bl_idname = "pies_plus.cursor_to_active_orient"
+    bl_label = "Cursor to Orient"
+    bl_description = "Align only rotation of the 3D Cursor to the active edge or face"
+
+    copy_rot_type: bpy.props.EnumProperty(
+        items=(
+            ('edge_angle', "Edge", ""),
+            ('average_face_angle', "Average", ""),
+            ('face_1_angle', "Face 1", ""),
+            ('face_2_angle', "Face 2", "")
+        ),
+        description='Different methods of getting the rotation angle to copy from',
+        name='Copy Type'
+    )
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode == 'EDIT_MESH'
+
+    def draw(self, context):
+        layout = self.layout
+        layout.separator()
+
+        split = layout.split(factor=.2)
+        split.label(text='Copy Type')
+        split.row().prop(self, 'copy_rot_type', expand=True)
+
+    def execute(self, context):
+        return_msg = get_active_geo_rotation(rotation_type = self.copy_rot_type)
+
+        if return_msg is not None:
+            self.report({'WARNING'}, return_msg)
+        return{'FINISHED'}
+
+
 class PIESPLUS_OT_reset_cursor(OpInfo, Operator):
     bl_idname = "pies_plus.reset_cursor"
     bl_label = "Cursor Reset"
@@ -273,6 +309,14 @@ class PIESPLUS_OT_reset_cursor(OpInfo, Operator):
                                            ('cursor_y', "Y", ""),
                                            ('cursor_z', "Z", "")), name = 'Reset Axis')
 
+    def draw(self, context):
+        layout = self.layout
+        layout.separator()
+
+        split = layout.split(factor=.2)
+        split.label(text='Reset Axis')
+        split.row().prop(self, 'cursor_reset_axis', expand=True)
+
     def execute(self, context):
         cursor = context.scene.cursor
 
@@ -282,7 +326,7 @@ class PIESPLUS_OT_reset_cursor(OpInfo, Operator):
             cursor.location[0] = 0
         elif self.cursor_reset_axis == 'cursor_y':
             cursor.location[1] = 0
-        else: # z
+        else: # Z
             cursor.location[2] = 0
 
         if context.preferences.addons[__package__].preferences.reset_3d_cursor_rot_pref:
@@ -527,6 +571,7 @@ classes = (
     PIESPLUS_OT_origin_to_com,
     PIESPLUS_OT_cursor_to_selected,
     PIESPLUS_OT_cursor_to_active,
+    PIESPLUS_OT_cursor_to_active_orient,
     PIESPLUS_OT_reset_origin,
     PIESPLUS_OT_reset_cursor,
     PIESPLUS_OT_reset_cursor_rot,
