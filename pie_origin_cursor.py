@@ -7,7 +7,7 @@ from .generic_utils import OpInfo
 class PIESPLUS_OT_origin_to_selection(OpInfo, Operator):
     bl_idname = "pies_plus.origin_to_selection"
     bl_label = "Origin to Selection"
-    bl_description = "[BATCH] Sets the Active Objects Origin to the current selection"
+    bl_description = "Sets the Active Objects Origin to the current selection"
 
     def execute(self, context):
         modeCallback = context.object.mode
@@ -25,7 +25,7 @@ class PIESPLUS_OT_origin_to_selection(OpInfo, Operator):
 class PIESPLUS_OT_origin_to_bottom(OpInfo, Operator):
     bl_idname = "pies_plus.origin_to_bottom"
     bl_label = "Origin to Bottom"
-    bl_description = "[BATCH] Sets the Active Objects Origin to the bottom of the mesh"
+    bl_description = "Sets the Active Objects Origin to the bottom of the mesh"
 
     def execute(self, context):
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -46,7 +46,7 @@ class PIESPLUS_OT_origin_to_bottom(OpInfo, Operator):
 class PIESPLUS_OT_reset_origin(OpInfo, Operator):
     bl_idname = "pies_plus.reset_origin"
     bl_label = "Origin Reset"
-    bl_description = "[BATCH] Resets the Origin to the respective selected axis"
+    bl_description = "Resets the Origin to the respective selected axis"
 
     origin_reset_axis: EnumProperty(
         items=(
@@ -104,7 +104,7 @@ class PIESPLUS_OT_reset_origin(OpInfo, Operator):
 class PIESPLUS_OT_origin_to_com(OpInfo, Operator):
     bl_idname = "pies_plus.origin_to_com"
     bl_label = "Origin to Mass"
-    bl_description = "[BATCH] Sends the 3D Cursor to the center of mass"
+    bl_description = "Snap 3D Cursor to the center of mass"
 
     def execute(self, context):
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -112,36 +112,38 @@ class PIESPLUS_OT_origin_to_com(OpInfo, Operator):
         return{'FINISHED'}
 
 
+def get_actives_rotation():
+    cursor = bpy.context.scene.cursor
+    ob = bpy.context.object
+
+    bm = bmesh.from_edit_mesh(ob.data)
+
+    normal_quat = bm.faces.active.normal.to_track_quat('Z', 'X')
+    normal_euler = normal_quat.to_euler('XYZ')
+
+    if ob.rotation_mode == 'QUATERNION':
+        cursor.rotation_euler = normal_quat
+    elif ob.rotation_mode == 'AXIS_ANGLE':
+        cursor.rotation_euler = normal_euler # TODO
+    else:
+        cursor.rotation_euler = normal_euler
+
+
 class PIESPLUS_OT_cursor_to_selected(OpInfo, Operator):
     bl_idname = "pies_plus.cursor_to_selection"
     bl_label = "Cursor to Selection"
     bl_description = "Snap 3D Cursor to the middle of the selected items"
 
-    copy_object_rot_to_cursor_pref: bpy.props.BoolProperty(
-        description="Copy the active objects' rotation when using 'Cursor to []' operators",
-        name="Copy Actives' Rotation"
+    copy_active_selections_rot: bpy.props.BoolProperty(
+        description="Copy the rotation of the active face",
+        name='Copy Active Rotation'
     )
 
     def execute(self, context):
         bpy.ops.view3d.snap_cursor_to_selected()
 
-        if self.copy_object_rot_to_cursor_pref:
-            cursor = context.scene.cursor
-            ob = context.object
-            ob_rotation_mode = ob.rotation_mode
-
-            if ob_rotation_mode == 'QUATERNION':
-                cursor.rotation_quaternion[0] = ob.rotation_quaternion[0]
-                cursor.rotation_quaternion[1] = ob.rotation_quaternion[1]
-                cursor.rotation_quaternion[2] = ob.rotation_quaternion[2]
-                cursor.rotation_quaternion[3] = ob.rotation_quaternion[3]
-            elif ob_rotation_mode == 'AXIS_ANGLE':
-                cursor.rotation_axis_angle[0] = ob.rotation_axis_angle[0]
-                cursor.rotation_axis_angle[1] = ob.rotation_axis_angle[1]
-                cursor.rotation_axis_angle[2] = ob.rotation_axis_angle[2]
-                cursor.rotation_axis_angle[3] = ob.rotation_axis_angle[3]
-            else:
-                cursor.rotation_euler = ob.rotation_euler
+        if self.copy_active_selections_rot:
+            get_actives_rotation()
         return{'FINISHED'}
 
 
@@ -150,38 +152,23 @@ class PIESPLUS_OT_cursor_to_active(OpInfo, Operator):
     bl_label = "Cursor to Active"
     bl_description = "Snap 3D Cursor to active item"
 
-    copy_object_rot_to_cursor_pref: bpy.props.BoolProperty(
-        description="Copy the active objects' rotation when using 'Cursor to []' operators",
-        name="Copy Actives' Rotation"
+    copy_active_selections_rot: bpy.props.BoolProperty(
+        description="Copy the rotation of the active face",
+        name='Copy Active Rotation'
     )
 
     def execute(self, context):
         bpy.ops.view3d.snap_cursor_to_active()
 
-        if self.copy_object_rot_to_cursor_pref:
-            cursor = context.scene.cursor
-            ob = context.object
-            ob_rotation_mode = ob.rotation_mode
-
-            if ob_rotation_mode == 'QUATERNION':
-                cursor.rotation_quaternion[0] = ob.rotation_quaternion[0]
-                cursor.rotation_quaternion[1] = ob.rotation_quaternion[1]
-                cursor.rotation_quaternion[2] = ob.rotation_quaternion[2]
-                cursor.rotation_quaternion[3] = ob.rotation_quaternion[3]
-            elif ob_rotation_mode == 'AXIS_ANGLE':
-                cursor.rotation_axis_angle[0] = ob.rotation_axis_angle[0]
-                cursor.rotation_axis_angle[1] = ob.rotation_axis_angle[1]
-                cursor.rotation_axis_angle[2] = ob.rotation_axis_angle[2]
-                cursor.rotation_axis_angle[3] = ob.rotation_axis_angle[3]
-            else:
-                cursor.rotation_euler = ob.rotation_euler
+        if self.copy_active_selections_rot:
+            get_actives_rotation()
         return{'FINISHED'}
 
 
 class PIESPLUS_OT_reset_cursor(OpInfo, Operator):
     bl_idname = "pies_plus.reset_cursor"
     bl_label = "Cursor Reset"
-    bl_description = "Resets the 3D Cursor to the respective selected axis"
+    bl_description = "Reset 3D Cursor to the selected axis"
 
     cursor_reset_axis: EnumProperty(items=(('cursor_all', "All", ""),
                                            ('cursor_x', "X", ""),
@@ -197,7 +184,7 @@ class PIESPLUS_OT_reset_cursor(OpInfo, Operator):
             cursor.location[0] = 0
         elif self.cursor_reset_axis == 'cursor_y':
             cursor.location[1] = 0
-        else:
+        else: # z
             cursor.location[2] = 0
 
         if context.preferences.addons[__package__].preferences.reset_3d_cursor_rot_pref:
@@ -208,7 +195,7 @@ class PIESPLUS_OT_reset_cursor(OpInfo, Operator):
 class PIESPLUS_OT_reset_cursor_rot(OpInfo, Operator):
     bl_idname = "pies_plus.reset_cursor_rot"
     bl_label = "Reset Cursor Rot"
-    bl_description = "Reset the 3D Cursor's Rotation"
+    bl_description = "Reset 3D Cursor rotation"
 
     def execute(self, context):
         cursor = context.scene.cursor
@@ -218,13 +205,11 @@ class PIESPLUS_OT_reset_cursor_rot(OpInfo, Operator):
             cursor.rotation_quaternion[1] = 0
             cursor.rotation_quaternion[2] = 0
             cursor.rotation_quaternion[3] = 0
-
         elif cursor.rotation_mode == 'AXIS_ANGLE':
             cursor.rotation_axis_angle[0] = 0
             cursor.rotation_axis_angle[1] = 0
             cursor.rotation_axis_angle[2] = 1
             cursor.rotation_axis_angle[3] = 0
-
         else:
             cursor.rotation_euler = (0,0,0)
         return {'FINISHED'}
@@ -233,7 +218,7 @@ class PIESPLUS_OT_reset_cursor_rot(OpInfo, Operator):
 class PIESPLUS_OT_edit_origin(Operator):
     bl_idname = "pies_plus.edit_origin"
     bl_label = "Edit Origin"
-    bl_description = "Manually edit the origin or cursor with a translate modal"
+    bl_description = "Transform the origin or 3D Cursor"
     bl_options = {'REGISTER'}
 
     edit_type: EnumProperty(
