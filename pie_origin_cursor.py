@@ -112,8 +112,9 @@ class PIESPLUS_OT_origin_to_com(OpInfo, Operator):
         return{'FINISHED'}
 
 
-def get_actives_rotation() -> None:
+def get_active_geo_rotation(rotation_type='edge_angle') -> str:
     '''Get and set the normal direction of the 3D Cursor based on the active geo'''
+    return_msg = None
     cursor = bpy.context.scene.cursor
     ob = bpy.context.object
 
@@ -122,17 +123,43 @@ def get_actives_rotation() -> None:
     bm.edges.ensure_lookup_table()
     
     active_geo = bm.select_history.active
-
     if active_geo is None:
-        return print('Could not find the active geo to copy rotation')
+        return_msg = "Could not find the active geo to copy rotation"
+        return return_msg
+
+    _loc, rot, _scl = ob.matrix_world.decompose()
+    rot_matrix = rot.to_matrix().to_4x4()
     
     if isinstance(active_geo, bmesh.types.BMVert):
-        return print('Active is a vert')
+        return_msg = "Active is a vert, skipping rotation align"
+        return return_msg
     elif isinstance(active_geo, bmesh.types.BMFace):
-        direction_vec = active_geo.normal
+        direction_vec = rot_matrix @ active_geo.normal
     else: # Edge
-        verts = [vert.co for vert in active_geo.verts]
-        direction_vec = verts[0] - verts[1]
+        if rotation_type == 'edge_angle':
+            edge_verts = [vert.co for vert in active_geo.verts]
+            direction_vec = rot_matrix @ (edge_verts[0] - edge_verts[1])
+        elif rotation_type == 'face_1_angle':
+            if len(active_geo.link_faces):
+                direction_vec = rot_matrix @ active_geo.link_faces[0].normal
+            else:
+                return_msg = "There is no face to sample from, using edge angle as fallback"
+        elif rotation_type == 'face_2_angle':
+            if len(active_geo.link_faces) > 1:
+                direction_vec = rot_matrix @ active_geo.link_faces[1].normal
+            else:
+                return_msg = "There is no second face to sample from, using edge angle as fallback"
+        elif rotation_type == 'average_face_angle':
+            if len(active_geo.link_faces) > 1:
+                direction_vec = active_geo.link_faces[0].normal + active_geo.link_faces[1].normal / 2
+            else:
+                return_msg = "There isn't 2 faces to average from, using edge angle as fallback"
+
+    # Use edge angle as fallback
+    if return_msg is not None:
+        edge_verts = [vert.co for vert in active_geo.verts]
+        direction_vec = rot_matrix @ (edge_verts[0] - edge_verts[1])
+        return return_msg
 
     normal_quat = direction_vec.to_track_quat('Z', 'Y')
     normal_euler = normal_quat.to_euler('XYZ')
@@ -147,6 +174,7 @@ def get_actives_rotation() -> None:
         cursor.rotation_axis_angle[3] = normal_axis[0][2]
     else:
         cursor.rotation_euler = normal_euler
+    return return_msg
 
 
 class PIESPLUS_OT_cursor_to_selected(OpInfo, Operator):
@@ -155,15 +183,40 @@ class PIESPLUS_OT_cursor_to_selected(OpInfo, Operator):
     bl_description = "Snap 3D Cursor to the middle of the selected items"
 
     copy_active_selections_rot: bpy.props.BoolProperty(
-        description="Copy the rotation of the active face",
+        description="Copy the rotation of the active face or edge",
         name='Copy Active Rotation'
     )
+
+    copy_rot_type: bpy.props.EnumProperty(
+        items=(
+            ('edge_angle', "Edge", ""),
+            ('average_face_angle', "Average", ""),
+            ('face_1_angle', "Face 1", ""),
+            ('face_2_angle', "Face 2", "")
+        ),
+        default='average_face_angle',
+        description='Different methods of getting the rotation angle to copy from',
+        name='Copy Type'
+    )
+
+    def draw(self, context):
+        layout = self.layout
+        layout.enabled = context.mode == 'EDIT_MESH'
+        layout.prop(self, "copy_active_selections_rot")
+
+        split = layout.split(factor=.2)
+        split.enabled = self.copy_active_selections_rot
+        split.label(text='Copy Type')
+        split.row().prop(self, 'copy_rot_type', expand=True)
 
     def execute(self, context):
         bpy.ops.view3d.snap_cursor_to_selected()
 
-        if self.copy_active_selections_rot:
-            get_actives_rotation()
+        if self.copy_active_selections_rot and context.mode == 'EDIT_MESH':
+            return_msg = get_active_geo_rotation(rotation_type = self.copy_rot_type)
+
+            if return_msg is not None:
+                self.report({'WARNING'}, return_msg)
         return{'FINISHED'}
 
 
@@ -173,15 +226,40 @@ class PIESPLUS_OT_cursor_to_active(OpInfo, Operator):
     bl_description = "Snap 3D Cursor to active item"
 
     copy_active_selections_rot: bpy.props.BoolProperty(
-        description="Copy the rotation of the active face",
+        description="Copy the rotation of the active face or edge",
         name='Copy Active Rotation'
     )
+
+    copy_rot_type: bpy.props.EnumProperty(
+        items=(
+            ('edge_angle', "Edge", ""),
+            ('average_face_angle', "Average", ""),
+            ('face_1_angle', "Face 1", ""),
+            ('face_2_angle', "Face 2", "")
+        ),
+        default='average_face_angle',
+        description='Different methods of getting the rotation angle to copy from',
+        name='Copy Type'
+    )
+
+    def draw(self, context):
+        layout = self.layout
+        layout.enabled = context.mode == 'EDIT_MESH'
+        layout.prop(self, "copy_active_selections_rot")
+
+        split = layout.split(factor=.2)
+        split.enabled = self.copy_active_selections_rot
+        split.label(text='Copy Type')
+        split.row().prop(self, 'copy_rot_type', expand=True)
 
     def execute(self, context):
         bpy.ops.view3d.snap_cursor_to_active()
 
-        if self.copy_active_selections_rot:
-            get_actives_rotation()
+        if self.copy_active_selections_rot and context.mode == 'EDIT_MESH':
+            return_msg = get_active_geo_rotation(rotation_type = self.copy_rot_type)
+
+            if return_msg is not None:
+                self.report({'WARNING'}, return_msg)
         return{'FINISHED'}
 
 
