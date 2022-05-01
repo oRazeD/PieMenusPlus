@@ -112,19 +112,39 @@ class PIESPLUS_OT_origin_to_com(OpInfo, Operator):
         return{'FINISHED'}
 
 
-def get_actives_rotation():
+def get_actives_rotation() -> None:
+    '''Get and set the normal direction of the 3D Cursor based on the active geo'''
     cursor = bpy.context.scene.cursor
     ob = bpy.context.object
 
     bm = bmesh.from_edit_mesh(ob.data)
+    bm.faces.ensure_lookup_table()
+    bm.edges.ensure_lookup_table()
+    
+    active_geo = bm.select_history.active
 
-    normal_quat = bm.faces.active.normal.to_track_quat('Z', 'X')
+    if active_geo is None:
+        return print('Could not find the active geo to copy rotation')
+    
+    if isinstance(active_geo, bmesh.types.BMVert):
+        return print('Active is a vert')
+    elif isinstance(active_geo, bmesh.types.BMFace):
+        direction_vec = active_geo.normal
+    else: # Edge
+        verts = [vert.co for vert in active_geo.verts]
+        direction_vec = verts[0] - verts[1]
+
+    normal_quat = direction_vec.to_track_quat('Z', 'Y')
     normal_euler = normal_quat.to_euler('XYZ')
+    normal_axis = normal_quat.to_axis_angle()
 
-    if ob.rotation_mode == 'QUATERNION':
-        cursor.rotation_euler = normal_quat
-    elif ob.rotation_mode == 'AXIS_ANGLE':
-        cursor.rotation_euler = normal_euler # TODO
+    if cursor.rotation_mode == 'QUATERNION':
+        cursor.rotation_quaternion = normal_quat
+    elif cursor.rotation_mode == 'AXIS_ANGLE':
+        cursor.rotation_axis_angle[0] = normal_axis[1]
+        cursor.rotation_axis_angle[1] = normal_axis[0][0]
+        cursor.rotation_axis_angle[2] = normal_axis[0][1]
+        cursor.rotation_axis_angle[3] = normal_axis[0][2]
     else:
         cursor.rotation_euler = normal_euler
 
@@ -201,15 +221,9 @@ class PIESPLUS_OT_reset_cursor_rot(OpInfo, Operator):
         cursor = context.scene.cursor
 
         if cursor.rotation_mode == 'QUATERNION':
-            cursor.rotation_quaternion[0] = 1
-            cursor.rotation_quaternion[1] = 0
-            cursor.rotation_quaternion[2] = 0
-            cursor.rotation_quaternion[3] = 0
+            cursor.rotation_quaternion = (1,0,0,0)
         elif cursor.rotation_mode == 'AXIS_ANGLE':
-            cursor.rotation_axis_angle[0] = 0
-            cursor.rotation_axis_angle[1] = 0
-            cursor.rotation_axis_angle[2] = 1
-            cursor.rotation_axis_angle[3] = 0
+            cursor.rotation_axis_angle = (0,0,1,0)
         else:
             cursor.rotation_euler = (0,0,0)
         return {'FINISHED'}
