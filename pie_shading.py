@@ -6,7 +6,7 @@ from .generic_utils import OpInfo
 class PIESPLUS_OT_auto_smooth(Operator):
     bl_idname = "pies_plus.auto_smooth"
     bl_label = " Auto Smooth+"
-    bl_description = "[BATCH] Automation for setting up meshes with Auto Smooth Normals. Also turns on Shade Smooth"
+    bl_description = "Automation for setting up meshes with Auto Smooth Normals. Also turns on Shade Smooth"
     bl_options = {'UNDO'}
 
     def execute(self, context):
@@ -35,7 +35,7 @@ class PIESPLUS_OT_auto_smooth(Operator):
 class PIESPLUS_OT_remove_auto_smooth(OpInfo, Operator):
     bl_idname = "pies_plus.remove_auto_smooth"
     bl_label = ""
-    bl_description = "[Batch] An 'undo' for Quick Smooth, sets to Shade Flat as well"
+    bl_description = "An 'undo' for Quick Smooth, sets to Shade Flat as well"
 
     def execute(self, context):
         if not context.selected_objects and not context.active_object:
@@ -83,48 +83,37 @@ class PIESPLUS_OT_remove_wire_per_obj(Operator):
 
 
 class PIESPLUS_OT_recalc_normals(OpInfo, Operator):
-    """    [BATCH] Recalculates the Active(s) Normals (individual faces in Edit Mode if selected)
+    """Recalculates Active Object vertex normals (selected faces if in Edit Mode)
 
         Specials:
-    ALT  -  Invert"""
+    ALT  -  Inside"""
     bl_idname = 'pies_plus.recalc_normals'
     bl_label = "Recalculate Normals"
 
+    calc_inverse: bpy.props.BoolProperty(default=False, name='Inside', description='Calculate the inverse')
+
+    @classmethod
+    def poll(cls, context):
+        return context.object is not None and context.object.type == 'MESH'
+
     def invoke(self, context, event):
-        if not context.selected_objects and not context.active_object:
-            self.report({'ERROR'}, "Nothing is selected & there is no Active Object")
+        self.calc_inverse = event.alt
+        return self.execute(context)
+
+    def execute(self, context):
+        if context.mode == 'EDIT_MESH':
+            bpy.ops.mesh.normals_make_consistent(inside=self.calc_inverse)
+            self.report({'INFO'}, "Recalculated vertex normals on selected faces")
             return{'FINISHED'}
 
-        if context.active_object:
-            if context.object.type != 'MESH':
-                self.report({'ERROR'}, "The Active Object is not a mesh")
-                return{'FINISHED'}
-        else:
-            for ob in context.selected_objects:
-                context.view_layer.objects.active = ob
-                break
-
         modeCallback = context.object.mode
-
-        if context.mode == 'EDIT_MESH':
-            context.view_layer.objects.active.select_set(True)
-            for ob in context.selected_objects:
-                if ob.type == 'MESH':
-                    ob.update_from_editmode()
-
-                    selected_polys = [x for x in ob.data.polygons if x.select]
-                    if selected_polys:
-                        bpy.ops.mesh.select_mode(type='FACE')
-                        bpy.ops.mesh.normals_make_consistent(inside=event.alt)
-                        self.report({'INFO'}, "Recalculated Normals on selected faces")
-                        return{'FINISHED'}
 
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_mode(type='FACE')
         bpy.ops.mesh.select_all(action='SELECT')
-        bpy.ops.mesh.normals_make_consistent(inside=event.alt)
+        bpy.ops.mesh.normals_make_consistent(inside=self.calc_inverse)
         bpy.ops.mesh.select_all(action='DESELECT')
-        self.report({'INFO'}, "Recalculated Normals on all faces")
+        self.report({'INFO'}, "Recalculated vertex normals on all faces")
 
         if 'modeCallback' in locals():
             bpy.ops.object.mode_set(mode = modeCallback)
@@ -134,7 +123,7 @@ class PIESPLUS_OT_recalc_normals(OpInfo, Operator):
 class PIESPLUS_OT_shade_smooth(Operator):
     bl_idname = "pies_plus.shade_smooth"
     bl_label = "Shade Smooth"
-    bl_description = "[BATCH] Changes the shading of the selected objects to smooth"
+    bl_description = "Changes the shading of the selected objects to smooth"
     bl_options = {'UNDO'}
 
     def execute(self,context):
@@ -153,7 +142,7 @@ class PIESPLUS_OT_shade_smooth(Operator):
 class PIESPLUS_OT_shade_flat(Operator):
     bl_idname = "pies_plus.shade_flat"
     bl_label = "Shade Flat"
-    bl_description = "[BATCH] Changes the shading of the selected objects to flat"
+    bl_description = "Changes the shading of the selected objects to flat"
     bl_options = {'UNDO'}
 
     def execute(self,context):
@@ -172,7 +161,7 @@ class PIESPLUS_OT_shade_flat(Operator):
 class PIESPLUS_OT_auto_fwn(OpInfo, Operator):
     bl_idname = "pies_plus.auto_fwn"
     bl_label = "Quick Weighted Normals"
-    bl_description = "[BATCH] Automates assigning the Weighted Normals modifier to all selected meshes"
+    bl_description = "Automates assigning the Weighted Normals modifier to all selected meshes"
 
     def execute(self, context):
         if not context.selected_objects and not context.active_object:
