@@ -538,7 +538,7 @@ class PIESPLUS_MT_origin_pivot(Menu):
             # 8 - TOP
             pie.operator("view3d.snap_selected_to_cursor", text="Selection to Cursor", icon='RESTRICT_SELECT_OFF').use_offset = True
             # 7 - TOP - LEFT
-            pie.operator("object.origin_set", text="Origin to Geo", icon='PIVOT_BOUNDBOX').type = 'ORIGIN_GEOMETRY'
+            pie.operator("object.origin_set", text="Origin to Bounds", icon='PIVOT_BOUNDBOX').type = 'ORIGIN_GEOMETRY'
             # 9 - TOP - RIGHT
             pie.operator("pies_plus.cursor_to_active", text="Cursor to Active", icon='PIVOT_CURSOR') 
             # 1 - BOTTOM - LEFT
@@ -546,7 +546,7 @@ class PIESPLUS_MT_origin_pivot(Menu):
 
             gap = col.column()
             gap.separator()
-            gap.scale_y = 15.7
+            gap.scale_y = 18.5
 
             box = col.box().column(align=True)
             
@@ -562,10 +562,10 @@ class PIESPLUS_MT_origin_pivot(Menu):
             box = col.box().column()
             box.scale_y = 1.2
 
-            box.operator("pies_plus.edit_origin", icon='OBJECT_ORIGIN').edit_type = 'origin'
-            box.operator("object.origin_set", text="Geo to Origin", icon='MOD_MESHDEFORM').type = 'GEOMETRY_ORIGIN'
+            box.operator("object.origin_set", text="Bounds to Origin", icon='MOD_MESHDEFORM').type = 'GEOMETRY_ORIGIN'
             box.operator("pies_plus.origin_to_com", icon='PIVOT_BOUNDBOX')
             box.operator("pies_plus.origin_to_bottom", icon='PIVOT_BOUNDBOX')
+            box.operator("pies_plus.origin_to_active_orient", icon='PIVOT_BOUNDBOX')
         else:
             # 4 - LEFT
             pie.separator()
@@ -601,7 +601,6 @@ class PIESPLUS_MT_origin_pivot(Menu):
 
         box = col.box().column()
         box.scale_y = 1.2
-        box.operator("pies_plus.edit_origin", text = 'Edit Cursor', icon='OBJECT_ORIGIN').edit_type = 'cursor'
         box.operator("pies_plus.reset_cursor_rot", icon='PIVOT_CURSOR')
         box.operator("pies_plus.cursor_to_active_orient", icon='PIVOT_CURSOR')
 
