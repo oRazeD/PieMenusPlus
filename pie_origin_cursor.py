@@ -1,8 +1,9 @@
-import bpy, bmesh
+import bpy, bmesh, gpu
 from bpy.types import Operator
 from bpy.props import EnumProperty
+from mathutils import Vector, Matrix
+from gpu_extras.batch import batch_for_shader
 from .generic_utils import OpInfo
-from mathutils import Matrix
 
 
 class PIESPLUS_OT_origin_to_selection(OpInfo, Operator):
@@ -117,51 +118,55 @@ class EdgeRotAlign: # Mix-in class
     def get_active_geo_rotation(self, context, bm: bmesh.types.BMesh=None) -> None:
         '''Get and set the normal direction of the 3D Cursor based on the active geo'''
         return_msg = None
-        cursor = context.scene.cursor
         ob = context.object
         me = ob.data
 
         if bm is None:
-            bm = bmesh.from_edit_mesh(me)
-            bm.faces.ensure_lookup_table()
-            bm.edges.ensure_lookup_table()
+            self.bm = bmesh.from_edit_mesh(me)
+            self.bm.faces.ensure_lookup_table()
+            self.bm.edges.ensure_lookup_table()
+        else:
+            self.bm = bm
         
-        active_geo = bm.select_history.active
+        active_geo = self.bm.select_history.active
         if active_geo is None:
             return_msg = "Could not find the active geo to copy rotation"
             return return_msg
 
-        _loc, rot, scl = ob.matrix_world.decompose()
-        rot_mat = rot.to_matrix().to_4x4()
-        scl_mat = Matrix.Diagonal(scl.to_4d())
-
         if isinstance(active_geo, bmesh.types.BMFace):
-            direction_vec = rot_mat @ scl_mat @ active_geo.normal
+            direction_vec = active_geo.normal
         else: # Edge
             if self.edge_rot_type == 'face_1_angle':
                 if len(active_geo.link_faces):
-                    direction_vec = rot_mat @ scl_mat @ active_geo.link_faces[0].normal
+                    direction_vec = active_geo.link_faces[0].normal
                 else:
                     return_msg = "There is no face to sample from, using edge angle as fallback"
             elif self.edge_rot_type == 'face_2_angle':
                 if len(active_geo.link_faces) > 1:
-                    direction_vec = rot_mat @ scl_mat @ active_geo.link_faces[1].normal
+                    direction_vec = active_geo.link_faces[1].normal
                 else:
                     return_msg = "There is no second face to sample from, using edge angle as fallback"
             elif self.edge_rot_type == 'average_face_angle':
                 if len(active_geo.link_faces) > 1:
-                    direction_vec = rot_mat @ scl_mat @ ((active_geo.link_faces[0].normal + active_geo.link_faces[1].normal) / 2)
+                    direction_vec = (active_geo.link_faces[0].normal + active_geo.link_faces[1].normal) / 2
                 else:
                     return_msg = "There isn't 2 faces to average from, using edge angle as fallback"
 
             if self.edge_rot_type == 'edge_angle' or return_msg is not None: # Also use as fallback
-                direction_vec = rot_mat @ scl_mat @ (active_geo.verts[0].co - active_geo.verts[1].co) 
+                direction_vec = active_geo.verts[0].co - active_geo.verts[1].co
+
+        _loc, rot, scl = ob.matrix_world.decompose()
+        rot_mat = rot.to_matrix().to_4x4()
+        scl_mat = Matrix.Diagonal(scl.to_4d())
+        direction_vec = rot_mat @ scl_mat @ direction_vec
 
         normal_quat = direction_vec.to_track_quat('Z', 'Y')
         normal_euler = normal_quat.to_euler('XYZ')
         normal_axis = normal_quat.to_axis_angle()
 
-        if self.align_type == 'cursor':
+        if self.internal_align_type == 'cursor':
+            cursor = context.scene.cursor
+
             if cursor.rotation_mode == 'QUATERNION':
                 cursor.rotation_quaternion = normal_quat
             elif cursor.rotation_mode == 'AXIS_ANGLE':
@@ -191,8 +196,9 @@ class EdgeRotAlign: # Mix-in class
             me.transform(ob.matrix_world.inverted())
 
             bpy.ops.object.mode_set(mode='EDIT')
+            self.bm = bmesh.from_edit_mesh(context.object.data) # Make new bmesh for UI purposes
 
-            # Wierd rounding errors without this, probably less accurate but looks nicer
+            # Wierd rounding errors without this, less accurate but looks nicer
             ob.rotation_euler[0] = round(ob.rotation_euler[0], 5)
             ob.rotation_euler[1] = round(ob.rotation_euler[1], 5)
             ob.rotation_euler[2] = round(ob.rotation_euler[2], 5)
@@ -214,28 +220,21 @@ class EdgeRotAlign: # Mix-in class
         row.enabled = False
         row.prop(self, 'selection_type', expand=True)
 
-        if self.selection_type in {'edge', 'face'}:
+        if self.selection_type in {'edge', 'face'} and not self.internal_enable_lock:
             layout.separator()
             layout.enabled = context.mode == 'EDIT_MESH'
             layout.prop(self, "copy_active_selections_rot")
 
-            if self.selection_type in 'edge':
-                split = layout.split(factor=.2)
-                split.enabled = self.copy_active_selections_rot
-                split.label(text='Copy Type')
-                split.row().prop(self, 'edge_rot_type', expand=True)
+        if self.selection_type in 'edge':
+            split = layout.split(factor=.2)
+            split.enabled = self.copy_active_selections_rot
+            split.label(text='Copy Type')
+            split.row().prop(self, 'edge_rot_type', expand=True)
 
     copy_active_selections_rot: bpy.props.BoolProperty(
         description="Copy the rotation of the active face or edge",
         name='Copy Active Rotation',
         default=False
-    )
-    align_type: bpy.props.EnumProperty(
-        items=(
-            ('cursor', "Cursor", ""),
-            ('origin', "Origin", "")
-        ),
-        name='Selection Type'
     )
     selection_type: bpy.props.EnumProperty(
         items=(
@@ -256,6 +255,95 @@ class EdgeRotAlign: # Mix-in class
         description='Method of getting the rotation angle to copy from',
         name='Copy Type'
     )
+    internal_enable_lock: bpy.props.BoolProperty(default=False)
+    internal_align_type: bpy.props.EnumProperty(
+        items=(
+            ('cursor', "Cursor", ""),
+            ('origin', "Origin", "")
+        )
+    )
+
+class PIESPLUS_OT_draw_vectors_with_fade(bpy.types.Operator):
+    bl_idname = "pies_plus.draw_vectors_with_fade"
+    bl_label = "Draw Vectors"
+    bl_options = {'INTERNAL'}
+
+    time: bpy.props.FloatProperty(name="Time (s)", default=1)
+    steps: bpy.props.FloatProperty(name="Steps", default=0.05)
+    alpha: bpy.props.FloatProperty(name="Alpha", default=0.3, min=0.1, max=1)
+    use_fade: bpy.props.IntProperty(default=True)
+    vec_color: bpy.props.FloatVectorProperty(
+        subtype='COLOR_GAMMA',
+        default=[1, 1, 1],
+        size=3,
+        min=0,
+        max=1
+    )
+
+    def draw_vectors(self, coords, mx=Matrix(), color=(1, 1, 1), width=1, alpha=1, xray=True, use_fade=True):
+        def draw():
+            # Hard coded idx order
+            indices = (
+                (0, 1), (0, 3), (1, 2), (2, 3),
+                (4, 5), (4, 7), (5, 6), (6, 7),
+                (0, 4), (1, 5), (2, 6), (3, 7),
+            )
+
+            shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
+            shader.bind()
+            shader.uniform_float("color", (*color, alpha))
+
+            gpu.state.depth_test_set('NONE' if xray else 'LESS_EQUAL')
+            gpu.state.blend_set('ALPHA' if alpha < 1 else 'NONE')
+            gpu.state.line_width_set(width)
+
+            batch = batch_for_shader(shader, 'LINES', {"pos": coords}, indices=indices)
+            batch.draw(shader)
+
+        # If in a modal, repeatedly draw
+        if use_fade:
+            draw()
+        else:
+            bpy.types.SpaceView3D.draw_handler_add(draw, (), 'WINDOW', 'POST_VIEW')
+
+    def draw_VIEW3D(self, args):
+        alpha = (self.countdown / self.time) * self.alpha
+
+        ob = bpy.context.object
+        bbox_corners = [ob.matrix_world @ Vector(point) for point in ob.bound_box]
+
+        self.draw_vectors(
+            bbox_corners,
+            mx=Matrix(),
+            color=self.vec_color,
+            width=3,
+            alpha=alpha,
+            xray=True,
+            use_fade=True
+        )
+
+    def modal(self, context, event):
+        context.area.tag_redraw()
+
+        if self.countdown < 0:
+            context.window_manager.event_timer_remove(self.TIMER)
+
+            bpy.types.SpaceView3D.draw_handler_remove(self.VIEW3D, 'WINDOW')
+            return {'FINISHED'}
+
+        if event.type == 'TIMER':
+            self.countdown -= self.steps
+        return {'PASS_THROUGH'}
+
+    def execute(self, context):
+        self.TIMER = context.window_manager.event_timer_add(self.steps, window=context.window)
+        self.countdown = self.time
+
+        args = (self, context)
+        self.VIEW3D = bpy.types.SpaceView3D.draw_handler_add(self.draw_VIEW3D, (args, ), 'WINDOW', 'POST_VIEW')
+
+        context.window_manager.modal_handler_add(self)
+        return {'RUNNING_MODAL'}
 
 
 class PIESPLUS_OT_cursor_to_selected(OpInfo, EdgeRotAlign, Operator):
@@ -269,9 +357,8 @@ class PIESPLUS_OT_cursor_to_selected(OpInfo, EdgeRotAlign, Operator):
         if context.mode == 'EDIT_MESH':
             self.bm = bmesh.from_edit_mesh(context.object.data)
 
-            if self.copy_active_selections_rot:
-                self.align_type = 'cursor'
-
+            if self.copy_active_selections_rot and 'VERT' not in self.bm.select_mode:
+                self.internal_align_type = 'cursor'
                 self.get_active_geo_rotation(context)
         return{'FINISHED'}
 
@@ -287,9 +374,8 @@ class PIESPLUS_OT_cursor_to_active(OpInfo, EdgeRotAlign, Operator):
         if context.mode == 'EDIT_MESH':
             self.bm = bmesh.from_edit_mesh(context.object.data)
 
-            if self.copy_active_selections_rot:
-                self.align_type = 'cursor'
-
+            if self.copy_active_selections_rot and 'VERT' not in self.bm.select_mode:
+                self.internal_align_type = 'cursor'
                 self.get_active_geo_rotation(context)
         return{'FINISHED'}
 
@@ -303,30 +389,15 @@ class PIESPLUS_OT_cursor_to_active_orient(OpInfo, EdgeRotAlign, Operator):
     def poll(cls, context):
         return context.mode == 'EDIT_MESH'
 
-    def draw(self, context):
-        layout = self.layout
-
-        if 'FACE' in self.bm.select_mode:
-            self.selection_type = 'face'
-        elif 'EDGE' in self.bm.select_mode:
-            self.selection_type = 'edge'
-        elif 'VERT' in self.bm.select_mode:
-            self.selection_type = 'vertex'
-
-        row = layout.row()
-        row.enabled = False
-        row.prop(self, 'selection_type', expand=True)
-
     def execute(self, context):
         self.bm = bmesh.from_edit_mesh(context.object.data)
-
         if 'VERT' in self.bm.select_mode:
             self.report({'ERROR'}, 'This operator does not work on vertices')
             return{'CANCELLED'}
 
         self.copy_active_selections_rot = True
-        self.align_type = 'cursor'
-        
+        self.internal_align_type = 'cursor'
+        self.internal_enable_lock = True
         self.get_active_geo_rotation(context)
         return{'FINISHED'}
 
@@ -340,32 +411,26 @@ class PIESPLUS_OT_origin_to_active_orient(OpInfo, EdgeRotAlign, Operator):
     def poll(cls, context):
         return context.mode == 'EDIT_MESH'
 
-    def draw(self, context):
-        layout = self.layout
-
-        if 'FACE' in self.bm.select_mode:
-            self.selection_type = 'face'
-        elif 'EDGE' in self.bm.select_mode:
-            self.selection_type = 'edge'
-        elif 'VERT' in self.bm.select_mode:
-            self.selection_type = 'vertex'
-
-        row = layout.row()
-        row.enabled = False
-        row.prop(self, 'selection_type', expand=True)
+    def invoke(self, context, event):
+        self.saved_mat = context.object.matrix_world.copy()
+        return self.execute(context)
 
     def execute(self, context):
-        self.bm = bmesh.from_edit_mesh(context.object.data)
+        ob = context.object
+        ob.matrix_world = self.saved_mat # Invoke undo safety net
+
+        self.bm = bmesh.from_edit_mesh(ob.data)
 
         if 'VERT' in self.bm.select_mode:
             self.report({'ERROR'}, 'This operator does not work on vertices')
             return{'CANCELLED'}
 
         self.copy_active_selections_rot = True
-        self.edge_rot_type = 'edge_angle'
-        self.align_type = 'origin'
-        
+        self.internal_align_type = 'origin'
+        self.internal_enable_lock = True
         self.get_active_geo_rotation(context)
+
+        bpy.ops.pies_plus.draw_vectors_with_fade(vec_color=(0, 1, 0))
         return{'FINISHED'}
 
 
@@ -434,6 +499,7 @@ classes = (
     PIESPLUS_OT_cursor_to_active,
     PIESPLUS_OT_cursor_to_active_orient,
     PIESPLUS_OT_origin_to_active_orient,
+    PIESPLUS_OT_draw_vectors_with_fade,
     PIESPLUS_OT_reset_origin,
     PIESPLUS_OT_reset_cursor,
     PIESPLUS_OT_reset_cursor_rot
