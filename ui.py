@@ -801,45 +801,49 @@ class PIESPLUS_MT_shading(Menu):
         # 9 - TOP - RIGHT
         pie.operator("pies_plus.overlay", icon='OVERLAY')
         #1 - BOTTOM - LEFT
-        col = pie.column()
+        col_base = pie.column()
+        col_base.ui_units_x = 18
 
-        col.scale_x = .96 # Override for X axis scaling
+        vertical_gap = col_base.column()
+        vertical_gap.separator()
+        vertical_gap.ui_units_y = 9
 
-        gap = col.column()
-        gap.separator()
-        gap.scale_y = 19.5
+        split = col_base.split()
+        split_left, split_right = (split.column(), split.column())
 
-        box = col.box().column()
-        box.scale_y = 1.2
+        split_right_box1 = split_right.box().column()
+        split = split_right_box1.split(align=True, factor=.55)
+        split.scale_y = 1.2
 
-        split = box.split(factor=.55, align = True)
+        sub_split_left = split.row(align=True)
+        sub_split_left.operator("pies_plus.auto_smooth")
 
-        split_left = split.row(align = True)
-        split_left.scale_x = .1
-        split_left.operator("pies_plus.auto_smooth")
+        sub_split_right = split.row(align=True)
+        sub_split_right.prop(context.scene.pies_plus, "smoothAngle", text = "")
+        sub_split_right.operator("pies_plus.remove_auto_smooth", icon = 'REMOVE')
 
-        split_right = split.row(align= True)
-        split_right.prop(context.scene.pies_plus, "smoothAngle", text = "")
-        split_right.operator("pies_plus.remove_auto_smooth", icon = 'REMOVE')
-
-        row = box.row(align = True)
-        row.scale_y = .95
+        row = split_right_box1.row(align = True)
         row.label(text = "Shade:")
         row.operator("pies_plus.shade_smooth", text = "Smooth")
         row.operator("pies_plus.shade_flat", text = "Flat")
 
-        box = col.box().column()
-        box.scale_y = 1.2
-        box.operator("pies_plus.recalc_normals", icon='NORMALS_FACE')
-        box.operator("pies_plus.auto_fwn", icon='NORMALS_VERTEX_FACE')
-        box.operator("pies_plus.remove_custom_normals", icon='X')
+        split_right_box2 = split_right.box().column()
+        split_right_box2.scale_y = 1.2
+        split_right_box2.operator("pies_plus.recalc_normals", icon='NORMALS_FACE')
+        split_right_box2.operator("pies_plus.remove_custom_normals", icon='X')
+        split_right_box2.operator("pies_plus.auto_fwn", icon='NORMALS_VERTEX_FACE')
+        row = split_right_box2.row(align = True)
+        row.scale_y = .95
+        row.operator("mesh.set_normals_from_faces", text='Weight Selection', icon='SNAP_FACE_CENTER').keep_sharp=True
+        row.operator("mesh.normals_tools", text='', icon='REMOVE').mode='RESET'
 
-        box = col.box().column()
-        box.scale_y = 1.2
-        row = box.row()
+        split_right_box2 = split_right.box().column()
+        split_right_box2.scale_y = 1.2
+        row = split_right_box2.row()
         row.prop(space.overlay, "show_face_orientation", text = 'Face Orientation Overlay')
-        row = box.row(align = True)
-        row.operator("pies_plus.wire_per_obj", icon='MOD_WIREFRAME')
+        row = split_right_box2.row(align = True)
+        row.scale_y = .95
+        row.operator("pies_plus.wire_per_obj", text='Sel Wireframe Toggle', icon='MOD_WIREFRAME')
         row.operator("pies_plus.remove_wire_per_obj", icon='REMOVE')
         # 3 - BOTTOM - RIGHT
         pie.prop(space.overlay, "show_wireframes", text = 'Wire Overlay', icon = 'MOD_WIREFRAME')

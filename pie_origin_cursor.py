@@ -6,24 +6,6 @@ from gpu_extras.batch import batch_for_shader
 from .generic_utils import OpInfo
 
 
-class PIESPLUS_OT_origin_to_selection(OpInfo, Operator):
-    bl_idname = "pies_plus.origin_to_selection"
-    bl_label = "Origin to Selection"
-    bl_description = "Sets the Active Objects Origin to the current selection"
-
-    def execute(self, context):
-        modeCallback = context.object.mode
-
-        saved_location = context.scene.cursor.location.copy()
-        bpy.ops.view3d.snap_cursor_to_selected()
-        bpy.ops.object.mode_set(mode='OBJECT')
-        bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-        context.scene.cursor.location = saved_location
-
-        bpy.ops.object.mode_set(mode=modeCallback)
-        return {'FINISHED'}
-
-
 class PIESPLUS_OT_origin_to_bottom(OpInfo, Operator):
     bl_idname = "pies_plus.origin_to_bottom"
     bl_label = "Origin to Bottom"
@@ -91,14 +73,14 @@ class PIESPLUS_OT_reset_origin(OpInfo, Operator):
         context.view_layer.objects.active = ob
 
     def execute(self, context):
-        modeCallback = context.object.mode
+        saved_mode = context.object.mode
 
         bpy.ops.object.mode_set(mode='OBJECT')
 
         for ob in context.selected_objects:
             self.create_pivot(context, ob)
 
-        bpy.ops.object.mode_set(mode=modeCallback)
+        bpy.ops.object.mode_set(mode=saved_mode)
         return{'FINISHED'}
 
 
@@ -115,18 +97,19 @@ class PIESPLUS_OT_origin_to_com(OpInfo, Operator):
 
 class EdgeRotAlign: # Mix-in class
     '''Helper properties, ui and functions for operators with Edge Align capabilities'''
-    def get_active_geo_rotation(self, context, bm: bmesh.types.BMesh=None) -> None:
+    def get_active_geo_rotation(self, context) -> str:
         '''Get and set the normal direction of the 3D Cursor based on the active geo'''
         return_msg = None
         ob = context.object
         me = ob.data
 
-        if bm is None:
-            self.bm = bmesh.from_edit_mesh(me)
-            self.bm.faces.ensure_lookup_table()
-            self.bm.edges.ensure_lookup_table()
-        else:
-            self.bm = bm
+        self.bm = bmesh.from_edit_mesh(me)
+        self.bm.faces.ensure_lookup_table()
+        self.bm.edges.ensure_lookup_table()
+
+        if 'VERT' in self.bm.select_mode:
+            return_msg = 'This operator does not work on vertices'
+            return return_msg
         
         active_geo = self.bm.select_history.active
         if active_geo is None:
@@ -196,7 +179,7 @@ class EdgeRotAlign: # Mix-in class
             me.transform(ob.matrix_world.inverted())
 
             bpy.ops.object.mode_set(mode='EDIT')
-            self.bm = bmesh.from_edit_mesh(context.object.data) # Make new bmesh for UI purposes
+            self.bm = bmesh.from_edit_mesh(ob.data)
 
             # Wierd rounding errors without this, less accurate but looks nicer
             ob.rotation_euler[0] = round(ob.rotation_euler[0], 5)
@@ -207,7 +190,13 @@ class EdgeRotAlign: # Mix-in class
             self.report({'WARNING'}, return_msg)
 
     def draw(self, context):
-        layout = self.layout
+        if context.object.mode != 'EDIT':
+            return
+
+        try:
+            getattr(PIESPLUS_OT_origin_to_selection, 'bm')
+        except AttributeError:
+            self.bm = bmesh.from_edit_mesh(context.object.data)
 
         if 'FACE' in self.bm.select_mode:
             self.selection_type = 'face'
@@ -215,6 +204,8 @@ class EdgeRotAlign: # Mix-in class
             self.selection_type = 'edge'
         elif 'VERT' in self.bm.select_mode:
             self.selection_type = 'vertex'
+
+        layout = self.layout
 
         row = layout.row()
         row.enabled = False
@@ -234,7 +225,8 @@ class EdgeRotAlign: # Mix-in class
     copy_active_selections_rot: bpy.props.BoolProperty(
         description="Copy the rotation of the active face or edge",
         name='Copy Active Rotation',
-        default=False
+        default=False,
+        options={'SKIP_SAVE'}
     )
     selection_type: bpy.props.EnumProperty(
         items=(
@@ -268,7 +260,7 @@ class PIESPLUS_OT_draw_vectors_with_fade(bpy.types.Operator):
     bl_label = "Draw Vectors"
     bl_options = {'INTERNAL'}
 
-    time: bpy.props.FloatProperty(name="Time (s)", default=1)
+    time: bpy.props.FloatProperty(name="Time", default=1)
     steps: bpy.props.FloatProperty(name="Steps", default=0.05)
     alpha: bpy.props.FloatProperty(name="Alpha", default=0.3, min=0.1, max=1)
     use_fade: bpy.props.IntProperty(default=True)
@@ -286,7 +278,7 @@ class PIESPLUS_OT_draw_vectors_with_fade(bpy.types.Operator):
             indices = (
                 (0, 1), (0, 3), (1, 2), (2, 3),
                 (4, 5), (4, 7), (5, 6), (6, 7),
-                (0, 4), (1, 5), (2, 6), (3, 7),
+                (0, 4), (1, 5), (2, 6), (3, 7)
             )
 
             shader = gpu.shader.from_builtin('3D_UNIFORM_COLOR')
@@ -346,20 +338,56 @@ class PIESPLUS_OT_draw_vectors_with_fade(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
 
+class PIESPLUS_OT_origin_to_selection(OpInfo, EdgeRotAlign, Operator):
+    bl_idname = "pies_plus.origin_to_selection"
+    bl_label = "Origin to Selection"
+    bl_description = "Sets the Active Objects Origin to the current selection"
+
+    def invoke(self, context, event):
+        self.saved_mat = context.object.matrix_world.copy()
+        return self.execute(context)
+
+    def execute(self, context):
+        ob = context.object
+        ob.matrix_world = self.saved_mat # Invoke undo safety net
+
+        if self.copy_active_selections_rot:
+            self.internal_align_type = 'origin'
+            return_msg = self.get_active_geo_rotation(context)
+
+            if return_msg is not None:
+                self.report({'ERROR'}, return_msg)
+                return{'CANCELLED'}
+
+            bpy.ops.pies_plus.draw_vectors_with_fade(vec_color=(0, 1, 0))
+
+        saved_mode = ob.mode
+        saved_cursor_loc = context.scene.cursor.location.copy()
+
+        bpy.ops.view3d.snap_cursor_to_selected()
+        bpy.ops.object.mode_set(mode='OBJECT')
+        bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+
+        bpy.ops.object.mode_set(mode=saved_mode)
+        context.scene.cursor.location = saved_cursor_loc
+        return {'FINISHED'}
+
+
 class PIESPLUS_OT_cursor_to_selected(OpInfo, EdgeRotAlign, Operator):
     bl_idname = "pies_plus.cursor_to_selection"
     bl_label = "Cursor to Selection"
     bl_description = "Snap 3D Cursor to the middle of the selected items"
 
     def execute(self, context):
+        if self.copy_active_selections_rot:
+            self.internal_align_type = 'cursor'
+            return_msg = self.get_active_geo_rotation(context)
+
+            if return_msg is not None:
+                self.report({'ERROR'}, return_msg)
+                return{'CANCELLED'}
+        
         bpy.ops.view3d.snap_cursor_to_selected()
-
-        if context.mode == 'EDIT_MESH':
-            self.bm = bmesh.from_edit_mesh(context.object.data)
-
-            if self.copy_active_selections_rot and 'VERT' not in self.bm.select_mode:
-                self.internal_align_type = 'cursor'
-                self.get_active_geo_rotation(context)
         return{'FINISHED'}
 
 
@@ -369,14 +397,15 @@ class PIESPLUS_OT_cursor_to_active(OpInfo, EdgeRotAlign, Operator):
     bl_description = "Snap 3D Cursor to active item"
 
     def execute(self, context):
+        if self.copy_active_selections_rot:
+            self.internal_align_type = 'cursor'
+            return_msg = self.get_active_geo_rotation(context)
+
+            if return_msg is not None:
+                self.report({'ERROR'}, return_msg)
+                return{'CANCELLED'}
+
         bpy.ops.view3d.snap_cursor_to_active()
-
-        if context.mode == 'EDIT_MESH':
-            self.bm = bmesh.from_edit_mesh(context.object.data)
-
-            if self.copy_active_selections_rot and 'VERT' not in self.bm.select_mode:
-                self.internal_align_type = 'cursor'
-                self.get_active_geo_rotation(context)
         return{'FINISHED'}
 
 
@@ -390,15 +419,14 @@ class PIESPLUS_OT_cursor_to_active_orient(OpInfo, EdgeRotAlign, Operator):
         return context.mode == 'EDIT_MESH'
 
     def execute(self, context):
-        self.bm = bmesh.from_edit_mesh(context.object.data)
-        if 'VERT' in self.bm.select_mode:
-            self.report({'ERROR'}, 'This operator does not work on vertices')
-            return{'CANCELLED'}
-
         self.copy_active_selections_rot = True
         self.internal_align_type = 'cursor'
         self.internal_enable_lock = True
-        self.get_active_geo_rotation(context)
+        return_msg = self.get_active_geo_rotation(context)
+
+        if return_msg is not None:
+            self.report({'ERROR'}, return_msg)
+            return{'CANCELLED'}
         return{'FINISHED'}
 
 
@@ -416,19 +444,16 @@ class PIESPLUS_OT_origin_to_active_orient(OpInfo, EdgeRotAlign, Operator):
         return self.execute(context)
 
     def execute(self, context):
-        ob = context.object
-        ob.matrix_world = self.saved_mat # Invoke undo safety net
-
-        self.bm = bmesh.from_edit_mesh(ob.data)
-
-        if 'VERT' in self.bm.select_mode:
-            self.report({'ERROR'}, 'This operator does not work on vertices')
-            return{'CANCELLED'}
+        context.object.matrix_world = self.saved_mat # Invoke undo safety net
 
         self.copy_active_selections_rot = True
         self.internal_align_type = 'origin'
         self.internal_enable_lock = True
-        self.get_active_geo_rotation(context)
+        return_msg = self.get_active_geo_rotation(context)
+
+        if return_msg is not None:
+            self.report({'ERROR'}, return_msg)
+            return{'CANCELLED'}
 
         bpy.ops.pies_plus.draw_vectors_with_fade(vec_color=(0, 1, 0))
         return{'FINISHED'}
