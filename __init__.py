@@ -15,6 +15,7 @@ import importlib
 module_names = (
     "ui",
     "prefs",
+    "op_separate",
     "pie_modes",
     "pie_snapping",
     "pie_origin_cursor",

@@ -7,12 +7,12 @@ from .generic_utils import OpInfo
 def align_to_axis(pivot_point, value, orient_type, constraint_axis):
     tool_settings = bpy.context.scene.tool_settings
 
-    savedTransPivot = tool_settings.transform_pivot_point
+    saved_trans_pivot = tool_settings.transform_pivot_point
     tool_settings.transform_pivot_point = pivot_point
 
     bpy.ops.transform.resize(value=value, orient_type=orient_type, constraint_axis=constraint_axis)
 
-    tool_settings.transform_pivot_point = savedTransPivot
+    tool_settings.transform_pivot_point = saved_trans_pivot
 
 
 class PIESPLUS_OT_quick_world_align(OpInfo, Operator):

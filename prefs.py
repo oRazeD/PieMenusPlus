@@ -611,7 +611,10 @@ def register():
 
     bpy.types.Scene.pies_plus = PointerProperty(type = PIESPLUS_property_group)
 
-    # Assign Standard Keymaps
+    PIESPLUS_addon_keymaps.new_keymap('Separate', 'wm.call_menu', 'PIESPLUS_MT_separate',
+                                      'Mesh', 'EMPTY', 'WINDOW',
+                                      'P', 'PRESS', False, False, False)
+
     PIESPLUS_addon_keymaps.new_keymap('Active Tools', 'wm.call_menu_pie', 'PIESPLUS_MT_active_tools',
                                       '3D View', 'VIEW_3D', 'WINDOW',
                                       'W', 'PRESS', False, False, False)
