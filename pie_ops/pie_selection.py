@@ -1,6 +1,6 @@
 import bpy, bmesh
 from bpy.types import Operator
-from .generic_utils import OpInfo
+from ..razeds_bpy_utils.utils.generic import OpInfo
 
 
 class PIESPLUS_OT_view_selection(OpInfo, Operator):
@@ -27,46 +27,36 @@ class PIESPLUS_OT_mesh_selection(OpInfo, Operator):
     bl_label = "Select / Deselect All"
 
     def invoke(self, context, event):
-        if context.mode == 'EDIT_MESH':
-            select = bpy.ops.mesh
-        else:
-            select = bpy.ops.object
+        select_action = 'SELECT'
 
         if event.shift:
-            select.select_all(action='SELECT')
-
+            pass # select
         elif event.ctrl:
-            select.select_all(action='DESELECT')
-
+            select_action = 'DESELECT'
         elif event.alt:
-            select.select_all(action='INVERT')
-
-        elif context.preferences.addons[__package__].preferences.invert_selection_pref:
+            select_action = 'INVERT'
+        elif context.preferences.addons[__name__.partition('.')[0]].preferences.invert_selection_pref:
             if context.mode == 'EDIT_MESH':
                 verts_hidden = 0
 
                 for ob in context.selected_objects:
                     if ob.type == 'MESH':
                         bm = bmesh.from_edit_mesh(ob.data)
-
-                        for v in bm.verts:
-                            if v.hide:
-                                verts_hidden += 1
+                        verts_hidden = len([v for v in bm.verts if v.hide])
 
                 scene_verts = context.scene.statistics(context.view_layer).split(" | ")[1]
-
                 if int(scene_verts.split('/')[1].replace(',','')) - verts_hidden == int(scene_verts.split('/')[0].split(':')[1].replace(',','')):
-                    select.select_all(action='DESELECT')
-                else:
-                    select.select_all(action='SELECT')
+                    select_action = 'DESELECT'
             else: # Object
                 if len([ob for ob in context.view_layer.objects if ob.visible_get()]) == len(context.selected_objects):
-                    select.select_all(action='DESELECT')
-                else:
-                    select.select_all(action='SELECT')
-
+                    select_action = 'DESELECT'
         else:
-            select.select_all(action='TOGGLE')
+            select_action = 'TOGGLE'
+
+        if context.mode == 'EDIT_MESH':
+            bpy.ops.mesh.select_all(action=select_action)
+        else:
+            bpy.ops.object.select_all(action=select_action)
         return {'FINISHED'}
 
 
@@ -84,42 +74,42 @@ class PIESPLUS_OT_select_loop_inner_region(OpInfo, Operator):
         return {'FINISHED'}
 
 
-class PIESPLUS_OT_select_seamed(OpInfo, Operator):
-    bl_idname = 'pies_plus.select_seamed'
-    bl_label = "Select all edges with seams"
+#class PIESPLUS_OT_select_seamed(OpInfo, Operator):
+#    bl_idname = 'pies_plus.select_seamed'
+#    bl_label = "Select all edges with seams"
+#
+#    def execute(self, context):
+#        bpy.ops.object.mode_set(mode='EDIT')
+#        bpy.ops.mesh.select_mode(type='EDGE')
+#        bpy.ops.object.mode_set(mode='OBJECT')
+#
+#        for ob in context.selected_objects:
+#            if ob.type == 'MESH':
+#                for edge in ob.data.edges:
+#                    if edge.use_seam:
+#                        edge.select = True
+#
+#        bpy.ops.object.mode_set(mode='EDIT')
+#        return {'FINISHED'}
 
-    def execute(self, context):
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_mode(type='EDGE')
-        bpy.ops.object.mode_set(mode='OBJECT')
 
-        for ob in context.selected_objects:
-            if ob.type == 'MESH':
-                for edge in ob.data.edges:
-                    if edge.use_seam:
-                        edge.select = True
-
-        bpy.ops.object.mode_set(mode='EDIT')
-        return {'FINISHED'}
-
-
-class PIESPLUS_OT_select_sharped(OpInfo, Operator):
-    bl_idname = 'pies_plus.select_sharped'
-    bl_label = "Select all edges with sharps"
-
-    def execute(self, context):
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.select_mode(type='EDGE')
-        bpy.ops.object.mode_set(mode='OBJECT')
-
-        for ob in context.selected_objects:
-            if ob.type == 'MESH':
-                for edge in ob.data.edges:
-                    if edge.use_edge_sharp:
-                        edge.select = True
-
-        bpy.ops.object.mode_set(mode='EDIT')
-        return {'FINISHED'}
+#class PIESPLUS_OT_select_sharped(OpInfo, Operator):
+#    bl_idname = 'pies_plus.select_sharped'
+#    bl_label = "Select all edges with sharps"
+#
+#    def execute(self, context):
+#        bpy.ops.object.mode_set(mode='EDIT')
+#        bpy.ops.mesh.select_mode(type='EDGE')
+#        bpy.ops.object.mode_set(mode='OBJECT')
+#
+#        for ob in context.selected_objects:
+#            if ob.type == 'MESH':
+#                for edge in ob.data.edges:
+#                    if edge.use_edge_sharp:
+#                        edge.select = True
+#
+#        bpy.ops.object.mode_set(mode='EDIT')
+#        return {'FINISHED'}
 
 
 class PIESPLUS_OT_make_links(OpInfo, Operator):
@@ -173,8 +163,8 @@ classes = (
     PIESPLUS_OT_view_selection,
     PIESPLUS_OT_mesh_selection,
     PIESPLUS_OT_select_loop_inner_region,
-    PIESPLUS_OT_select_seamed,
-    PIESPLUS_OT_select_sharped,
+    #PIESPLUS_OT_select_seamed,
+    #PIESPLUS_OT_select_sharped,
     PIESPLUS_OT_make_links,
     PIESPLUS_OT_loop_sel,
     PIESPLUS_OT_ring_sel

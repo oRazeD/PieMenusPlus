@@ -32,7 +32,7 @@ class PIESPLUS_property_group(bpy.types.PropertyGroup):
     def update_uvSyncSelection(self, context):
         context.scene.tool_settings.use_uv_select_sync = self.uvSyncSelection
 
-        if context.preferences.addons[__package__].preferences.preserve_uv_selection_pref:
+        if context.preferences.addons[__name__.partition('.')[0]].preferences.preserve_uv_selection_pref:
             if not context.scene.tool_settings.use_uv_select_sync:
                 old_area_type = context.area.type
                     
@@ -54,21 +54,6 @@ class PIESPLUS_property_group(bpy.types.PropertyGroup):
         name="UV Sync Selection",
         update=update_uvSyncSelection
     )
-
-    dropdownDelete: BoolProperty()
-    dropdownSelection: BoolProperty()
-    dropdownProportional: BoolProperty()
-    dropdownSnapping: BoolProperty()
-    dropdownSelectMode: BoolProperty()
-    dropdownTools: BoolProperty()
-    dropdownAnimation: BoolProperty()
-    dropdownShading: BoolProperty()
-    dropdownOrigin: BoolProperty()
-    dropdownTransform: BoolProperty()
-    dropdownLT: BoolProperty()
-    dropdownBT: BoolProperty()
-    dropdownSave: BoolProperty()
-    dropdownAlign: BoolProperty()
 
 
 ##################################
@@ -146,230 +131,29 @@ class PIESPLUS_addon_keymaps:
         col.label(text=f"No hotkey entry found for {name}")
         col.operator(PIESPLUS_OT_add_hotkey.bl_idname, text="Restore keymap", icon='ADD').km_name = km.name
 
+
     @staticmethod
     def draw_keymap_items(wm, layout):
-        pies_plus = bpy.context.scene.pies_plus
-
-        deleteUsed = False
-        selectionUsed = False
-        proportionalUsed = False
-        snappingUsed = False
-        selectModeUsed = False
-        animationUsed = False
-        toolsUsed = False
-        shadingUsed = False
-        transformUsed = False
-        originUsed = False
-        ltUsed = False
-        btUsed = False
-        saveUsed = False
-        alignUsed = False
-
+        keymap_entries = {}
         for name, items in PIESPLUS_addon_keymaps._keymaps.items():
-            drawKeymap = False
+            if items[0] != 'wm.call_menu_pie':
+                continue
 
-            # Tools
-            if name.endswith('Tools'):
-                if not toolsUsed:
-                    toolsUsed = True
+            split_name = str(name).split(' ')[0] # Convert to str for syntax
+            if split_name in keymap_entries:
+                keymap_entries[split_name].append(items[:3])
+            else:
+                keymap_entries[split_name] = [items[:3]]
 
-                    box = layout.box()
-                    row = box.row()
-                    row.prop(pies_plus, 'dropdownTools', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownTools else "RIGHTARROW")
-                    row.label(text="Active Tool Pies")
-                    row.label(text="Context: [3D View, Sculpt]")
+        for name in keymap_entries.keys():
+            box = layout.box()
+            row = box.row()
+            row.label(text=f"{name} Pies")
 
-                if pies_plus.dropdownTools:
-                    drawKeymap = True
-
-            # Align
-            elif name.startswith('Align'):
-                if not alignUsed:
-                    alignUsed = True
-
-                    box = layout.box()
-                    row = box.row()
-                    row.prop(pies_plus, 'dropdownAlign', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownAlign else "RIGHTARROW")
-                    row.label(text="Align Pies")
-                    row.label(text="Context: [Mesh]")
-
-                if pies_plus.dropdownAlign:
-                    drawKeymap = True
-
-            # Animation
-            elif name.startswith('Animation'):
-                if not animationUsed:
-                    animationUsed = True
-
-                    box = layout.box()
-                    row = box.row()
-                    row.prop(pies_plus, 'dropdownAnimation', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownAnimation else "RIGHTARROW")
-                    row.label(text="Anim Playback & Keyframing Pies")
-                    row.label(text="Context: [3D View]")
-
-                if pies_plus.dropdownAnimation:
-                    drawKeymap = True
-            
-            # Bool Tool
-            elif name.startswith('Bool Tool'):
-                if not btUsed:
-                    btUsed = True
-
-                    box = layout.box()
-                    row = box.row()
-                    row.prop(pies_plus, 'dropdownBT', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownBT else "RIGHTARROW")
-                    row.label(text="Bool Tool Pies")
-                    row.label(text="Context: [Object]")
-
-                if pies_plus.dropdownBT:
-                    drawKeymap = True
-
-            # Delete
-            elif name.startswith('Delete'):
-                if not deleteUsed:
-                    deleteUsed = True
-
-                    box = layout.box()
-                    row = box.row()
-                    row.prop(pies_plus, 'dropdownDelete', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownDelete else "RIGHTARROW")
-                    row.label(text="Delete Pies")
-                    row.label(text="Context: [Mesh, Curve]")
-
-                if pies_plus.dropdownDelete:
-                    drawKeymap = True
-
-
-            # LoopTools
-            elif name.startswith('LoopTools'):
-                if not ltUsed:
-                    ltUsed = True
-
-                    box = layout.box()
-                    row = box.row()
-                    row.prop(pies_plus, 'dropdownLT', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownLT else "RIGHTARROW")
-                    row.label(text="LoopTools Pies")
-                    row.label(text="Context: [Mesh]")
-
-                if pies_plus.dropdownLT:
-                    drawKeymap = True
-
-            # Origin / Cursor
-            elif name.startswith('Origin'):
-                if not originUsed:
-                    originUsed = True
-
-                    box = layout.box()
-                    row = box.row()
-                    row.prop(pies_plus, 'dropdownOrigin', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownOrigin else "RIGHTARROW")
-                    row.label(text="Origin / Cursor Pies")
-                    row.label(text="Context: [3D View]")
-
-                if pies_plus.dropdownOrigin:
-                    drawKeymap = True
-
-            # Proportional
-            elif name.startswith('Proportional'):
-                if not proportionalUsed:
-                    proportionalUsed = True
-
-                    box = layout.box()
-                    row = box.row()
-                    row.prop(pies_plus, 'dropdownProportional', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownProportional else "RIGHTARROW")
-                    row.label(text="Proportional Pies")
-                    row.label(text="Context: [Object, Mesh]")
-
-                if pies_plus.dropdownProportional:
-                    drawKeymap = True
-
-            # Save
-            elif name.startswith('Save'):
-                if not saveUsed:
-                    saveUsed = True
-
-                    box = layout.box()
-                    row = box.row()
-                    row.prop(pies_plus, 'dropdownSave', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownSave else "RIGHTARROW")
-                    row.label(text="Save Pies")
-                    row.label(text="Context: [3D View]")
-
-                if pies_plus.dropdownSave:
-                    drawKeymap = True
-
-            # Select Mode
-            elif name.startswith('Select Mode'):
-                if not selectModeUsed:
-                    selectModeUsed = True
-
-                    box = layout.box()
-                    row = box.row()
-                    row.prop(pies_plus, 'dropdownSelectMode', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownSelectMode else "RIGHTARROW")
-                    row.label(text="Select Mode Pies")
-                    row.label(text="Context: [3D View, UV Editor]")
-
-                if pies_plus.dropdownSelectMode:
-                    drawKeymap = True
-
-            # Selection
-            elif name.startswith('Selection'):
-                if not selectionUsed:
-                    selectionUsed = True
-
-                    box = layout.box()
-                    row = box.row()
-                    row.prop(pies_plus, 'dropdownSelection', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownSelection else "RIGHTARROW")
-                    row.label(text="Selection Pies")
-                    row.label(text="Context: [Object, Mesh]")
-
-                if pies_plus.dropdownSelection:
-                    drawKeymap = True
-
-            # Shading
-            elif name.startswith('Shading'):
-                if not shadingUsed:
-                    shadingUsed = True
-
-                    box = layout.box()
-                    row = box.row()
-                    row.prop(pies_plus, 'dropdownShading', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownShading else "RIGHTARROW")
-                    row.label(text="Shading Pies")
-                    row.label(text="Context: [3D View]")
-
-                if pies_plus.dropdownShading:
-                    drawKeymap = True
-
-            # Snapping
-            elif name.startswith('Snapping'):
-                if not snappingUsed:
-                    snappingUsed = True
-
-                    box = layout.box()
-                    row = box.row()
-                    row.prop(pies_plus, 'dropdownSnapping', icon_only=True, emboss=False,
-                             icon="DOWNARROW_HLT" if pies_plus.dropdownSnapping else "RIGHTARROW")
-                    row.label(text="Snapping Pies")
-                    row.label(text="Context: [3D View, UV Editor]")
-
-                if pies_plus.dropdownSnapping:
-                    drawKeymap = True
-
-            # Transforms
-            elif name.startswith('Transforms'):
-                if not transformUsed:
-                    transformUsed = True
-
-                    box = layout.box()
-                    row = box.row()
-                    row.prop(pies_plus, 'dropdownTransform', icon_only=True, emboss=False, icon="DOWNARROW_HLT" if pies_plus.dropdownTransform else "RIGHTARROW")
-                    row.label(text="Transform Pies")
-                    row.label(text="Context: [Object]")
-
-                if pies_plus.dropdownTransform:
-                    drawKeymap = True
-
-            if drawKeymap:
+            for id in keymap_entries[name]:
                 kc = wm.keyconfigs.user
 
-                kmi_name, kmi_value, km_name = items[:3]
+                kmi_name, kmi_value, km_name = id[:3]
                 split = box.split()
                 col = split.column()
                 km = kc.keymaps[km_name]
@@ -401,7 +185,7 @@ class PIESPLUS_OT_add_hotkey(bpy.types.Operator):
 
 
 class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
-    bl_idname = __package__
+    bl_idname = __name__.partition('.')[0]
 
     tabs: EnumProperty(
         items=(
@@ -515,6 +299,7 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             row.prop(self, "default_tool_pref", expand=True)
 
             col = layout.column(align = True)
+            col.separator()
             box = col.box()
             box.scale_y = .9
             box.label(text="    ORIGIN / CURSOR")
@@ -522,6 +307,7 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             col.prop(self, "reset_3d_cursor_rot_pref", text="Reset 3D Cursor Rotation when Resetting Location")
 
             col = layout.column(align = True)
+            col.separator()
             box = col.box()
             box.scale_y = .9
             box.label(text="    SELECT MODE")
@@ -530,6 +316,7 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             col.prop(self, "sculptors_haven_pref", text="Add Sculpt Mode Button to Main Selection")
             
             col = layout.column(align = True)
+            col.separator()
             box = col.box()
             box.scale_y = .9
             box.label(text="    SELECTION")
@@ -537,6 +324,7 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             col.prop(self, "frame_selected_pref", text="Isolate & Frame Selected")
 
             col = layout.column(align = True)
+            col.separator()
             box = col.box()
             box.scale_y = .9
             box.label(text="    SHADING")
@@ -551,6 +339,7 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             row.prop(self, "fwn_face_influence_pref", text="FWN Face Influence")
 
             col = layout.column(align = True)
+            col.separator()
             box = col.box()
             box.scale_y = .9
             box.label(text="    SNAPPING")
@@ -558,6 +347,7 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             col.prop(self, "auto_enable_abs_grid_snap_pref", text="Enable Absolute Grid Snap when Turning on Incremental Snapping")
 
             col = layout.column(align = True)
+            col.separator()
             box = col.box()
             box.scale_y = .9
             box.label(text="    UI")

@@ -26,7 +26,7 @@ class PIESPLUS_OT_snapping(bpy.types.Operator):
     def execute(self, context):
         ts = context.scene.tool_settings
 
-        pies_plus = context.preferences.addons[__package__].preferences
+        pies_plus = context.preferences.addons[__name__.partition('.')[0]].preferences
 
         # Snap Elements
         if self.snap_elements == 'vertex':

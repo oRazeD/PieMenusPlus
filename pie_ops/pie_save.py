@@ -32,7 +32,7 @@ class PIESPLUS_OT_batch_import(bpy.types.Operator):
         description='Remove all UV Maps from all imported models'
     )
 
-    # TODO for v1.4
+    # TODO
     #
     #clear_normals: bpy.props.BoolProperty(
     #    name='Clear Normals',
@@ -42,61 +42,44 @@ class PIESPLUS_OT_batch_import(bpy.types.Operator):
     directory: bpy.props.StringProperty()
 
     def settings_app(self,context):
-        if self.remove_uv_maps:
-            for ob in context.selected_objects:
-                if ob.type == 'MESH':
-                    context.view_layer.objects.active = ob
+        if not self.remove_uv_maps:
+            return
 
-                    bpy.ops.mesh.uv_texture_remove()
+        for ob in context.selected_objects:
+            if ob.type == 'MESH':
+                context.view_layer.objects.active = ob
+
+                bpy.ops.mesh.uv_texture_remove()
 
     def new_coll(self,context):
         new_coll = bpy.data.collections.new(name = self.file_name[:-4])
-
         context.scene.collection.children.link(new_coll)
 
         context.view_layer.active_layer_collection = context.view_layer.layer_collection.children[-1]
 
     def import_file(self, context):
-        if self.import_type == 'fbx':
-            for self.file_name in self.dir_contents:
-                if self.file_name.upper().endswith(".FBX"):
-                    self.new_coll(context)
+        for self.file_name in self.dir_contents:
+            file_path = os.path.join(self.dir_name, self.file_name)
 
-                    bpy.ops.import_scene.fbx(filepath=os.path.join(self.dir_name, self.file_name))
+            if self.file_name.upper().endswith(".FBX") and self.import_type in {'fbx', 'both'}:
+                self.new_coll(context)
 
-                    self.settings_app(context)
+                bpy.ops.import_scene.fbx(filepath=file_path)
 
-        elif self.import_type == 'obj':
-            for self.file_name in self.dir_contents:
-                if self.file_name.upper().endswith(".OBJ"):
-                    self.new_coll(context)
+                self.settings_app(context)
 
-                    bpy.ops.import_scene.obj(filepath=os.path.join(self.dir_name, self.file_name))
+            if self.file_name.upper().endswith(".OBJ") and self.import_type in {'obj', 'both'}:
+                self.new_coll(context)
 
-                    self.settings_app(context)
+                bpy.ops.import_scene.obj(filepath=file_path)
 
-        else: # Both
-            for self.file_name in self.dir_contents:
-                if self.file_name.upper().endswith(".FBX"):
-                    self.new_coll(context)
-                    
-                    bpy.ops.import_scene.fbx(filepath=os.path.join(self.dir_name, self.file_name))
-
-                    self.settings_app(context)
-
-                if self.file_name.upper().endswith(".OBJ"):
-                    self.new_coll(context)
-
-                    bpy.ops.import_scene.obj(filepath=os.path.join(self.dir_name, self.file_name))
-
-                    self.settings_app(context)
+                self.settings_app(context)
 
     def execute(self, context):
         if self.include_subdirs:
             self.dir_path = os.walk(self.directory)
 
-            # Get a list of every subdirectory
-            dir_list = [x[0] for x in self.dir_path]
+            dir_list = [x[0] for x in self.dir_path] # Get every subdirectory
 
             # Access every folders contents
             for self.dir_name in dir_list:
@@ -124,7 +107,6 @@ class PIESPLUS_OT_open_last(bpy.types.Operator):
 
     def execute(self, context):
         config_path = bpy.utils.user_resource('CONFIG')
-
         recent_file_paths = os.path.join(config_path, 'recent-files.txt')
 
         try:

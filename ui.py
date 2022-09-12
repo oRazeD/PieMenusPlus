@@ -19,7 +19,7 @@ class PIESPLUS_MT_modes(Menu):
         if context.object:
             ob_type = context.object.type
 
-        pies_plus_prefs = context.preferences.addons[__package__].preferences
+        pies_plus_prefs = context.preferences.addons[__name__.partition('.')[0]].preferences
 
         if not context.object:
             # 4 - LEFT
@@ -202,7 +202,7 @@ class PIESPLUS_MT_active_tools(Menu):
         layout = self.layout
         pie = layout.menu_pie()
 
-        pies_plus_prefs = context.preferences.addons[__package__].preferences
+        pies_plus_prefs = context.preferences.addons[__name__.partition('.')[0]].preferences
         
         #4 - LEFT
         pie.operator("wm.tool_set_by_id", text="Move", icon='ORIENTATION_GLOBAL').name = 'builtin.move'
@@ -691,7 +691,7 @@ class PIESPLUS_MT_selection_object_mode(Menu):
         layout = self.layout
         pie = layout.menu_pie()
 
-        pies_plus_prefs = context.preferences.addons[__package__].preferences
+        pies_plus_prefs = context.preferences.addons[__name__.partition('.')[0]].preferences
 
         #4 - LEFT
         pie.separator()
@@ -761,11 +761,11 @@ class PIESPLUS_MT_selection_edit_mode(Menu):
         box.operator("pies_plus.select_loop_inner_region", icon='SNAP_FACE_CENTER')
         box.operator("mesh.select_similar", text="Select Similar...", icon='PIVOT_INDIVIDUAL')
         box.operator("mesh.edges_select_sharp", text="Select by Edge Angle", icon='MOD_EDGESPLIT')
-        row = box.row(align=True)
-        row.scale_x = .7
-        row.label(text="Select:")
-        row.operator("pies_plus.select_seamed", text="Seams")
-        row.operator("pies_plus.select_sharped", text="Sharps")
+        #row = box.row(align=True)
+        #row.scale_x = .7
+        #row.label(text="Select:")
+        #row.operator("pies_plus.select_seamed", text="Seams")
+        #row.operator("pies_plus.select_sharped", text="Sharps")
         #3 - BOTTOM - RIGHT
         pie.operator("mesh.select_nth", text="Checker Deselect", icon='PARTICLE_POINT')
 
@@ -1392,6 +1392,37 @@ class PIESPLUS_MT_align(Menu):
         pie.separator()
 
 
+########################################################################################################################
+# MARK EDGE - ALT + C 
+########################################################################################################################
+
+
+class PIESPLUS_MT_mark_edge(Menu):
+    bl_idname = "PIESPLUS_MT_mark_edge"
+    bl_label = "Mark Edge"
+
+    def draw(self, context):
+        layout = self.layout
+        pie = layout.menu_pie()
+
+        # 4 - LEFT
+        pie.separator()
+        # 6 - RIGHT
+        pie.separator()
+        # 2 - BOTTOM
+        pie.separator()
+        # 8 - TOP
+        pie.separator()
+        # 7 - TOP - LEFT
+        pie.separator()
+        # 9 - TOP - RIGHT
+        pie.separator()
+        # 1 - BOTTOM - LEFT
+        pie.separator()
+        # 3 - BOTTOM - RIGHT
+        pie.separator()
+
+
 ##############################
 #   REGISTRATION
 ##############################
@@ -1447,7 +1478,8 @@ classes = (
     PIESPLUS_MT_sculpt_grab,
     PIESPLUS_MT_sculpt_more,
     PIESPLUS_MT_save,
-    PIESPLUS_MT_align
+    PIESPLUS_MT_align,
+    PIESPLUS_MT_mark_edge
 )
 
 

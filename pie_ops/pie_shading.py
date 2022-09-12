@@ -1,6 +1,6 @@
 import bpy
 from bpy.types import Operator
-from .generic_utils import OpInfo
+from ..razeds_bpy_utils.utils.generic import OpInfo
 
 
 class PIESPLUS_OT_auto_smooth(Operator):
@@ -51,7 +51,7 @@ class PIESPLUS_OT_remove_auto_smooth(OpInfo, Operator):
             if ob.type == 'MESH':
                 ob.data.use_auto_smooth = False
 
-        if context.preferences.addons[__package__].preferences.auto_smooth_flat_pref:
+        if context.preferences.addons[__name__.partition('.')[0]].preferences.auto_smooth_flat_pref:
             bpy.ops.object.shade_flat()
 
         if 'modeCallback' in locals():
@@ -168,7 +168,7 @@ class PIESPLUS_OT_auto_fwn(OpInfo, Operator):
             self.report({'ERROR'}, "Nothing is selected & there is no Active Object")
             return{'FINISHED'}
 
-        pies_plus_prefs = context.preferences.addons[__package__].preferences
+        pies_plus_prefs = context.preferences.addons[__name__.partition('.')[0]].preferences
 
         if context.active_object:
             activeCallback = context.view_layer.objects.active

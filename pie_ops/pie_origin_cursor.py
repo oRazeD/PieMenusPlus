@@ -3,7 +3,7 @@ from bpy.types import Operator
 from bpy.props import EnumProperty
 from mathutils import Vector, Matrix
 from gpu_extras.batch import batch_for_shader
-from .generic_utils import OpInfo
+from ..razeds_bpy_utils.utils.generic import OpInfo
 
 
 class PIESPLUS_OT_origin_to_bottom(OpInfo, Operator):
@@ -489,7 +489,7 @@ class PIESPLUS_OT_reset_cursor(OpInfo, Operator):
         else: # Z
             cursor.location[2] = 0
 
-        if context.preferences.addons[__package__].preferences.reset_3d_cursor_rot_pref:
+        if context.preferences.addons[__name__.partition('.')[0]].preferences.reset_3d_cursor_rot_pref:
             bpy.ops.pies_plus.reset_cursor_rot()
         return{'FINISHED'}
 

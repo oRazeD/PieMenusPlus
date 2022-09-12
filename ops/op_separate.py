@@ -1,6 +1,6 @@
 import bpy
 from bpy.types import Operator
-from .generic_utils import OpInfo
+from ..razeds_bpy_utils.utils.generic import OpInfo
 
 
 class PIESPLUS_OT_separate(OpInfo, Operator):
@@ -21,15 +21,17 @@ class PIESPLUS_OT_separate(OpInfo, Operator):
 
     def execute(self, context):
         if self.remove_mods:
-            ob_list = {ob.name for ob in context.selected_objects}
+            saved_ob_list = context.selected_objects.copy()
 
         bpy.ops.mesh.separate(type=self.type)
 
-        if self.remove_mods:
-            for ob in context.selected_objects:
-                if ob.name not in ob_list:
-                    for mod in ob.modifiers:
-                        ob.modifiers.remove(mod)
+        if not self.remove_mods:
+            return{'FINISHED'}
+
+        for ob in context.selected_objects:
+            if ob not in saved_ob_list:
+                for mod in ob.modifiers:
+                    ob.modifiers.remove(mod)
         return{'FINISHED'}
 
 

@@ -3,7 +3,7 @@ bl_info = {
     "description": "Additional / Improved Pie Menus for Blender 2.8+",
     "author": "Ethan Simon-Law",
     "version": (1, 4),
-    "blender": (3, 00, 0),
+    "blender": (3, 3, 0),
     "tracker_url": "https://discord.com/invite/wHAyVZG",
     "category": "3D View"
 }
@@ -15,17 +15,17 @@ import importlib
 module_names = (
     "ui",
     "prefs",
-    "op_separate",
-    "pie_modes",
-    "pie_snapping",
-    "pie_origin_cursor",
-    "pie_transforms",
-    "pie_selection",
-    "pie_shading",
-    "pie_proportional",
-    "pie_keyframing",
-    "pie_save",
-    "pie_align"
+    "ops.op_separate",
+    "pie_ops.pie_modes",
+    "pie_ops.pie_snapping",
+    "pie_ops.pie_origin_cursor",
+    "pie_ops.pie_transforms",
+    "pie_ops.pie_selection",
+    "pie_ops.pie_shading",
+    "pie_ops.pie_proportional",
+    "pie_ops.pie_keyframing",
+    "pie_ops.pie_save",
+    "pie_ops.pie_align"
 )
 
 
