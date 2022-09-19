@@ -1,3 +1,5 @@
+
+
 ![logoideabanner5](https://user-images.githubusercontent.com/31065180/167503775-4d5af0a8-d0a6-4817-962b-05db94d45b4f.png)
 
 
@@ -10,6 +12,8 @@ If you are looking for stable full releases of the add-on, check out the Release
 [Product Page](https://gumroad.com/l/piesplus)
 
 [Discord Support Server](https://discord.gg/fttAx9g9WQ)
+
+# WARNING: Download ZIP will currently not work! Please refer to full releases only or contact me @ ethan.simon.3d@gmail.com. Should be fixed within the week
 
 # Feature Set
 
