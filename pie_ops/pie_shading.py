@@ -9,7 +9,7 @@ class PIESPLUS_OT_auto_smooth(Operator):
     bl_description = "Automation for setting up meshes with Auto Smooth Normals. Also turns on Shade Smooth"
     bl_options = {'UNDO'}
 
-    def execute(self, context):
+    def execute(self, context): # TODO integrate this better into the new shade smooth op
         if not context.selected_objects and not context.active_object:
             self.report({'ERROR'}, "Nothing is selected & there is no Active Object")
             return{'FINISHED'}
@@ -19,13 +19,13 @@ class PIESPLUS_OT_auto_smooth(Operator):
 
             bpy.ops.object.mode_set(mode="OBJECT")
 
+        bpy.ops.object.shade_smooth()
+
         for ob in context.selected_objects:
             if ob.type == 'MESH':
                 ob.data.use_auto_smooth = True
 
                 ob.data.auto_smooth_angle = context.scene.pies_plus.smoothAngle * 3.14159 / 180
-            
-        bpy.ops.object.shade_smooth()
 
         if 'modeCallback' in locals():
             bpy.ops.object.mode_set(mode = modeCallback)

@@ -1,6 +1,7 @@
-import bpy, bmesh
+import bpy
 from bpy.types import Operator
 from ..razeds_bpy_utils.utils.generic import OpInfo
+from ..razeds_bpy_utils.utils.bmesh import BMeshFromEditMode
 
 
 X_PLANE = (0, 1, 1)
@@ -58,23 +59,22 @@ class PIESPLUS_OT_quick_world_align(OpInfo, Operator):
         xMax, yMax, zMax = float('-inf'), float('-inf'), float('-inf')
 
         ob = context.object
+        with BMeshFromEditMode(ob, False) as bmesh:
+            v_cos = [ob.matrix_world @ v.co for v in bmesh.bm.verts if v.select]
 
-        bm = bmesh.new()
-        bm = bmesh.from_edit_mesh(ob.data)
-        points = [ob.matrix_world @ v.co for v in bm.verts if v.select]
-        for p in points:
-            if (p.x < xMin):
-                xMin = p.x
-            if (p.y < yMin):
-                yMin = p.y
-            if (p.z < zMin):
-                zMin = p.z
-            if (p.x > xMax):
-                xMax = p.x
-            if (p.y > yMax):
-                yMax = p.y
-            if (p.z > zMax):
-                zMax = p.z
+        for co in v_cos:
+            if co.x < xMin:
+                xMin = co.x
+            if co.y < yMin:
+                yMin = co.y
+            if co.z < zMin:
+                zMin = co.z
+            if co.x > xMax:
+                xMax = co.x
+            if co.y > yMax:
+                yMax = co.y
+            if co.z > zMax:
+                zMax = co.z
 
         xDist = abs(xMin - xMax)
         yDist = abs(yMin - yMax)
@@ -83,7 +83,7 @@ class PIESPLUS_OT_quick_world_align(OpInfo, Operator):
         axis_dist = [xDist, yDist, zDist]
 
         if axis_dist.count(0) >= 2:
-            self.report({'WARNING'}, "Found no axis to align")
+            self.report({'WARNING'}, "No axis to auto-align")
             return{'FINISHED'}
 
         try:
@@ -92,11 +92,13 @@ class PIESPLUS_OT_quick_world_align(OpInfo, Operator):
             pass
 
         if min(axis_dist) == xDist:
-            align_to_axis('BOUNDING_BOX_CENTER', X_PLANE, 'GLOBAL', X_AXIS)
+            plane_value, axis_lock = X_PLANE, X_AXIS
         elif min(axis_dist) == yDist:
-            align_to_axis('BOUNDING_BOX_CENTER', Y_PLANE, 'GLOBAL', Y_AXIS)
+            plane_value, axis_lock = Y_PLANE, Y_AXIS
         elif min(axis_dist) == zDist:
-            align_to_axis('BOUNDING_BOX_CENTER', Z_PLANE, 'GLOBAL', Z_AXIS)
+            plane_value, axis_lock = Z_PLANE, Z_AXIS
+        
+        align_to_axis('BOUNDING_BOX_CENTER', plane_value, 'GLOBAL', axis_lock)
         return{'FINISHED'}
 
 
