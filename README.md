@@ -2,6 +2,8 @@
 
 ![logoideabanner5](https://user-images.githubusercontent.com/31065180/167503775-4d5af0a8-d0a6-4817-962b-05db94d45b4f.png)
 
+<!-- BEGIN LATEST DOWNLOAD BUTTON -->
+<!-- END LATEST DOWNLOAD BUTTON -->
 
 # Pie Menus Plus Introduction
 
