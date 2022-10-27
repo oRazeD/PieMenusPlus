@@ -3,6 +3,7 @@
 ![logoideabanner5](https://user-images.githubusercontent.com/31065180/167503775-4d5af0a8-d0a6-4817-962b-05db94d45b4f.png)
 
 <!-- BEGIN LATEST DOWNLOAD BUTTON -->
+[![Download zip](https://custom-icon-badges.herokuapp.com/badge/-Download-white?style=for-the-badge&logo=download&logoColor=white "Download zip")](https://github.com/oRazeD/PieMenusPlus/archive/v1.4.zip)
 <!-- END LATEST DOWNLOAD BUTTON -->
 
 # Pie Menus Plus Introduction
