@@ -1,4 +1,4 @@
-<img align="right" width="500" src="https://user-images.githubusercontent.com/31065180/220214339-047f36e2-0620-4c24-aa44-fe3af26f3847.png" />
+<img align="right" width="500" src="https://user-images.githubusercontent.com/31065180/220215046-8ba7e52a-1d0c-4f71-9025-088706699176.png" />
 
 ##### Table of Contents  
 - [Introduction](#introduction)  
