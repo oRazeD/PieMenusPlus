@@ -1,7 +1,6 @@
 import bpy
 from bpy.types import Operator
-from ..razeds_bpy_utils.utils.generic import OpInfo
-from ..razeds_bpy_utils.utils.bmesh import BMeshFromEditMode
+from utils import OpInfo, BMeshFromEditMode
 
 
 X_PLANE = (0, 1, 1)

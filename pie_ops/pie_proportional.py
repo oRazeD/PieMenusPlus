@@ -1,5 +1,5 @@
 import bpy
-from ..razeds_bpy_utils.utils.generic import OpInfo
+from utils import OpInfo
 
 
 class PIESPLUS_OT_change_proportional_falloff(OpInfo, bpy.types.Operator):
