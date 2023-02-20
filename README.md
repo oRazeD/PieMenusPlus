@@ -12,7 +12,9 @@ If you are looking for stable full releases of the add-on, check out the Release
 
 [Discord Support Server](https://discord.gg/fttAx9g9WQ)
 
-
+# Stability
+Pie Menus Plus is fundamentally a stable add-on because of its inherent simplicity. It often does no more than move around existing operators into a different UI configuration and as such rarely ever needs maintenence between updates. While this github page does focus on volatile releases, the only things that may have any real opportunity to be considered unstable are the [Extra Tools](#extra-tools--functionality) I tend to integrate into the add-on.
+  
 # Shipped Pie Menus
 - Select Modes (UV Editor Compatible)
 - Origin / Cursor
@@ -32,18 +34,18 @@ If you are looking for stable full releases of the add-on, check out the Release
 - Save
 
 
-# Extra Tools
-## Rotation Align Extension to Origin / Cursor Tools
-Most of the operators contained within the Origin / Cursor pie menu should have access to the `Copy Active Rotation` tick within the Redo Panel of the operators
+# Extra Tools & Functionality
+Pie Menus Plus is sort of my do-it-all add-on and as such has some extra goodies I've made that don't really have a home anywhere else, so I threw them in! Here are the important ones:
+
+### Copy Rotation extension to Origin/Cursor Operators
+Most operators contained within the Origin/Cursor Pie have access to the `Copy Active Rotation` tick within the Redo Panel of the operators.
 
 <img src="https://imgur.com/lev0EZX.gif" width="834" height="667"/>
-<img src="https://imgur.com/wDhYZrh.gif" width="776" height="637"/>
-<img src="https://imgur.com/z1EATYo.gif" width="610" height="550"/>
 
-## Improved Separate Operator
-Added `Remove Modifiers` tick to the Redo Panel of the operator
+### Improved Separate Operator
+Added `Remove Modifiers` tick to the Redo Panel of the operator for situations where modifiers make separated objects completely unselectable in the 3D View.
 
-<img src="https://imgur.com/N6yp7tj.gif" width="574" height="375"/>
+<img src="https://imgur.com/N6yp7tj.gif" width="717" height="469"/>
 
 
 # Installation Guide
@@ -51,12 +53,3 @@ Added `Remove Modifiers` tick to the Redo Panel of the operator
 2. Follow this video for the rest of the simple instructions
 
 https://user-images.githubusercontent.com/31065180/137642217-d51470d3-a243-438f-8c49-1e367a8972ab.mp4
-
-
-# TODO / Future Update Paths
-- [ ] TODO
-
-
-# Known Issues / Limitations
-- TODO
-  - SOLUTION: TODO
