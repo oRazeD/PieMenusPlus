@@ -1,6 +1,6 @@
 import bpy, bmesh
 from bpy.types import Operator
-from utils import OpInfo
+from ..utils import OpInfo
 
 
 class PIESPLUS_OT_view_selection(OpInfo, Operator):

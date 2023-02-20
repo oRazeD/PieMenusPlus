@@ -1,5 +1,5 @@
 import bpy
-from utils import OpInfo
+from ..utils import OpInfo
 
 
 class PIESPLUS_OT_keyframing(OpInfo, bpy.types.Operator):

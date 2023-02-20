@@ -43,6 +43,8 @@ class BMeshFromEditMode():
         self.bm = bmesh.from_edit_mesh(self.input_data)
         return self.bm
      
-    def __exit__(self, _exc_type, _exc_value, _exc_traceback): # NOTE do not use self.bm.free() for BMeshes made in Edit Mode, uses same data regardless
+    def __exit__(self, _exc_type, _exc_value, _exc_traceback):
+        # NOTE do not use self.bm.free() for BMeshes made in Edit Mode, uses same data regardless
+
         if self.update_mesh:
             bmesh.update_edit_mesh(self.input_data)

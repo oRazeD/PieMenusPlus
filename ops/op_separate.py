@@ -1,6 +1,6 @@
 import bpy
 from bpy.types import Operator
-from utils import OpInfo
+from ..utils import OpInfo
 
 
 class PIESPLUS_OT_separate(OpInfo, Operator):

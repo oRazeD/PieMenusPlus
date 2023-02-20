@@ -32,15 +32,17 @@ class PIESPLUS_property_group(bpy.types.PropertyGroup):
     def update_uvSyncSelection(self, context):
         context.scene.tool_settings.use_uv_select_sync = self.uvSyncSelection
 
-        if context.preferences.addons[__name__.partition('.')[0]].preferences.preserve_uv_selection_pref:
-            if not context.scene.tool_settings.use_uv_select_sync:
-                old_area_type = context.area.type
-                    
-                context.area.type = 'VIEW_3D'
+        if not context.preferences.addons[__name__.partition('.')[0]].preferences.preserve_uv_selection_pref:
+            return
 
-                bpy.ops.mesh.select_all(action='SELECT')
+        if not context.scene.tool_settings.use_uv_select_sync:
+            old_area_type = context.area.type
+                
+            context.area.type = 'VIEW_3D'
 
-                context.area.type = old_area_type
+            bpy.ops.mesh.select_all(action='SELECT')
+
+            context.area.type = old_area_type
 
     smoothAngle: IntProperty(
         name="Smooth Angle",

@@ -1,6 +1,6 @@
 import bpy
 from bpy.types import Operator
-from utils import OpInfo, BMeshFromEditMode
+from ..utils import OpInfo, BMeshFromEditMode
 
 
 X_PLANE = (0, 1, 1)
@@ -25,12 +25,12 @@ def align_to_axis(pivot_point: str, value: tuple, orient_type: str, constraint_a
     """
     tool_settings = bpy.context.scene.tool_settings
 
-    saved_trans_pivot = tool_settings.transform_pivot_point
+    saved_transform_pivot = tool_settings.transform_pivot_point
     tool_settings.transform_pivot_point = pivot_point
 
     bpy.ops.transform.resize(value=value, orient_type=orient_type, constraint_axis=constraint_axis)
 
-    tool_settings.transform_pivot_point = saved_trans_pivot
+    tool_settings.transform_pivot_point = saved_transform_pivot
 
 
 class AxisAlignHelper: # Mix-in Class
@@ -54,13 +54,11 @@ class PIESPLUS_OT_quick_world_align(OpInfo, Operator):
         return context.mode == 'EDIT_MESH'
 
     def execute(self, context):
+        with BMeshFromEditMode(context.object, False) as bmesh:
+            v_cos = (context.object.matrix_world @ v.co for v in bmesh.verts if v.select)
+
         xMin, yMin, zMin = float( 'inf'), float( 'inf'), float( 'inf')
         xMax, yMax, zMax = float('-inf'), float('-inf'), float('-inf')
-
-        ob = context.object
-        with BMeshFromEditMode(ob, False) as bmesh:
-            v_cos = [ob.matrix_world @ v.co for v in bmesh.bm.verts if v.select]
-
         for co in v_cos:
             if co.x < xMin:
                 xMin = co.x
@@ -75,15 +73,15 @@ class PIESPLUS_OT_quick_world_align(OpInfo, Operator):
             if co.z > zMax:
                 zMax = co.z
 
-        xDist = abs(xMin - xMax)
-        yDist = abs(yMin - yMax)
-        zDist = abs(zMin - zMax)
+        xDist = round(abs(xMin - xMax), 6)
+        yDist = round(abs(yMin - yMax), 6)
+        zDist = round(abs(zMin - zMax), 6)
 
         axis_dist = [xDist, yDist, zDist]
 
         if axis_dist.count(0) >= 2:
             self.report({'WARNING'}, "No axis to auto-align")
-            return{'FINISHED'}
+            return{'CANCELLED'}
 
         try:
             axis_dist.pop(axis_dist.index(0))

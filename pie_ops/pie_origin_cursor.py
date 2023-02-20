@@ -3,7 +3,7 @@ from bpy.types import Operator
 from bpy.props import EnumProperty
 from mathutils import Vector, Matrix
 from gpu_extras.batch import batch_for_shader
-from utils import OpInfo
+from ..utils import OpInfo
 
 
 class PIESPLUS_OT_origin_to_bottom(OpInfo, Operator):
