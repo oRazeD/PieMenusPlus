@@ -1,7 +1,4 @@
-
-
-<img src="https://user-images.githubusercontent.com/31065180/167503775-4d5af0a8-d0a6-4817-962b-05db94d45b4f.png" width="768" height="432"/>
-
+![PieMenusPlus_TransparentBanner](https://user-images.githubusercontent.com/31065180/220210789-e77754ac-fc01-49b3-bb11-3e357f60f805.png)
 
 # Pie Menus Plus Introduction
 Welcome to the Git version of Pie Menus Plus! This page will host "volatile" releases of the add-on, although it is a very stable tool all around in its inherent simplicity.
@@ -11,6 +8,7 @@ If you are looking for stable full releases of the add-on, check out the Release
 [Product Page](https://gumroad.com/l/piesplus)
 
 [Discord Support Server](https://discord.gg/fttAx9g9WQ)
+![CursorToSelectionExample2_Optimized]()
 
 # Stability
 Pie Menus Plus is fundamentally a stable add-on because of its inherent simplicity. It often does no more than move around existing operators into a different UI configuration and as such rarely ever needs maintenence between updates. While this github page does focus on volatile releases, the only things that may have any real opportunity to be considered unstable are the [Extra Tools](#extra-tools--functionality) I tend to integrate into the add-on.
@@ -34,6 +32,9 @@ Pie Menus Plus is fundamentally a stable add-on because of its inherent simplici
 - Save
 
 
+<img src="https://imgur.com/W6PijFV.gif"/>
+
+
 # Extra Tools & Functionality
 Pie Menus Plus is sort of my do-it-all add-on and as such has some extra goodies I've made that don't really have a home anywhere else, so I threw them in! Here are the important ones:
 
@@ -41,11 +42,12 @@ Pie Menus Plus is sort of my do-it-all add-on and as such has some extra goodies
 Most operators contained within the Origin/Cursor Pie have access to the `Copy Active Rotation` tick within the Redo Panel of the operators.
 
 <img src="https://imgur.com/lev0EZX.gif" width="834" height="667"/>
+<img src="https://user-images.githubusercontent.com/31065180/220211533-85ee2a20-f0e5-4aeb-986b-738ba15b45ff.gif" width="830" height="706"/>
 
 ### Improved Separate Operator
 Added `Remove Modifiers` tick to the Redo Panel of the operator for situations where modifiers make separated objects completely unselectable in the 3D View.
 
-<img src="https://imgur.com/N6yp7tj.gif" width="717" height="469"/>
+<img src="https://imgur.com/N6yp7tj.gif" width="827" height="579"/>
 
 
 # Installation Guide
