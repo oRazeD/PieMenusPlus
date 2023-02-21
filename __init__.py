@@ -1,6 +1,6 @@
 bl_info = {
     "name": "Pie Menus Plus",
-    "description": "Additional / Improved Pie Menus for Blender 2.8+",
+    "description": "Improved Pie Menu ecosystem for Blender 2.8+",
     "author": "Ethan Simon-Law",
     "version": (1, 4, 2),
     "blender": (3, 4, 1),
