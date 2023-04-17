@@ -129,7 +129,7 @@ class PIESPLUS_MT_modes(Menu):
                     pie.operator("object.posemode_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
                 else:
                     pie.operator("object.editmode_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
-            elif ob_type in {'CURVE', 'FONT', 'SURFACE', 'META', 'LATTICE'}:
+            elif ob_type in ('CURVE', 'CURVES', 'FONT', 'SURFACE', 'META', 'LATTICE'):
                 pie.operator("object.editmode_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
             elif ob_type == 'GPENCIL':
                 pie.operator("gpencil.editmode_toggle", text="Edit / Object", icon='OBJECT_DATAMODE')
@@ -150,6 +150,8 @@ class PIESPLUS_MT_modes(Menu):
             # 1 - BOTTOM - LEFT
             if ob_type == 'GPENCIL':
                 pie.operator("gpencil.weightmode_toggle", text="Weight Paint", icon='WPAINT_HLT')
+            elif ob_type == 'CURVES':
+                pie.operator("curves.sculptmode_toggle", text="Sculpt Mode", icon='SCULPTMODE_HLT')
             else:
                 pie.separator()
 
@@ -203,7 +205,7 @@ class PIESPLUS_MT_active_tools(Menu):
         pie = layout.menu_pie()
 
         pies_plus_prefs = context.preferences.addons[__name__.partition('.')[0]].preferences
-        
+
         #4 - LEFT
         pie.operator("wm.tool_set_by_id", text="Move", icon='ORIENTATION_GLOBAL').name = 'builtin.move'
         #6 - RIGHT
@@ -283,7 +285,7 @@ class PIESPLUS_MT_snapping(Menu):
         gap = col.column()
         gap.separator()
         gap.scale_y = 12.5
-        
+
         box = col.box().column(align = True)
         box.scale_y = 1.2
         box.scale_x = .9
@@ -478,7 +480,7 @@ class PIESPLUS_MT_transforms(Menu):
             box = col.box().column()
             box.scale_y = 1.2
             box.scale_x = .875
-            
+
             box.label(text="Apply to Deltas", icon='TRANSFORM_ORIGINS')
 
             box.operator("object.transforms_to_deltas", text="All Tforms to Deltas")
@@ -487,7 +489,7 @@ class PIESPLUS_MT_transforms(Menu):
             row.operator("object.transforms_to_deltas", text="Loc").mode = 'LOC'
             row.operator("object.transforms_to_deltas", text="Rot").mode = 'ROT'
             row.operator("object.transforms_to_deltas", text="Scale").mode = 'SCALE'
-            
+
             # 3 - BOTTOM - RIGHT
             col = pie.column()
 
@@ -540,7 +542,7 @@ class PIESPLUS_MT_origin_pivot(Menu):
             # 7 - TOP - LEFT
             pie.operator("object.origin_set", text="Origin to Bounds", icon='PIVOT_BOUNDBOX').type = 'ORIGIN_GEOMETRY'
             # 9 - TOP - RIGHT
-            pie.operator("pies_plus.cursor_to_active", text="Cursor to Active", icon='PIVOT_CURSOR') 
+            pie.operator("pies_plus.cursor_to_active", text="Cursor to Active", icon='PIVOT_CURSOR')
             # 1 - BOTTOM - LEFT
             col = pie.column()
 
@@ -549,7 +551,7 @@ class PIESPLUS_MT_origin_pivot(Menu):
             gap.scale_y = 18.5
 
             box = col.box().column(align=True)
-            
+
             row = box.row(align=True) # Row to affect scaling
             row.scale_y = 1.2
             row.operator("pies_plus.reset_origin", text='Origin to 0,0,0', icon='PIVOT_BOUNDBOX').origin_reset_axis = 'origin_all'
@@ -793,7 +795,7 @@ class PIESPLUS_MT_shading(Menu):
         if context.scene.render.engine in ('CYCLES', 'BLENDER_EEVEE'):
             pie.prop_enum(space.shading, "type", 'MATERIAL')
         else:
-            pie.separator()   
+            pie.separator()
         # 8 - TOP
         pie.prop_enum(space.shading, "type", 'RENDERED')
         # 7 - TOP - LEFT
@@ -1219,7 +1221,7 @@ class PIESPLUS_MT_save(Menu):
 
         # Look for other files in the same folder with the same base name & set the increment number
         list_of_blends = []
-        
+
         for file in os.listdir(dir_path):
             if file.endswith(".blend") and '_' in file:
                 delimiters = ".blend", "_"
@@ -1228,7 +1230,7 @@ class PIESPLUS_MT_save(Menu):
                 # Split the string & convert to a number
                 try:
                     increment_number = int(re.split(regex_pattern, file)[-2])
-                    
+
                     list_of_blends.append(increment_number)
                 except ValueError:
                     pass
@@ -1393,7 +1395,7 @@ class PIESPLUS_MT_align(Menu):
 
 
 ########################################################################################################################
-# MARK EDGE - ALT + C 
+# MARK EDGE - ALT + C
 ########################################################################################################################
 
 
