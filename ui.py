@@ -786,16 +786,16 @@ class PIESPLUS_MT_shading(Menu):
         pie = layout.menu_pie()
 
         space = context.space_data
-
         # 4 - LEFT
         pie.prop_enum(space.shading, "type", 'WIREFRAME')
         # 6 - RIGHT
         pie.prop_enum(space.shading, "type", 'SOLID')
         # 2 - BOTTOM
-        if context.scene.render.engine in ('CYCLES', 'BLENDER_EEVEE'):
+        if context.scene.render.engine not in ('WORKBENCH',):
             pie.prop_enum(space.shading, "type", 'MATERIAL')
         else:
             pie.separator()
+
         # 8 - TOP
         pie.prop_enum(space.shading, "type", 'RENDERED')
         # 7 - TOP - LEFT
@@ -811,7 +811,7 @@ class PIESPLUS_MT_shading(Menu):
         vertical_gap.ui_units_y = 9
 
         split = col_base.split()
-        split_left, split_right = (split.column(), split.column())
+        _split_left, split_right = (split.column(), split.column())
 
         split_right_box1 = split_right.box().column()
         split = split_right_box1.split(align=True, factor=.55)
@@ -822,12 +822,9 @@ class PIESPLUS_MT_shading(Menu):
 
         sub_split_right = split.row(align=True)
         sub_split_right.prop(context.scene.pies_plus, "smoothAngle", text = "")
-        sub_split_right.operator("pies_plus.remove_auto_smooth", icon = 'REMOVE')
-
-        row = split_right_box1.row(align = True)
-        row.label(text = "Shade:")
-        row.operator("pies_plus.shade_smooth", text = "Smooth")
-        row.operator("pies_plus.shade_flat", text = "Flat")
+        sub_split_right.operator(
+            "object.shade_flat", text = "", icon = 'REMOVE'
+        )
 
         split_right_box2 = split_right.box().column()
         split_right_box2.scale_y = 1.2

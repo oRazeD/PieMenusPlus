@@ -4,58 +4,29 @@ from ..utils import OpInfo
 
 
 class PIESPLUS_OT_auto_smooth(Operator):
+    """Automation for setting up meshes with
+    Auto Smooth Normals. Also turns on Shade Smooth"""
     bl_idname = "pies_plus.auto_smooth"
-    bl_label = " Auto Smooth+"
-    bl_description = "Automation for setting up meshes with Auto Smooth Normals. Also turns on Shade Smooth"
+    bl_label = " Auto Smooth"
+    bl_description = ""
     bl_options = {'UNDO'}
-
-    def execute(self, context): # TODO integrate this better into the new shade smooth op
-        if not context.selected_objects and not context.active_object:
-            self.report({'ERROR'}, "Nothing is selected & there is no Active Object")
-            return{'FINISHED'}
-
-        if context.active_object:
-            modeCallback = context.object.mode
-
-            bpy.ops.object.mode_set(mode="OBJECT")
-
-        bpy.ops.object.shade_smooth()
-
-        for ob in context.selected_objects:
-            if ob.type == 'MESH':
-                ob.data.use_auto_smooth = True
-
-                ob.data.auto_smooth_angle = context.scene.pies_plus.smoothAngle * 3.14159 / 180
-
-        if 'modeCallback' in locals():
-            bpy.ops.object.mode_set(mode = modeCallback)
-        return {'FINISHED'}
-
-
-class PIESPLUS_OT_remove_auto_smooth(OpInfo, Operator):
-    bl_idname = "pies_plus.remove_auto_smooth"
-    bl_label = ""
-    bl_description = "An 'undo' for Quick Smooth, sets to Shade Flat as well"
 
     def execute(self, context):
         if not context.selected_objects and not context.active_object:
-            self.report({'ERROR'}, "Nothing is selected & there is no Active Object")
+            self.report(
+                {'ERROR'}, "Nothing is selected & there is no Active Object"
+            )
             return{'FINISHED'}
 
         if context.active_object:
-            modeCallback = context.object.mode
-
+            saved_mode = context.object.mode
             bpy.ops.object.mode_set(mode="OBJECT")
 
-        for ob in context.selected_objects:
-            if ob.type == 'MESH':
-                ob.data.use_auto_smooth = False
+        angle = context.scene.pies_plus.smoothAngle * 3.14159 / 180
+        bpy.ops.object.shade_auto_smooth(use_auto_smooth=True, angle=angle)
 
-        if context.preferences.addons[__name__.partition('.')[0]].preferences.auto_smooth_flat_pref:
-            bpy.ops.object.shade_flat()
-
-        if 'modeCallback' in locals():
-            bpy.ops.object.mode_set(mode = modeCallback)
+        if 'saved_mode' in locals():
+            bpy.ops.object.mode_set(mode = saved_mode)
         return {'FINISHED'}
 
 
@@ -106,7 +77,7 @@ class PIESPLUS_OT_recalc_normals(OpInfo, Operator):
             self.report({'INFO'}, "Recalculated vertex normals on selected faces")
             return{'FINISHED'}
 
-        modeCallback = context.object.mode
+        saved_mode = context.object.mode
 
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_mode(type='FACE')
@@ -115,8 +86,8 @@ class PIESPLUS_OT_recalc_normals(OpInfo, Operator):
         bpy.ops.mesh.select_all(action='DESELECT')
         self.report({'INFO'}, "Recalculated vertex normals on all faces")
 
-        if 'modeCallback' in locals():
-            bpy.ops.object.mode_set(mode = modeCallback)
+        if 'saved_mode' in locals():
+            bpy.ops.object.mode_set(mode = saved_mode)
         return{'FINISHED'}
 
 
@@ -128,14 +99,14 @@ class PIESPLUS_OT_shade_smooth(Operator):
 
     def execute(self,context):
         if context.active_object:
-            modeCallback = context.object.mode
+            saved_mode = context.object.mode
 
             bpy.ops.object.mode_set(mode='OBJECT')
 
         bpy.ops.object.shade_smooth()
 
-        if 'activeCallback' in locals():
-            bpy.ops.object.mode_set(mode = modeCallback)
+        if 'saved_active' in locals():
+            bpy.ops.object.mode_set(mode = saved_mode)
         return{'FINISHED'}
 
 
@@ -147,14 +118,14 @@ class PIESPLUS_OT_shade_flat(Operator):
 
     def execute(self,context):
         if context.active_object:
-            modeCallback = context.object.mode
+            saved_mode = context.object.mode
 
             bpy.ops.object.mode_set(mode='OBJECT')
 
         bpy.ops.object.shade_flat()
 
-        if 'activeCallback' in locals():
-            bpy.ops.object.mode_set(mode = modeCallback)
+        if 'saved_active' in locals():
+            bpy.ops.object.mode_set(mode = saved_mode)
         return{'FINISHED'}
 
 
@@ -165,42 +136,45 @@ class PIESPLUS_OT_auto_fwn(OpInfo, Operator):
 
     def execute(self, context):
         if not context.selected_objects and not context.active_object:
-            self.report({'ERROR'}, "Nothing is selected & there is no Active Object")
+            self.report(
+                {'ERROR'}, "Nothing is selected & there is no Active Object"
+            )
             return{'FINISHED'}
 
         pies_plus_prefs = context.preferences.addons[__name__.partition('.')[0]].preferences
 
         if context.active_object:
-            activeCallback = context.view_layer.objects.active
-
-            modeCallback = context.object.mode
-        
+            saved_active = context.view_layer.objects.active
+            saved_mode = context.object.mode
             bpy.ops.object.mode_set(mode='OBJECT')
 
+        bpy.ops.object.shade_auto_smooth(True, 3.14159)
+
         for ob in context.selected_objects:
-            if ob.type == 'MESH':
-                context.view_layer.objects.active = ob
-
-                bpy.ops.object.shade_smooth()
-                ob.data.use_auto_smooth = True
-                
-                for mod in ob.modifiers:
-                    if mod.type == 'WEIGHTED_NORMAL':
-                        break
+            if ob.type != 'MESH':
+                continue
+            context.view_layer.objects.active = ob
+            for mod in ob.modifiers:
+                if mod.type == 'WEIGHTED_NORMAL':
+                    break
+            else:
+                ob.modifiers.new('Weighted Normal', 'WEIGHTED_NORMAL')
+                ob.modifiers["Weighted Normal"].weight = \
+                    pies_plus_prefs.fwn_weight_value_pref
+                ob.modifiers["Weighted Normal"].keep_sharp = \
+                    pies_plus_prefs.fwn_keep_sharps_pref
+                if bpy.app.version >= (2, 91, 0):
+                    ob.modifiers["Weighted Normal"].use_face_influence = \
+                        pies_plus_prefs.fwn_face_influence_pref
                 else:
-                    ob.modifiers.new('Weighted Normal', 'WEIGHTED_NORMAL')
-                    ob.modifiers["Weighted Normal"].weight = pies_plus_prefs.fwn_weight_value_pref
-                    ob.modifiers["Weighted Normal"].keep_sharp = pies_plus_prefs.fwn_keep_sharps_pref
-                    if bpy.app.version >= (2, 91, 0):
-                        ob.modifiers["Weighted Normal"].use_face_influence = pies_plus_prefs.fwn_face_influence_pref
-                    else:
-                        ob.modifiers["Weighted Normal"].face_influence = pies_plus_prefs.fwn_face_influence_pref
+                    ob.modifiers["Weighted Normal"].face_influence = \
+                        pies_plus_prefs.fwn_face_influence_pref
 
-        if 'activeCallback' in locals():
-            context.view_layer.objects.active = activeCallback
-            
-            bpy.ops.object.mode_set(mode = modeCallback)
-        
+        if 'saved_active' in locals():
+            context.view_layer.objects.active = saved_active
+
+            bpy.ops.object.mode_set(mode = saved_mode)
+
         self.report({'INFO'}, "Automatically Face Weighted selection")
         return{'FINISHED'}
 
@@ -216,26 +190,25 @@ class PIESPLUS_OT_remove_custom_normals(OpInfo, Operator):
             return{'FINISHED'}
 
         if context.active_object:
-            activeCallback = context.view_layer.objects.active.name
+            saved_active = context.view_layer.objects.active.name
 
         for ob in context.selected_objects:
             if ob.type == 'MESH':
                 context.view_layer.objects.active = ob
                 bpy.ops.mesh.customdata_custom_splitnormals_clear()
 
-        if 'activeCallback' in locals():
-            context.view_layer.objects.active = bpy.data.objects[activeCallback]
+        if 'saved_active' in locals():
+            context.view_layer.objects.active = bpy.data.objects[saved_active]
         return{'FINISHED'}
 
 
 ##############################
-#   REGISTRATION    
+#   REGISTRATION
 ##############################
 
 
 classes = (
     PIESPLUS_OT_auto_smooth,
-    PIESPLUS_OT_remove_auto_smooth,
     PIESPLUS_OT_wire_per_obj,
     PIESPLUS_OT_remove_wire_per_obj,
     PIESPLUS_OT_recalc_normals,
