@@ -2,8 +2,8 @@ bl_info = {
     "name": "Pie Menus Plus",
     "description": "Improved Pie Menu ecosystem for Blender 2.8+",
     "author": "Ethan Simon-Law",
-    "version": (1, 4, 2),
-    "blender": (3, 5, 0),
+    "version": (1, 4, 3),
+    "blender": (4, 2, 0),
     "tracker_url": "https://discord.com/invite/wHAyVZG",
     "category": "3D View"
 }
