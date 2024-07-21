@@ -1,6 +1,7 @@
 import bpy, bmesh
 from bpy.types import Operator
-from ..utils import OpInfo
+
+from ..utils import OpInfo, get_addon_preferences
 
 
 class PIESPLUS_OT_view_selection(OpInfo, Operator):
@@ -35,7 +36,7 @@ class PIESPLUS_OT_mesh_selection(OpInfo, Operator):
             select_action = 'DESELECT'
         elif event.alt:
             select_action = 'INVERT'
-        elif context.preferences.addons[__name__.partition('.')[0]].preferences.invert_selection_pref:
+        elif get_addon_preferences().invert_selection_pref:
             if context.mode == 'EDIT_MESH':
                 verts_hidden = 0
 

@@ -1,22 +1,10 @@
 import bpy, rna_keymap_ui
-from bpy.props import StringProperty, EnumProperty, BoolProperty, IntProperty, PointerProperty
-from .addon_updater import Updater as updater
-from .__init__ import bl_info
+from bpy.props import (
+    StringProperty, EnumProperty, BoolProperty, IntProperty, PointerProperty
+)
+from bpy.types import PropertyGroup, Operator, AddonPreferences, Scene
 
-
-##################################
-# Operators
-##################################
-
-
-class PIESPLUS_OT_check_for_update(bpy.types.Operator):
-    bl_idname = "updater_pies_plus.check_for_update"
-    bl_label = ""
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        updater.check_for_update_now()
-        return{'FINISHED'}
+from .utils import get_addon_preferences
 
 
 ##################################
@@ -24,7 +12,7 @@ class PIESPLUS_OT_check_for_update(bpy.types.Operator):
 ##################################
 
 
-class PIESPLUS_property_group(bpy.types.PropertyGroup):
+class PIESPLUS_property_group(PropertyGroup):
     def update_smoothAngle(self, context):
         if context.selected_objects:
             bpy.ops.pies_plus.auto_smooth()
@@ -32,12 +20,12 @@ class PIESPLUS_property_group(bpy.types.PropertyGroup):
     def update_uvSyncSelection(self, context):
         context.scene.tool_settings.use_uv_select_sync = self.uvSyncSelection
 
-        if not context.preferences.addons[__name__.partition('.')[0]].preferences.preserve_uv_selection_pref:
+        if not get_addon_preferences().preserve_uv_selection_pref:
             return
 
         if not context.scene.tool_settings.use_uv_select_sync:
             old_area_type = context.area.type
-                
+
             context.area.type = 'VIEW_3D'
 
             bpy.ops.mesh.select_all(action='SELECT')
@@ -51,7 +39,7 @@ class PIESPLUS_property_group(bpy.types.PropertyGroup):
         max=180,
         update=update_smoothAngle
     )
-        
+
     uvSyncSelection: BoolProperty(
         name="UV Sync Selection",
         update=update_uvSyncSelection
@@ -162,7 +150,7 @@ class PIESPLUS_addon_keymaps:
                 PIESPLUS_addon_keymaps.get_hotkey_entry_item(name, kc, km, kmi_name, kmi_value, col)
 
 
-class PIESPLUS_OT_add_hotkey(bpy.types.Operator):
+class PIESPLUS_OT_add_hotkey(Operator):
     bl_idname = "pies_plus.add_hotkey"
     bl_label = "Add Hotkeys"
     bl_options = {'REGISTER', 'INTERNAL'}
@@ -186,7 +174,7 @@ class PIESPLUS_OT_add_hotkey(bpy.types.Operator):
 ##################################
 
 
-class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
+class PIESPLUS_MT_addon_prefs(AddonPreferences):
     bl_idname = __name__.partition('.')[0]
 
     tabs: EnumProperty(
@@ -238,7 +226,7 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
         description="Automatically enables Absolute Grid Snap when you switch to incremental snapping within the pie"
     )
     reset_3d_cursor_rot_pref: BoolProperty(
-        description="Automatically reset 3D Cursor rotation when resetting the translation within the pie", 
+        description="Automatically reset 3D Cursor rotation when resetting the translation within the pie",
         default=True
     )
 
@@ -270,19 +258,6 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
     def draw(self, context):
         layout = self.layout
         row = layout.row()
-        
-        if updater.update_ready == None:
-            row.label(text = "Checking for an update...")
-
-            updater.check_for_update_now()
-
-        elif updater.update_ready:
-            row.alert = True
-            row.label(text = "There is a Pie Menus Plus update available! Go grab it on Gumroad/Github :D")
-
-        elif not updater.update_ready:
-            row.label(text = "You have the latest version of Pie Menus Plus! There are no new versions available.")
-            row.operator("updater_pies_plus.check_for_update", text = "", icon = "FILE_REFRESH")
 
         row.operator("wm.url_open", text="", icon = 'URL').url = "https://gumroad.com/l/piesplus"
 
@@ -294,7 +269,7 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             col = layout.column(align = True)
             box = col.box()
             box.scale_y = .9
-            box.label(text="    ACTIVE TOOLS")
+            box.label(text="ACTIVE TOOLS")
             row = col.row()
             row.scale_x = 1.25
             row.label(text="Default Selection Tool")
@@ -304,7 +279,7 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             col.separator()
             box = col.box()
             box.scale_y = .9
-            box.label(text="    ORIGIN / CURSOR")
+            box.label(text="ORIGIN / CURSOR")
             col.prop(self, "face_center_snap_pref", text="[EXPERIMENTAL] Edit Origin Tool Snapping to Center of Faces")
             col.prop(self, "reset_3d_cursor_rot_pref", text="Reset 3D Cursor Rotation when Resetting Location")
 
@@ -312,16 +287,16 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             col.separator()
             box = col.box()
             box.scale_y = .9
-            box.label(text="    SELECT MODE")
+            box.label(text="SELECT MODE")
             col.prop(self, "preserve_uv_selection_pref", text="Select Entire Mesh in 3D View when Exiting UV Sync Mode")
             col.prop(self, "simple_context_mode_pref", text="Use Simple Select Mode Pie")
             col.prop(self, "sculptors_haven_pref", text="Add Sculpt Mode Button to Main Selection")
-            
+
             col = layout.column(align = True)
             col.separator()
             box = col.box()
             box.scale_y = .9
-            box.label(text="    SELECTION")
+            box.label(text="SELECTION")
             col.prop(self, "invert_selection_pref", text="Invert Selection Toggle")
             col.prop(self, "frame_selected_pref", text="Isolate & Frame Selected")
 
@@ -329,7 +304,7 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             col.separator()
             box = col.box()
             box.scale_y = .9
-            box.label(text="    SHADING")
+            box.label(text="SHADING")
             col.prop(self, "auto_smooth_flat_pref", text="Shade Objects Flat when Auto Smooth+ is Removed")
             col.separator()
             row = col.row()
@@ -344,7 +319,7 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             col.separator()
             box = col.box()
             box.scale_y = .9
-            box.label(text="    SNAPPING")
+            box.label(text="SNAPPING")
             col.prop(self, "auto_enable_snap_pref", text="Enable Snapping when Changing Snap Pie Settings")
             col.prop(self, "auto_enable_abs_grid_snap_pref", text="Enable Absolute Grid Snap when Turning on Incremental Snapping")
 
@@ -352,7 +327,7 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
             col.separator()
             box = col.box()
             box.scale_y = .9
-            box.label(text="    UI")
+            box.label(text="UI")
 
             view = context.preferences.view
 
@@ -381,8 +356,7 @@ class PIESPLUS_MT_addon_prefs(bpy.types.AddonPreferences):
 classes = (
     PIESPLUS_MT_addon_prefs,
     PIESPLUS_OT_add_hotkey,
-    PIESPLUS_property_group,
-    PIESPLUS_OT_check_for_update
+    PIESPLUS_property_group
 )
 
 
@@ -390,18 +364,7 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    # Set the updaters repo
-    updater.user = "oRazeD"
-    updater.repo = "piemenusplus"
-    updater.current_version = bl_info["version"]
-
-    # Initial check for repo updates
-    updater.check_for_update_now()
-
-    if updater.update_ready:
-        print("There is a Pie Menus Plus update available! Go grab it on Gumroad/Github :D")
-
-    bpy.types.Scene.pies_plus = PointerProperty(type = PIESPLUS_property_group)
+    Scene.pies_plus = PointerProperty(type = PIESPLUS_property_group)
 
     PIESPLUS_addon_keymaps.new_keymap('Separate', 'wm.call_menu', 'PIESPLUS_MT_separate',
                                       'Mesh', 'EMPTY', 'WINDOW',
@@ -498,7 +461,7 @@ def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
 
-    del bpy.types.Scene.pies_plus
+    del Scene.pies_plus
 
     PIESPLUS_addon_keymaps.unregister_keymaps()  # Keymap Cleanup
 

@@ -3,7 +3,8 @@ from bpy.types import Operator
 from bpy.props import EnumProperty
 from mathutils import Vector, Matrix
 from gpu_extras.batch import batch_for_shader
-from ..utils import OpInfo
+
+from ..utils import OpInfo, get_addon_preferences
 
 
 class PIESPLUS_OT_origin_to_bottom(OpInfo, Operator):
@@ -18,7 +19,7 @@ class PIESPLUS_OT_origin_to_bottom(OpInfo, Operator):
 
         for ob in context.selected_objects:
             min_z = min([vertex.co.z for vertex in ob.data.vertices])
-            
+
             for vertex in ob.data.vertices:
                 vertex.co.z -= min_z
 
@@ -110,7 +111,7 @@ class EdgeRotAlign: # Mix-in class
         if 'VERT' in self.bm.select_mode:
             return_msg = 'This operator does not work on vertices'
             return return_msg
-        
+
         active_geo = self.bm.select_history.active
         if active_geo is None:
             return_msg = "Could not find the active geo to copy rotation"
@@ -386,7 +387,7 @@ class PIESPLUS_OT_cursor_to_selected(OpInfo, EdgeRotAlign, Operator):
             if return_msg is not None:
                 self.report({'ERROR'}, return_msg)
                 return{'CANCELLED'}
-        
+
         bpy.ops.view3d.snap_cursor_to_selected()
         return{'FINISHED'}
 
@@ -489,7 +490,7 @@ class PIESPLUS_OT_reset_cursor(OpInfo, Operator):
         else: # Z
             cursor.location[2] = 0
 
-        if context.preferences.addons[__name__.partition('.')[0]].preferences.reset_3d_cursor_rot_pref:
+        if get_addon_preferences().reset_3d_cursor_rot_pref:
             bpy.ops.pies_plus.reset_cursor_rot()
         return{'FINISHED'}
 
@@ -512,7 +513,7 @@ class PIESPLUS_OT_reset_cursor_rot(OpInfo, Operator):
 
 
 ##############################
-#   REGISTRATION    
+#   REGISTRATION
 ##############################
 
 

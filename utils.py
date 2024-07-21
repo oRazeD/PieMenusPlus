@@ -1,3 +1,4 @@
+import bpy
 import inspect, logging, bmesh
 from timeit import default_timer
 import bpy.types as types
@@ -42,9 +43,14 @@ class BMeshFromEditMode():
     def __enter__(self):
         self.bm = bmesh.from_edit_mesh(self.input_data)
         return self.bm
-     
+
     def __exit__(self, _exc_type, _exc_value, _exc_traceback):
         # NOTE do not use self.bm.free() for BMeshes made in Edit Mode, uses same data regardless
 
         if self.update_mesh:
             bmesh.update_edit_mesh(self.input_data)
+
+
+def get_addon_preferences():
+    package_name = __name__.partition('.')[0]
+    return bpy.context.preferences.addons[package_name].preferences

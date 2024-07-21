@@ -1,10 +1,12 @@
 import bpy, os, re, math
 from bpy.types import Menu
 
+from .utils import get_addon_preferences
 
-########################################################################################################################
+
+########################################
 # CONTEXT MODES - TAB
-########################################################################################################################
+########################################
 
 
 class PIESPLUS_MT_modes(Menu):
@@ -19,7 +21,7 @@ class PIESPLUS_MT_modes(Menu):
         if context.object:
             ob_type = context.object.type
 
-        pies_plus_prefs = context.preferences.addons[__name__.partition('.')[0]].preferences
+        pies_plus_prefs = get_addon_preferences()
 
         if not context.object:
             # 4 - LEFT
@@ -191,9 +193,9 @@ class PIESPLUS_MT_UV_modes(Menu):
             pie.operator("pies_plus.uv_sel_change", text='Island', icon='UV_ISLANDSEL').sel_choice = 'island'
 
 
-########################################################################################################################
+########################################
 # ACTIVE TOOLS - W
-########################################################################################################################
+########################################
 
 
 class PIESPLUS_MT_active_tools(Menu):
@@ -204,7 +206,7 @@ class PIESPLUS_MT_active_tools(Menu):
         layout = self.layout
         pie = layout.menu_pie()
 
-        pies_plus_prefs = context.preferences.addons[__name__.partition('.')[0]].preferences
+        pies_plus_prefs = get_addon_preferences()
 
         #4 - LEFT
         pie.operator("wm.tool_set_by_id", text="Move", icon='ORIENTATION_GLOBAL').name = 'builtin.move'
@@ -240,9 +242,9 @@ class PIESPLUS_MT_active_tools(Menu):
             pie.operator("wm.tool_set_by_id", text="Lasso", icon='GP_ONLY_SELECTED').name = 'builtin.select_lasso'
 
 
-########################################################################################################################
+########################################
 # SNAPPING - SHIFT + TAB
-########################################################################################################################
+########################################
 
 
 class PIESPLUS_MT_snapping(Menu):
@@ -257,13 +259,13 @@ class PIESPLUS_MT_snapping(Menu):
         pie.operator("pies_plus.snap", text="Vertex", icon='SNAP_VERTEX').snap_elements = 'vertex'
         # 6 - RIGHT
         pie.operator("pies_plus.snap", text="Increment", icon='SNAP_INCREMENT').snap_elements = 'increment'
-        # # 2 - BOTTOM
+        # 2 - BOTTOM
         pie.operator("pies_plus.snap", text="Edge", icon='SNAP_EDGE').snap_elements = 'edge'
-        # # 8 - TOP
+        # 8 - TOP
         pie.prop(context.tool_settings, "use_snap", text="Snap Toggle")
-        # # 7 - TOP - LEFT
+        # 7 - TOP - LEFT
         pie.operator("pies_plus.snap", text="Volume", icon='SNAP_VOLUME').snap_elements = 'volume'
-        # # 9 - TOP - RIGHT
+        # 9 - TOP - RIGHT
         pie.operator("pies_plus.snap", text="Face", icon='SNAP_FACE').snap_elements = 'face'
         # 1 - BOTTOM - LEFT
         col = pie.column()
@@ -324,13 +326,13 @@ class PIESPLUS_MT_UV_snapping(Menu):
         pie.operator("pies_plus.snap", text="Vertex", icon='SNAP_VERTEX').snap_elements = 'uv_vertex'
         # 6 - RIGHT
         pie.operator("pies_plus.snap", text="Increment", icon='SNAP_INCREMENT').snap_elements = 'uv_increment'
-        # # 2 - BOTTOM
+        # 2 - BOTTOM
         pie.separator()
-        # # 8 - TOP
+        # 8 - TOP
         pie.prop(context.tool_settings, "use_snap", text="Snap Toggle")
-        # # 7 - TOP - LEFT
+        # 7 - TOP - LEFT
         pie.separator()
-        # # 9 - TOP - RIGHT
+        # 9 - TOP - RIGHT
         pie.separator()
         # 1 - BOTTOM - LEFT
         col = pie.column()
@@ -358,9 +360,9 @@ class PIESPLUS_MT_UV_snapping(Menu):
         pie.popover(panel="IMAGE_PT_snapping", text="Snap Panel...")
 
 
-########################################################################################################################
+########################################
 # LOOPTOOLS - SHIFT + Q
-########################################################################################################################
+########################################
 
 
 class PIESPLUS_MT_looptools(Menu):
@@ -371,30 +373,35 @@ class PIESPLUS_MT_looptools(Menu):
         layout = self.layout
         pie = layout.menu_pie()
 
-        if 'mesh_looptools' in context.preferences.addons.keys():
-            # 4 - LEFT
-            pie.operator("mesh.looptools_relax")
-            # 6 - RIGHT
-            pie.operator("mesh.looptools_space")
-            # # 2 - BOTTOM
-            pie.operator("mesh.looptools_flatten")
-            # # 8 - TOP
-            pie.operator("mesh.looptools_circle")
-            # # 7 - TOP - LEFT
-            pie.operator("mesh.looptools_bridge", text="Loft").loft = True
-            # # 9 - TOP - RIGHT
-            pie.operator("mesh.looptools_gstretch")
-            # 1 - BOTTOM - LEFT
-            pie.operator("mesh.looptools_curve")
-            # 3 - BOTTOM - RIGHT
-            pie.operator("mesh.looptools_bridge", text="Bridge")
+        if bpy.app.version >= (4, 2, 0):
+            addon_name = 'bl_ext.blender_org.looptools'
         else:
+            addon_name = 'mesh_looptools'
+        if addon_name not in context.preferences.addons.keys():
             pie.label(text="          WARNING: You must have LoopTools enabled")
+            return
+
+        # 4 - LEFT
+        pie.operator("mesh.looptools_relax")
+        # 6 - RIGHT
+        pie.operator("mesh.looptools_space")
+        # 2 - BOTTOM
+        pie.operator("mesh.looptools_flatten")
+        # 8 - TOP
+        pie.operator("mesh.looptools_circle")
+        # 7 - TOP - LEFT
+        pie.operator("mesh.looptools_bridge", text="Loft").loft = True
+        # 9 - TOP - RIGHT
+        pie.operator("mesh.looptools_gstretch")
+        # 1 - BOTTOM - LEFT
+        pie.operator("mesh.looptools_curve")
+        # 3 - BOTTOM - RIGHT
+        pie.operator("mesh.looptools_bridge", text="Bridge")
 
 
-########################################################################################################################
+########################################
 # BOOLTOOL - ALT + C
-########################################################################################################################
+########################################
 
 
 class PIESPLUS_MT_booltool(Menu):
@@ -407,35 +414,66 @@ class PIESPLUS_MT_booltool(Menu):
 
         if len(context.selected_objects) < 2:
             pie.label(text="          WARNING: You must have at least 2 objects selected")
-
-        elif not context.active_object:
+            return
+        if not context.active_object:
             pie.label(text="          WARNING: You must have an Active Object selected")
-
-        elif 'object_boolean_tools' in context.preferences.addons.keys():
-            # 4 - LEFT
-            pie.operator("object.booltool_auto_slice", text='Auto Slice', icon='SELECT_DIFFERENCE')
-            # 6 - RIGHT
-            pie.operator("btool.boolean_slice", text='Mod Slice', icon='SELECT_DIFFERENCE')
-            # # 2 - BOTTOM
-            pie.operator("object.booltool_auto_difference", text='Auto Difference', icon='SELECT_SUBTRACT')
-            # # 8 - TOP
-            pie.operator("btool.boolean_diff", text='Mod Difference', icon='SELECT_SUBTRACT')
-            # # 7 - TOP - LEFT
-            pie.operator("btool.boolean_inters", text='Mod Intersect', icon='SELECT_INTERSECT')
-            # # 9 - TOP - RIGHT
-            pie.operator("btool.boolean_union", text='Mod Union', icon='SELECT_EXTEND')
-            # 1 - BOTTOM - LEFT
-            pie.operator("object.booltool_auto_union", text='Auto Union', icon='SELECT_EXTEND')
-            # 3 - BOTTOM - RIGHT
-            pie.operator("object.booltool_auto_intersect", text='Auto Intersect', icon='SELECT_INTERSECT')
-
+            return
+        if bpy.app.version >= (4, 2, 0):
+            addon_name = 'bl_ext.blender_org.bool_tool'
         else:
+            addon_name = 'object_boolean_tools'
+        if addon_name not in context.preferences.addons.keys():
             pie.label(text="          WARNING: You must have Bool Tool enabled")
+            return
+
+        if bpy.app.version >= (4, 2, 0):
+            boolean_auto_slice       = "object.boolean_auto_slice"
+            boolean_brush_slice      = "object.boolean_brush_slice"
+            boolean_auto_difference  = "object.boolean_auto_difference"
+            boolean_brush_difference = "object.boolean_brush_difference"
+            boolean_brush_intersect  = "object.boolean_brush_intersect"
+            boolean_brush_union      = "object.boolean_brush_union"
+            boolean_auto_union       = "object.boolean_auto_union"
+            boolean_auto_intersect   = "object.boolean_auto_intersect"
+        else:
+            boolean_auto_slice       = "object.booltool_auto_slice"
+            boolean_brush_slice      = "btool.boolean_slice"
+            boolean_auto_difference  = "object.booltool_auto_difference"
+            boolean_brush_difference = "btool.boolean_diff"
+            boolean_brush_intersect  = "btool.boolean_inters"
+            boolean_brush_union      = "btool.boolean_union"
+            boolean_auto_union       = "object.booltool_auto_union"
+            boolean_auto_intersect   = "object.booltool_auto_intersect"
+
+        # 4 - LEFT
+        pie.operator(boolean_auto_slice,
+                     text='Auto Slice', icon='SELECT_DIFFERENCE')
+        # 6 - RIGHT
+        pie.operator(boolean_brush_slice,
+                     text='Modifier Slice', icon='SELECT_DIFFERENCE')
+        # 2 - BOTTOM
+        pie.operator(boolean_auto_difference,
+                     text='Auto Difference', icon='SELECT_SUBTRACT')
+        # 8 - TOP
+        pie.operator(boolean_brush_difference,
+                     text='Modifier Difference', icon='SELECT_SUBTRACT')
+        # 7 - TOP - LEFT
+        pie.operator(boolean_brush_intersect,
+                     text='Modifier Intersect', icon='SELECT_INTERSECT')
+        # 9 - TOP - RIGHT
+        pie.operator(boolean_brush_union,
+                     text='Modifier Union', icon='SELECT_EXTEND')
+        # 1 - BOTTOM - LEFT
+        pie.operator(boolean_auto_union,
+                     text='Auto Union', icon='SELECT_EXTEND')
+        # 3 - BOTTOM - RIGHT
+        pie.operator(boolean_auto_intersect,
+                     text='Auto Intersect', icon='SELECT_INTERSECT')
 
 
-########################################################################################################################
+########################################
 # TRANSFORMS - CTRL + A
-########################################################################################################################
+########################################
 
 
 class PIESPLUS_MT_transforms(Menu):
@@ -517,9 +555,9 @@ class PIESPLUS_MT_transforms(Menu):
             pie.label(text="          WARNING: You must have an object selected")
 
 
-########################################################################################################################
+########################################
 # CURSOR / ORIGIN - SHIFT + S
-########################################################################################################################
+########################################
 
 
 class PIESPLUS_MT_origin_pivot(Menu):
@@ -607,9 +645,9 @@ class PIESPLUS_MT_origin_pivot(Menu):
         box.operator("pies_plus.cursor_to_active_orient", icon='PIVOT_CURSOR')
 
 
-########################################################################################################################
+########################################
 # DELETE - X
-########################################################################################################################
+########################################
 
 
 class PIESPLUS_MT_delete(Menu):
@@ -680,9 +718,9 @@ class PIESPLUS_MT_delete_curve(Menu):
         pie.operator("curve.dissolve_verts", text="Dissolve Vertices")
 
 
-########################################################################################################################
+########################################
 # SELECTION - A
-########################################################################################################################
+########################################
 
 
 class PIESPLUS_MT_selection_object_mode(Menu):
@@ -693,7 +731,7 @@ class PIESPLUS_MT_selection_object_mode(Menu):
         layout = self.layout
         pie = layout.menu_pie()
 
-        pies_plus_prefs = context.preferences.addons[__name__.partition('.')[0]].preferences
+        pies_plus_prefs = get_addon_preferences()
 
         #4 - LEFT
         pie.separator()
@@ -772,9 +810,9 @@ class PIESPLUS_MT_selection_edit_mode(Menu):
         pie.operator("mesh.select_nth", text="Checker Deselect", icon='PARTICLE_POINT')
 
 
-########################################################################################################################
+########################################
 # SHADING - Z
-########################################################################################################################
+########################################
 
 
 class PIESPLUS_MT_shading(Menu):
@@ -848,9 +886,9 @@ class PIESPLUS_MT_shading(Menu):
         pie.prop(space.overlay, "show_wireframes", text = 'Wire Overlay', icon = 'MOD_WIREFRAME')
 
 
-########################################################################################################################
+########################################
 # ANIMATION - SHIFT + SPACE
-########################################################################################################################
+########################################
 
 
 class PIESPLUS_MT_animation(Menu):
@@ -882,9 +920,9 @@ class PIESPLUS_MT_animation(Menu):
         pie.menu("VIEW3D_MT_object_animation", text="Keyframe...", icon="KEYINGSET")
 
 
-########################################################################################################################
+########################################
 # KEYFRAMING - ALT + SPACE
-########################################################################################################################
+########################################
 
 
 class PIESPLUS_MT_keyframing(Menu):
@@ -1010,9 +1048,9 @@ class PIESPLUS_MT_keyframing(Menu):
             box.operator("pies_plus.keyframing", text="Delta Scale").key_choice = 'key_del_scale'
 
 
-########################################################################################################################
+########################################
 # PROPORTIONAL EDITING - ALT + O
-########################################################################################################################
+########################################
 
 
 class PIESPLUS_MT_proportional_edit_mode(Menu):
@@ -1089,9 +1127,9 @@ class PIESPLUS_MT_proportional_object_mode(Menu):
         pie.operator("pies_plus.change_proportional_falloff", text='Root', icon='ROOTCURVE').falloff_type = 'ROOT'
 
 
-########################################################################################################################
+########################################
 # SCULPT TOOLS - W
-########################################################################################################################
+########################################
 
 
 class PIESPLUS_MT_sculpt(Menu):
@@ -1202,9 +1240,9 @@ class PIESPLUS_MT_sculpt_grab(Menu):
             layout.operator("paint.brush_select", text='    Rotate').sculpt_tool = 'ROTATE'
 
 
-########################################################################################################################
+########################################
 # SAVE - S
-########################################################################################################################
+########################################
 
 
 class PIESPLUS_MT_save(Menu):
@@ -1332,9 +1370,9 @@ class PIESPLUS_MT_save(Menu):
         split.operator("pies_plus.batch_import", text='OBJ').import_type = 'obj'
 
 
-########################################################################################################################
+########################################
 # ALIGN - SHIFT + X
-########################################################################################################################
+########################################
 
 
 class PIESPLUS_MT_align(Menu):
@@ -1391,9 +1429,9 @@ class PIESPLUS_MT_align(Menu):
         pie.separator()
 
 
-########################################################################################################################
+########################################
 # MARK EDGE - ALT + C
-########################################################################################################################
+########################################
 
 
 class PIESPLUS_MT_mark_edge(Menu):

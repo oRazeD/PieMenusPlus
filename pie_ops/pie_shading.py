@@ -1,6 +1,7 @@
 import bpy
 from bpy.types import Operator
-from ..utils import OpInfo
+
+from ..utils import OpInfo, get_addon_preferences
 
 
 class PIESPLUS_OT_auto_smooth(Operator):
@@ -141,7 +142,7 @@ class PIESPLUS_OT_auto_fwn(OpInfo, Operator):
             )
             return{'FINISHED'}
 
-        pies_plus_prefs = context.preferences.addons[__name__.partition('.')[0]].preferences
+        pies_plus_prefs = get_addon_preferences()
 
         if context.active_object:
             saved_active = context.view_layer.objects.active

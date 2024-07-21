@@ -1,8 +1,8 @@
 bl_info = {
     "name": "Pie Menus Plus",
-    "description": "Improved Pie Menu ecosystem for Blender 2.8+",
+    "description": "Improved Pie Menu ecosystem for Blender 2.8-4+",
     "author": "Ethan Simon-Law",
-    "version": (1, 4, 3),
+    "version": (1, 4, 2),
     "blender": (4, 2, 0),
     "tracker_url": "https://discord.com/invite/wHAyVZG",
     "category": "3D View"
@@ -15,7 +15,9 @@ import importlib
 module_names = (
     "ui",
     "prefs",
+
     "ops.op_separate",
+
     "pie_ops.pie_modes",
     "pie_ops.pie_snapping",
     "pie_ops.pie_origin_cursor",
@@ -27,10 +29,7 @@ module_names = (
     "pie_ops.pie_save",
     "pie_ops.pie_align"
 )
-
-
 modules = []
-
 for mod in module_names:
     if mod in locals():
         modules.append(importlib.reload(locals()[mod]))
