@@ -149,7 +149,7 @@ class PIESPLUS_OT_auto_fwn(OpInfo, Operator):
             saved_mode = context.object.mode
             bpy.ops.object.mode_set(mode='OBJECT')
 
-        bpy.ops.object.shade_auto_smooth(True, 3.14159)
+        bpy.ops.object.shade_auto_smooth(use_auto_smooth=True, angle=3.14159)
 
         for ob in context.selected_objects:
             if ob.type != 'MESH':
