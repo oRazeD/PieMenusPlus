@@ -25,9 +25,7 @@ If you are looking for stable full releases of the add-on, check out the Release
 
 [Discord Support Server](https://discord.gg/fttAx9g9WQ)
 
-# Functionality
-
-## Available pie menus
+# Available pie menus
 - Select Modes (UV compatible)
 - Origin / Cursor
 - Transforms & Relations
@@ -45,19 +43,19 @@ If you are looking for stable full releases of the add-on, check out the Release
 - Mesh Align
 - Save
 
-## Made for industry artists
-Pie menus are by far the most efficient way to interact within the Blender viewport. The built-in pie menu add-on is good, but it doesn't consider certain aspects of modern modeling workflows. There is a ton of extremely useful operators that deserve to exist within pies that are simply left out in the default and built-in add-on pies, forcing you to sift through dropdowns or use the operator search.
+# Made for industry artists and advanced hobbyists
+Pie menus are by far the most efficient way to interact within the Blender viewport. The built-in pie menu add-on is good, but it doesn't consider certain aspects of modern modeling workflows. There is a ton of extremely useful operators that deserve to exist within pies that are simply left out in the default and built-in add-on pies, forcing you to compromise and sift through dropdowns or use the operator search.
 
-## Built-in add-on integration
+# Built-in add-on integration
 Some functionality is locked behind optional add-ons you can enable within Blender. This add-on attempts to fill some of the gaps where this extra functionality lacks pie support, while staying true a "vanilla" experience.
 
-## Non-intrusive default keymaps
+# Non-intrusive default keymaps
 Pie Menus Plus overlays keymaps over the standard Blender keymap configuration, meaning uninstalling will maintain the original keymaps. This add-on does not accommodate industry standard keymaps but you can use it at the minor risk of other keymaps becoming "conflicted".
 
-## Stability
+# Stability
 Pie Menus Plus is fundamentally stable due to its inherent simplicity. It often does no more than convert existing operators into a digestible menu of contextually relevant functionality. The only functionality potentially considerable as unstable is the [Extra Tools](#extra-functionality) I tend to integrate into the add-on for larger QOL workflow improvements.
 
-## Extras
+# Extras
 Pie Menus Plus is sort of my do-it-all add-on and as such has some extra goodies I've made that don't really have a home anywhere else, so I threw them in! Here are the important ones:
 
 ### Extended origin and cursor manipulation
@@ -76,3 +74,9 @@ Added `Remove Modifiers` tick to the Redo Panel of the operator for situations w
 2. Follow this video for the rest of the simple instructions
 
 https://user-images.githubusercontent.com/31065180/137642217-d51470d3-a243-438f-8c49-1e367a8972ab.mp4
+
+# Support
+
+Pie Menus Plus is a FOSS (Free and Open Source Software) project, which means I see very little return on my time spent developing and maintaining it.
+
+If you would like to support me, consider buying this add-on on [Gumroad](https://razed.gumroad.com/l/piesplus), or if you've already done that, send me a tip on [Ko-fi](https://ko-fi.com/razed)!
