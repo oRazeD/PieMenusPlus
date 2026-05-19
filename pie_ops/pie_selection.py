@@ -132,10 +132,9 @@ class PIESPLUS_OT_ring_sel(OpInfo, Operator):
     bl_label = ""
 
     def invoke(self, context, event):
-        bpy.ops.mesh.loop_multi_select(ring = True)
-
+        bpy.ops.mesh.select_edge_ring_multi()
         if event.shift:
-            bpy.ops.mesh.loop_multi_select(ring = False)
+            bpy.ops.mesh.select_edge_loop_multi()
         return {'FINISHED'}
 
 
@@ -148,10 +147,9 @@ class PIESPLUS_OT_loop_sel(OpInfo, Operator):
     bl_label = ""
 
     def invoke(self, context, event):
-        bpy.ops.mesh.loop_multi_select(ring = False)
-
+        bpy.ops.mesh.select_edge_loop_multi()
         if event.shift:
-            bpy.ops.mesh.loop_multi_select(ring = True)
+            bpy.ops.mesh.select_edge_ring_multi()
         return {'FINISHED'}
 
 

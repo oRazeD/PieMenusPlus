@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "PieMenusPlus"
-version = "1.4.2"
+version = "1.4.3"
 name = "Pie Menus Plus"
 tagline = "Improved Pie Menu ecosystem for Blender 2.8-5.0 and beyond"
 maintainer = "Ethan Simon-Law <ethan.simon.3d@gmail.com>"

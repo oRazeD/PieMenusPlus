@@ -322,7 +322,7 @@ class PIESPLUS_MT_UV_snapping(Menu):
         # 2 - BOTTOM
         pie.separator()
         # 8 - TOP
-        pie.prop(context.tool_settings, "use_snap", text="Snap Toggle")
+        pie.prop(context.tool_settings, "use_snap_uv", text="Snap Toggle")
         # 7 - TOP - LEFT
         pie.separator()
         # 9 - TOP - RIGHT

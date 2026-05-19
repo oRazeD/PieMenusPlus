@@ -50,9 +50,9 @@ class PIESPLUS_OT_snapping(bpy.types.Operator):
 
         # UV
         elif self.snap_elements == 'uv_increment':
-            ts.snap_uv_element = 'INCREMENT'
+            ts.snap_uv_element = {'INCREMENT'}
         elif self.snap_elements == 'uv_vertex':
-            ts.snap_uv_element = 'VERTEX'
+            ts.snap_uv_element = {'VERTEX'}
 
         if pies_plus.auto_enable_snap_pref:
             ts.use_snap = True
