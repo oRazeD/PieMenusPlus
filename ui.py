@@ -366,11 +366,12 @@ class PIESPLUS_MT_looptools(Menu):
         layout = self.layout
         pie = layout.menu_pie()
 
-        if bpy.app.version >= (4, 2, 0):
-            addon_name = 'bl_ext.blender_org.looptools'
-        else:
-            addon_name = 'mesh_looptools'
-        if addon_name not in context.preferences.addons.keys():
+        addon_found = False
+        for addon_name in context.preferences.addons.keys():
+            if 'looptools' in addon_name:
+                addon_found = True
+                break
+        if not addon_found:
             pie.label(text="          WARNING: You must have LoopTools enabled")
             return
 
