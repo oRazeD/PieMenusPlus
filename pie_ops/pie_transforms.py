@@ -1,4 +1,6 @@
 import bpy
+import bmesh
+
 
 
 class PIESPLUS_OT_transforms(bpy.types.Operator):
@@ -24,11 +26,37 @@ class PIESPLUS_OT_transforms(bpy.types.Operator):
         name='Apply Properties',
         description='Modfy properties such as curve vertex radius, font size and bone evelope.'
     )
+    remap_weight: bpy.props.BoolProperty(name='Remap Bevel Weight', default=True)
+
+    @staticmethod
+    def remap_bevel_weight():
+        for ob in bpy.context.selected_objects:
+            bm = bmesh.new()
+            bm.from_mesh(ob.data)
+
+            scale_factor = (abs(ob.scale.x) + abs(ob.scale.y) + abs(ob.scale.z)) / 3
+            layer = bm.edges.layers.float.get("bevel_weight_edge")
+            for edge in bm.edges:
+                edge[layer] *= scale_factor
+
+            for mod in ob.modifiers:
+                # TODO: Remove hard-coded references
+                if mod.name != "1_GN Initial Mesh Setup":
+                    continue
+                mod["Socket_2"] *= scale_factor
+                mod["Socket_3"] *= scale_factor
+                mod["Socket_9"] *= scale_factor
+
+            bm.to_mesh(ob.data)
+            bm.free()
 
     def apply_transform(self, location, rotation, scale, properties):
         bpy.ops.object.transform_apply('INVOKE_DEFAULT', location=location, rotation=rotation, scale=scale, properties=properties)
 
     def execute(self, context):
+        if self.remap_weight:
+            self.remap_bevel_weight()
+
         if self.tranforms_type == 'apply_loc':
             self.apply_transform(True, False, False, self.use_properties)
         elif self.tranforms_type == 'apply_rot':
@@ -46,7 +74,7 @@ class PIESPLUS_OT_transforms(bpy.types.Operator):
 
 
 ##############################
-#   REGISTRATION    
+#   REGISTRATION
 ##############################
 
 
